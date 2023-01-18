@@ -1,0 +1,18 @@
+{
+	"help": {
+		"description": "Hi there! Thanks for checking out NodBot. NodBot is used in two distinct ways: with 'Slash Commands' (/help), and with 'Dot Commands' (nod.gif). The two types will be outlined below, along with usage examples.",
+		"slash": "Slash Commands always begin with a / and a menu will pop up to help complete the commands.",
+		"dot": "Dot Commands have the command at the end of the message, for example to search for a gif of 'nod', type 'nod.gif'"
+	},
+	"emoji": {
+		"joint": "<:joint:862082955902976000>",
+		"next": "⏭️",
+		"previous": "⏮️",
+		"confirm": "☑️",
+		"cancel": "❌"
+	},
+	"urls": {
+		"avatar": "https://cdn.discordapp.com/avatars/513184762073055252/12227aa23a06d5178853e59b72c7487b.webp?size=128"
+	},
+	"temp": {}
+}

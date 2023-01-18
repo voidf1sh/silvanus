@@ -1,0 +1,33 @@
+{
+  "name": "nodbot",
+  "version": "3.0.8",
+  "description": "Nods and Nod Accessories.",
+  "main": "main.js",
+  "dependencies": {
+    "axios": "^0.21.4",
+    "discord.js": "^14.7.1",
+    "dotenv": "^10.0.0",
+    "fuzzy-search": "^3.2.1",
+    "mysql": "^2.18.1",
+    "tenorjs": "^1.0.10"
+  },
+  "engines": {
+    "node": "18.x"
+  },
+  "devDependencies": {
+    "eslint": "^7.32.0"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/voidf1sh/nodbot.git"
+  },
+  "author": "voidf1sh#0420",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/voidf1sh/nodbot/issues"
+  },
+  "homepage": "https://github.com/voidf1sh/nodbot#readme"
+}
