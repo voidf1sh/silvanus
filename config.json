@@ -1,4 +1,9 @@
 {
 	"guildId": "868542949737246730",
-	"validCommands": []
+	"messageId": "",
+	"treeMessageId": "",
+	"treeHeight": 0,
+	"validCommands": [],
+	"rankMessageId": "",
+	"rankings": []
 }

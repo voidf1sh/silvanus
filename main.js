@@ -28,20 +28,18 @@ const isDev = process.env.isDev;
 
 client.once('ready', () => {
 	fn.collections.slashCommands(client);
-	fn.collections.dotCommands(client);
-	fn.collections.setvalidCommands(client);
 	console.log('Ready!');
 	client.channels.fetch(statusChannelId).then(channel => {
-		channel.send(`${new Date().toISOString()} -- <@${process.env.ownerId}>\nStartup Sequence Complete`);
+		channel.send(`${new Date().toISOString()} -- \nStartup Sequence Complete`);
 	});
 });
 
 // slash-commands
 client.on('interactionCreate', async interaction => {
 	if (interaction.isCommand()) {
-		if (isDev) {
-			console.log(interaction);
-		}
+		// if (isDev) {
+		// 	console.log(interaction);
+		// }
 		const { commandName } = interaction;
 
 		if (client.slashCommands.has(commandName)) {
@@ -51,27 +49,10 @@ client.on('interactionCreate', async interaction => {
 			console.error('Slash command attempted to run but not found: ' + commandName);
 		}
 	}
-});
 
-// dot-commands
-client.on('messageCreate', message => {
-	// Some basic checking to prevent running unnecessary code
-	if (message.author.bot) return;
-
-	// Break the message down into its components and analyze it
-	const commandData = fn.dot.getCommandData(message);
-	console.log(commandData);
-
-	if (commandData.isValid && commandData.isCommand) {
-		try {
-			client.dotCommands.get(commandData.command).execute(message, commandData);
-		}
-		catch (error) {
-			console.error(error);
-			message.reply('There was an error trying to execute that command.');
-		}
+	if (interaction.isButton() && interaction.component.customId == 'refresh') {
+		fn.refresh(interaction);
 	}
-	return;
 });
 
 client.login(token);
