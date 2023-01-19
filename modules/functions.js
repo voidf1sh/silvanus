@@ -12,9 +12,9 @@ const Discord = require('discord.js');
 const { EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle } = Discord;
 
 // Various imports from other files
-const config = require('./config.json');
-let messageIds = require('./messageIds.json');
-const strings = require('./strings.json');
+const config = require('../data/config.json');
+let guildInfo = require('../data/guildInfo.json');
+const strings = require('../data/strings.json');
 const slashCommandFiles = fs.readdirSync('./slash-commands/').filter(file => file.endsWith('.js'));
 
 const functions = {
@@ -25,7 +25,7 @@ const functions = {
 			if (!client.slashCommands) client.slashCommands = new Discord.Collection();
 			client.slashCommands.clear();
 			for (const file of slashCommandFiles) {
-				const slashCommand = require(`./slash-commands/${file}`);
+				const slashCommand = require(`../slash-commands/${file}`);
 				if (slashCommand.data != undefined) {
 					client.slashCommands.set(slashCommand.data.name, slashCommand);
 				}
@@ -89,13 +89,13 @@ const functions = {
 	rankings: {
 		parse(interaction) {
 			return new Promise ((resolve, reject) => {
-				if (messageIds[interaction.guildId] == undefined) {
+				if (guildInfo[interaction.guildId] == undefined) {
 					reject("The guild entry hasn't been created yet.");
 					return;
 				}
-				if (messageIds[interaction.guildId].rankMessageId != undefined) {
-					interaction.guild.channels.fetch(messageIds[interaction.guildId].rankChannelId).then(c => {
-						c.messages.fetch(messageIds[interaction.guildId].rankMessageId).then(rankMessage => {
+				if (guildInfo[interaction.guildId].rankMessageId != undefined) {
+					interaction.guild.channels.fetch(guildInfo[interaction.guildId].rankChannelId).then(c => {
+						c.messages.fetch(guildInfo[interaction.guildId].rankMessageId).then(rankMessage => {
 							if ((rankMessage.embeds.length == 0) || (rankMessage.embeds[0].data.title != 'Tallest Trees' )) {
 								reject("This doesn't appear to be a valid ``/top trees`` message.");
 								return;
@@ -126,9 +126,9 @@ const functions = {
 								});
 							}
 		
-							messageIds[interaction.guildId].rankings = rankings;
-							fs.writeFileSync('./messageIds.json', JSON.stringify(messageIds));
-							messageIds = require('./messageIds.json');
+							guildInfo[interaction.guildId].rankings = rankings;
+							fs.writeFileSync('../data/guildInfo.json', JSON.stringify(guildInfo));
+							guildInfo = require('../data/guildInfo.json');
 							resolve(rankings);
 						});
 					});
@@ -140,13 +140,13 @@ const functions = {
 			
 		},
 		compare(interaction) {
-			if (messageIds[interaction.guildId] == undefined) {
+			if (guildInfo[interaction.guildId] == undefined) {
 				return `Please reset the reference messages! (${interaction.guildId})`;
 			}
-			let treeHeight = parseFloat(messageIds[interaction.guildId].treeHeight).toFixed(1);
-			if ((messageIds[interaction.guildId].rankings.length > 0) && (treeHeight > 0)) {
+			let treeHeight = parseFloat(guildInfo[interaction.guildId].treeHeight).toFixed(1);
+			if ((guildInfo[interaction.guildId].rankings.length > 0) && (treeHeight > 0)) {
 				let replyString = 'Current Tree Height: ' + treeHeight + 'ft\n\n';
-				messageIds[interaction.guildId].rankings.forEach(e => {
+				guildInfo[interaction.guildId].rankings.forEach(e => {
 					let difference = parseFloat(e.height).toFixed(1) - treeHeight;
 					const absDifference = parseFloat(Math.abs(difference)).toFixed(1);
 					if (difference > 0) {
@@ -159,7 +159,7 @@ const functions = {
 				});
 				return 'Here\'s how your tree compares: \n' + replyString;
 			} else {
-				console.error('Not configured correctly\n' + 'Guild ID: ' + interaction.guildId + '\nGuild Info: ' + JSON.stringify(messageIds[interaction.guildId]));
+				console.error('Not configured correctly\n' + 'Guild ID: ' + interaction.guildId + '\nGuild Info: ' + JSON.stringify(guildInfo[interaction.guildId]));
 				return 'Not configured correctly';
 			}
 		}
@@ -168,22 +168,22 @@ const functions = {
 		parse(interaction) {
 			let input;
 			return new Promise((resolve, reject) => {
-				if (messageIds[interaction.guildId] == undefined) {
+				if (guildInfo[interaction.guildId] == undefined) {
 					reject(`The guild entry hasn't been created yet. [${interaction.guildId || interaction.commandGuildId}]`);
 					return;
 				}
-				if (messageIds[interaction.guildId].treeMessageId != "") {
-					interaction.guild.channels.fetch(messageIds[interaction.guildId].treeChannelId).then(c => {
-						c.messages.fetch(messageIds[interaction.guildId].treeMessageId).then(m => {
+				if (guildInfo[interaction.guildId].treeMessageId != "") {
+					interaction.guild.channels.fetch(guildInfo[interaction.guildId].treeChannelId).then(c => {
+						c.messages.fetch(guildInfo[interaction.guildId].treeMessageId).then(m => {
 							if ( (m.embeds.length == 0) || !(m.embeds[0].data.description.includes('Your tree is')) ) {
 								reject("This doesn't appear to be a valid ``/tree`` message.");
 								return;
 							}
 							input = m.embeds[0].data.description;
 							let lines = input.split('\n');
-							messageIds[interaction.guildId].treeHeight = parseFloat(lines[0].slice(lines[0].indexOf('is') + 3, lines[0].indexOf('ft'))).toFixed(1);
-							fs.writeFileSync('./messageIds.json', JSON.stringify(messageIds));
-							messageIds = require('./messageIds.json');
+							guildInfo[interaction.guildId].treeHeight = parseFloat(lines[0].slice(lines[0].indexOf('is') + 3, lines[0].indexOf('ft'))).toFixed(1);
+							fs.writeFileSync('../data/guildInfo.json', JSON.stringify(guildInfo));
+							guildInfo = require('../data/guildInfo.json');
 							resolve("The reference tree message has been saved/updated.");
 						});
 					})
@@ -208,13 +208,13 @@ const functions = {
 		});
 	},
 	reset(guildId) {
-		delete messageIds[guildId];
-		fs.writeFileSync('./messageIds.json', JSON.stringify(messageIds));
-		messageIds = require('./messageIds.json');
+		delete guildInfo[guildId];
+		fs.writeFileSync('../data/guildInfo.json', JSON.stringify(guildInfo));
+		guildInfo = require('../data/guildInfo.json');
 		return;
 	},
 	getInfo(guildId) {
-		const guildInfo = messageIds[guildId];
+		const guildInfo = guildInfo[guildId];
 		if (guildInfo != undefined) {
 			let guildInfoString = "";
 			if (guildInfo.treeMessageId != "") {

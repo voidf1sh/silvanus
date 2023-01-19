@@ -3,16 +3,16 @@ const dotenv = require('dotenv');
 dotenv.config();
 
 const { REST, Routes } = require('discord.js');
-const { guildId } = require('./config.json');
+const { guildId } = require('../data/config.json');
 const clientId = process.env.clientId;
 const token = process.env.TOKEN;
 const fs = require('fs');
 
 const commands = [];
-const commandFiles = fs.readdirSync('./slash-commands').filter(file => file.endsWith('.js'));
+const commandFiles = fs.readdirSync('../slash-commands').filter(file => file.endsWith('.js'));
 
 for (const file of commandFiles) {
-	const command = require(`./slash-commands/${file}`);
+	const command = require(`../slash-commands/${file}`);
 	if (command.data != undefined) {
 		commands.push(command.data.toJSON());
 	}

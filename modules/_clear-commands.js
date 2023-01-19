@@ -5,7 +5,7 @@ dotenv.config();
 const { REST } = require('@discordjs/rest');
 const { Routes } = require('discord-api-types/v9');
 const clientId = process.env.clientId;
-const { guildId } = require('../config.json');
+const { guildId } = require('../data/config.json');
 const token = process.env.TOKEN;
 
 const rest = new REST({ version: '9' }).setToken(token);

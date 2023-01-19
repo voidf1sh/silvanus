@@ -1,14 +1,14 @@
 const { SlashCommandBuilder } = require('discord.js');
-const fn = require('../functions.js');
-const messageIds = require('../messageIds.json');
+const fn = require('../modules/functions.js');
+const guildInfo = require('../data/guildInfo.json');
 
 module.exports = {
 	data: new SlashCommandBuilder()
 		.setName('setup')
 		.setDescription('Attempt automatic configuration of the bot.'),
 	execute(interaction) {
-		if (messageIds[interaction.guildId] == undefined) {
-			messageIds[interaction.guildId] = {
+		if (guildInfo[interaction.guildId] == undefined) {
+			guildInfo[interaction.guildId] = {
 				"treeMessageId": "",
 				"treeChannelId": "",
 				"rankMessageId": "",
@@ -24,13 +24,13 @@ module.exports = {
 				if (msg.embeds.length > 0) {
 					if (msg.embeds[0].data.description.includes("Your tree is")) {
 						treeFound = true;
-						messageIds[interaction.guildId].treeChannelId = msg.channelId;
-						messageIds[interaction.guildId].treeMessageId = msg.id;
+						guildInfo[interaction.guildId].treeChannelId = msg.channelId;
+						guildInfo[interaction.guildId].treeMessageId = msg.id;
 						fn.tree.parse(msg);
 					} else if (msg.embeds[0].data.title == "Tallest Trees") {
 						rankFound = true;
-						messageIds[interaction.guildId].rankChannelId = msg.channelId;
-						messageIds[interaction.guildId].rankMessageId = msg.id;
+						guildInfo[interaction.guildId].rankChannelId = msg.channelId;
+						guildInfo[interaction.guildId].rankMessageId = msg.id;
 						fn.rankings.parse(msg);
 					}
 				}

@@ -1,6 +1,6 @@
 const { SlashCommandBuilder, messageLink } = require('discord.js');
-const fn = require('../functions.js');
-const strings = require('../strings.json');
+const fn = require('../modules/functions.js');
+const strings = require('../data/strings.json');
 
 module.exports = {
 	data: new SlashCommandBuilder()

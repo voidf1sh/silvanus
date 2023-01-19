@@ -22,8 +22,8 @@ const client = new Client({
 });
 
 // Various imports
-const fn = require('./functions.js');
-const strings = require('./strings.json');
+const fn = require('./modules/functions.js');
+const strings = require('./data/strings.json');
 const isDev = process.env.isDev;
 
 client.once('ready', () => {
