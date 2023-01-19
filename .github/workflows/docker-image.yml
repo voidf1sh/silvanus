@@ -19,8 +19,8 @@ jobs:
     steps:
     - uses: actions/checkout@v3
     - name: Build the Docker image
-      run: docker build . --file Dockerfile --tag v0idf1sh/nodbot
+      run: docker build . --file Dockerfile --tag v0idf1sh/treeanalyzer
     - name: Log into Docker Hub
       run: docker login -u $DHUB_UNAME -p $DHUB_PWORD
     - name: Push image to Docker Hub
-      run: docker push v0idf1sh/nodbot
+      run: docker push v0idf1sh/treeanalyzer
