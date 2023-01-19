@@ -1,7 +1,7 @@
 {
 	"help": {
 		"info": "This bot will analyze your tree (from the Grow A Tree Bot by Limbo Labs) and compare its growth to other trees displayed on the leaderboard.\n\nThis bot assumes that there is a single </tree:972648557796524032> message and a single </top trees:1051840665362894950> message that everyone uses. If everyone creates their own </tree:972648557796524032> and </top trees:1051840665362894950>, the reference messages will have to be updated every time, or old data will be displayed.",
-		"setup": "To begin analyzing your Tree, first you must set up the reference messages.\n\n1. Run </setup:1065407649363005561> in the channel(s) that contain your server's tree and leaderboard messages.\n2. Now simply run </compare:1065442144074088510> where you want your analysis to be visible.",
+		"setup": "To begin analyzing your Tree, first you must set up the reference messages.\n\n1. Run </setup:1065407649363005561> in the channel(s) that contain your server's tree and leaderboard messages.\n2. Now simply run </compare:1065346941166297128> where you want your analysis to be visible.",
 		"permissions": "At a minimum, Grow A Tree Analyzer requires permissions to `Send Messages` and `Send Messages in Threads` if applicable. If Analyzer is given permission to `Manage Messages`, the bot will delete the `.settree` and `.setranks` messages to reduce spam."
 	},
 	"embeds": {
