@@ -47,6 +47,16 @@ const functions = {
 				);
 			return refreshActionRow;
 		},
+		comparisonEmbed(content, refreshActionRow) {
+			// Create the embed using the content passed to this function
+			const embed = new EmbedBuilder()
+				.setColor(strings.embeds.color)
+				.setTitle('Tree Growth Comparison')
+				.setDescription(content)
+				.setFooter({text: strings.embeds.footer});
+			const messageContents = { embeds: [embed], components: [refreshActionRow] };
+			return messageContents;
+		},
 		helpEmbed(content, private) {
 			const embed = new EmbedBuilder()
 				.setColor(strings.embeds.color)
@@ -76,6 +86,115 @@ const functions = {
 			return messageContents;
 		}
 	},
+	rankings: {
+		parse(interaction) {
+			return new Promise ((resolve, reject) => {
+				if (guildInfo[interaction.guildId] == undefined) {
+					reject("The guild entry hasn't been created yet.");
+					return;
+				}
+				if (guildInfo[interaction.guildId].rankMessageId != undefined) {
+					interaction.guild.channels.fetch(guildInfo[interaction.guildId].rankChannelId).then(c => {
+						c.messages.fetch(guildInfo[interaction.guildId].rankMessageId).then(rankMessage => {
+							if ((rankMessage.embeds.length == 0) || (rankMessage.embeds[0].data.title != 'Tallest Trees' )) {
+								reject("This doesn't appear to be a valid ``/top trees`` message.");
+								return;
+							}
+							let lines = rankMessage.embeds[0].data.description.split('\n');
+							let rankings = [];
+							for (let i = 0; i < 10; i++) {
+								let breakdown = lines[i].split(' - ');
+								if (breakdown[0].includes('🥇')) {
+									breakdown[0] = '``#1 ``'
+								} else if (breakdown[0].includes('🥈')) {
+									breakdown[0] = '``#2 ``'
+								} else if (breakdown[0].includes('🥉')) {
+									breakdown[0] = '``#3 ``'
+								}
+		
+								let trimmedRank = breakdown[0].slice(breakdown[0].indexOf('#') + 1, breakdown[0].lastIndexOf('``'));
+		
+								let trimmedName = breakdown[1].slice(breakdown[1].indexOf('``') + 2);
+								trimmedName = trimmedName.slice(0, trimmedName.indexOf('``'));
+		
+								let trimmedHeight = parseFloat(breakdown[2].slice(0, breakdown[2].indexOf('ft'))).toFixed(1);
+		
+								rankings.push({
+									rank: trimmedRank,
+									name: trimmedName,
+									height: trimmedHeight
+								});
+							}
+		
+							guildInfo[interaction.guildId].rankings = rankings;
+							fs.writeFileSync('../data/guildInfo.json', JSON.stringify(guildInfo));
+							guildInfo = require('../data/guildInfo.json');
+							resolve(rankings);
+						});
+					});
+				} else {
+					reject("The rankMessageId is undefined somehow");
+					return;
+				}
+			});
+			
+		},
+		compare(interaction) {
+			if (guildInfo[interaction.guildId] == undefined) {
+				return `Please reset the reference messages! (${interaction.guildId})`;
+			}
+			let treeHeight = parseFloat(guildInfo[interaction.guildId].treeHeight).toFixed(1);
+			if ((guildInfo[interaction.guildId].rankings.length > 0) && (treeHeight > 0)) {
+				let replyString = 'Current Tree Height: ' + treeHeight + 'ft\n\n';
+				guildInfo[interaction.guildId].rankings.forEach(e => {
+					let difference = parseFloat(e.height).toFixed(1) - treeHeight;
+					const absDifference = parseFloat(Math.abs(difference)).toFixed(1);
+					if (difference > 0) {
+						replyString += `${absDifference}ft shorter than rank #${e.rank}\n`;
+					} else if (difference < 0) {
+						replyString += `${absDifference}ft taller than rank #${e.rank}\n`;
+					} else if (difference == 0) {
+						replyString += `Same height as rank #${e.rank}\n`;
+					}
+				});
+				return 'Here\'s how your tree compares: \n' + replyString;
+			} else {
+				console.error('Not configured correctly\n' + 'Guild ID: ' + interaction.guildId + '\nGuild Info: ' + JSON.stringify(guildInfo[interaction.guildId]));
+				return 'Not configured correctly';
+			}
+		}
+	},
+	tree: {
+		parse(interaction) {
+			let input;
+			return new Promise((resolve, reject) => {
+				if (guildInfo[interaction.guildId] == undefined) {
+					reject(`The guild entry hasn't been created yet. [${interaction.guildId || interaction.commandGuildId}]`);
+					return;
+				}
+				if (guildInfo[interaction.guildId].treeMessageId != "") {
+					interaction.guild.channels.fetch(guildInfo[interaction.guildId].treeChannelId).then(c => {
+						c.messages.fetch(guildInfo[interaction.guildId].treeMessageId).then(m => {
+							if ( (m.embeds.length == 0) || !(m.embeds[0].data.description.includes('Your tree is')) ) {
+								reject("This doesn't appear to be a valid ``/tree`` message.");
+								return;
+							}
+							input = m.embeds[0].data.description;
+							let lines = input.split('\n');
+							guildInfo[interaction.guildId].treeHeight = parseFloat(lines[0].slice(lines[0].indexOf('is') + 3, lines[0].indexOf('ft'))).toFixed(1);
+							fs.writeFileSync('../data/guildInfo.json', JSON.stringify(guildInfo));
+							guildInfo = require('../data/guildInfo.json');
+							resolve("The reference tree message has been saved/updated.");
+						});
+					})
+				} else {
+					console.error('treeMessageId undefined');
+					reject("There was an unknown error while setting the tree message.");
+					return;
+				}
+			});
+		}
+	},
 	refresh(interaction) {
 		functions.rankings.parse(interaction).then(r1 => {
 			functions.tree.parse(interaction).then(r2 => {
@@ -87,6 +206,36 @@ const functions = {
 		}).catch(e => {
 			interaction.reply(functions.builders.errorEmbed(e));
 		});
+	},
+	reset(guildId) {
+		delete guildInfo[guildId];
+		fs.writeFileSync('../data/guildInfo.json', JSON.stringify(guildInfo));
+		guildInfo = require('../data/guildInfo.json');
+		return;
+	},
+	getInfo(guildId) {
+		const guildInfo = guildInfo[guildId];
+		if (guildInfo != undefined) {
+			let guildInfoString = "";
+			if (guildInfo.treeMessageId != "") {
+				guildInfoString += `Tree Message ID: ${guildInfo.treeMessageId}\n`;
+			}
+			if (guildInfo.treeChannelId != "") {
+				guildInfoString += `Tree Channel ID: ${guildInfo.treeChannelId}\n`;
+			}
+			if (guildInfo.rankMessageId != "") {
+				guildInfoString += `Rank Message ID: ${guildInfo.rankMessageId}\n`;
+			}
+			if (guildInfo.rankChannelId != "") {
+				guildInfoString += `Rank Channel ID: ${guildInfo.rankChannelId}\n`;
+			}
+			if (guildInfo.treeHeight != "") {
+				guildInfoString += `Tree Height: ${guildInfo.treeHeight}\n`;
+			}
+			return `Here if your servers setup info:\n${guildInfoString}`;
+		} else {
+			return "Your guild hasn't been set up yet.";
+		}
 	}
 };
 

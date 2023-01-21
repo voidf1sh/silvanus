@@ -30,20 +30,23 @@ client.once('ready', () => {
 	fn.collections.slashCommands(client);
 	console.log('Ready!');
 	client.channels.fetch(statusChannelId).then(channel => {
-		channel.send(`${new Date().toISOString()} -- Ready`);
+		channel.send(`${new Date().toISOString()} -- \nStartup Sequence Complete`);
 	});
 });
 
 // slash-commands
 client.on('interactionCreate', async interaction => {
 	if (interaction.isCommand()) {
+		// if (isDev) {
+		// 	console.log(interaction);
+		// }
 		const { commandName } = interaction;
 
 		if (client.slashCommands.has(commandName)) {
 			client.slashCommands.get(commandName).execute(interaction);
 		} else {
 			interaction.reply('Sorry, I don\'t have access to that command.');
-			console.error('Slash command attempted to run but not found: /' + commandName);
+			console.error('Slash command attempted to run but not found: ' + commandName);
 		}
 	}
 
