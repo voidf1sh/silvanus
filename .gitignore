@@ -4,6 +4,7 @@ package-lock.json
 .VSCodeCounter/
 env.dev
 env.prod
+.DS_Store
 
 # Custom folders
 # gifs/*
