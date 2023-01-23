@@ -14,6 +14,6 @@ module.exports = {
 		interaction.deferReply();
 		const treeHeight = interaction.options.getString('height');
 		const waterTime = Math.floor(Math.floor(Math.pow(treeHeight * 0.07 + 5, 1.1)) / 60);
-		interaction.reply(`A tree that is ${treeHeight}ft tall will have a watering time of ${waterTime} minutes.`);
+		interaction.editReply(`A tree that is ${treeHeight}ft tall will have a watering time of ${waterTime} minutes.`);
 	},
 };
