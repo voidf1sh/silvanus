@@ -150,12 +150,13 @@ const functions = {
 					let difference = parseFloat(e.height).toFixed(1) - treeHeight;
 					const absDifference = parseFloat(Math.abs(difference)).toFixed(1);
 					if (difference > 0) {
-						replyString += `${absDifference}ft shorter than rank #${e.rank}\n`;
+						replyString += `#${e.rank} - ${absDifference}ft shorter `;
 					} else if (difference < 0) {
-						replyString += `${absDifference}ft taller than rank #${e.rank}\n`;
+						replyString += `#${e.rank} - ${absDifference}ft taller `;
 					} else if (difference == 0) {
-						replyString += `Same height as rank #${e.rank}\n`;
+						replyString += `#${e.rank} - Same height `;
 					}
+					replyString += `[${functions.getWaterTime(e.height)}m]\n`;
 				});
 				return 'Here\'s how your tree compares: \n' + replyString;
 			} else {
@@ -236,6 +237,9 @@ const functions = {
 		} else {
 			return "Your guild hasn't been set up yet.";
 		}
+	},
+	getWaterTime(size) {
+		return Math.floor((Math.pow(size * 0.07 + 5, 1.1) / 60));
 	}
 };
 
