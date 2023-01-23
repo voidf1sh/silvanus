@@ -148,13 +148,18 @@ const functions = {
 				let replyString = 'Current Tree Height: ' + treeHeight + 'ft\n\n';
 				guildInfo[interaction.guildId].rankings.forEach(e => {
 					let difference = parseFloat(e.height).toFixed(1) - treeHeight;
+					let decimal = (e.height % 1).toFixed(1);
+					let growthIndicator = "";
+					if (decimal > 0) {
+						growthIndicator += "[+]";
+					}
 					const absDifference = parseFloat(Math.abs(difference)).toFixed(1);
 					if (difference > 0) {
-						replyString += `#${e.rank} - ${absDifference}ft shorter `;
+						replyString += `#${e.rank} - ${absDifference}ft${growthIndicator} shorter `;
 					} else if (difference < 0) {
-						replyString += `#${e.rank} - ${absDifference}ft taller `;
+						replyString += `#${e.rank} - ${absDifference}ft${growthIndicator} taller `;
 					} else if (difference == 0) {
-						replyString += `#${e.rank} - Same height `;
+						replyString += `#${e.rank} - Same height${growthIndicator} `;
 					}
 					replyString += `[${functions.getWaterTime(e.height)}m]\n`;
 				});
