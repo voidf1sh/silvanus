@@ -12,7 +12,7 @@ const commands = [];
 const commandFiles = fs.readdirSync('./slash-commands').filter(file => file.endsWith('.js'));
 
 for (const file of commandFiles) {
-	const command = require(`./slash-commands/${file}`);
+	const command = require(`../slash-commands/${file}`);
 	if (command.data != undefined) {
 		commands.push(command.data.toJSON());
 	}
