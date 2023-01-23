@@ -220,25 +220,25 @@ const functions = {
 		return;
 	},
 	getInfo(guildId) {
-		const guildInfo = guildInfo[guildId];
-		if (guildInfo != undefined) {
-			let guildInfoString = "";
-			if (guildInfo.treeMessageId != "") {
-				guildInfoString += `Tree Message ID: ${guildInfo.treeMessageId}\n`;
+		const thisGuildInfo = guildInfo[guildId];
+		if (thisGuildInfo != undefined) {
+			let thisGuildInfoString = "";
+			if (thisGuildInfo.treeMessageId != "") {
+				thisGuildInfoString += `Tree Message ID: ${thisGuildInfo.treeMessageId}\n`;
 			}
-			if (guildInfo.treeChannelId != "") {
-				guildInfoString += `Tree Channel ID: ${guildInfo.treeChannelId}\n`;
+			if (thisGuildInfo.treeChannelId != "") {
+				thisGuildInfoString += `Tree Channel ID: ${thisGuildInfo.treeChannelId}\n`;
 			}
-			if (guildInfo.rankMessageId != "") {
-				guildInfoString += `Rank Message ID: ${guildInfo.rankMessageId}\n`;
+			if (thisGuildInfo.rankMessageId != "") {
+				thisGuildInfoString += `Rank Message ID: ${thisGuildInfo.rankMessageId}\n`;
 			}
-			if (guildInfo.rankChannelId != "") {
-				guildInfoString += `Rank Channel ID: ${guildInfo.rankChannelId}\n`;
+			if (thisGuildInfo.rankChannelId != "") {
+				thisGuildInfoString += `Rank Channel ID: ${thisGuildInfo.rankChannelId}\n`;
 			}
-			if (guildInfo.treeHeight != "") {
-				guildInfoString += `Tree Height: ${guildInfo.treeHeight}\n`;
+			if (thisGuildInfo.treeHeight != "") {
+				thisGuildInfoString += `Tree Height: ${thisGuildInfo.treeHeight}\n`;
 			}
-			return `Here if your servers setup info:\n${guildInfoString}`;
+			return `Here if your servers setup info:\n${thisGuildInfoString}`;
 		} else {
 			return "Your guild hasn't been set up yet.";
 		}
