@@ -10,10 +10,10 @@ module.exports = {
 			o.setName('height')
 			 .setDescription('Tree height in feet, numbers ONLY')
 			 .setRequired(true)),
-	execute(interaction) {
-		interaction.deferReply();
+	async execute(interaction) {
+		await interaction.deferReply();
 		const treeHeight = interaction.options.getString('height');
 		const waterTime = Math.floor(Math.floor(Math.pow(treeHeight * 0.07 + 5, 1.1)) / 60);
-		interaction.editReply(`A tree that is ${treeHeight}ft tall will have a watering time of ${waterTime} minutes.`);
+		await interaction.editReply(`A tree that is ${treeHeight}ft tall will have a watering time of ${waterTime} minutes.`);
 	},
 };
