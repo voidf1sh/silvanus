@@ -127,7 +127,7 @@ const functions = {
 							}
 		
 							guildInfo[interaction.guildId].rankings = rankings;
-							fs.writeFileSync('../data/guildInfo.json', JSON.stringify(guildInfo));
+							fs.writeFileSync('./data/guildInfo.json', JSON.stringify(guildInfo));
 							guildInfo = require('../data/guildInfo.json');
 							resolve(rankings);
 						});
@@ -182,7 +182,7 @@ const functions = {
 							input = m.embeds[0].data.description;
 							let lines = input.split('\n');
 							guildInfo[interaction.guildId].treeHeight = parseFloat(lines[0].slice(lines[0].indexOf('is') + 3, lines[0].indexOf('ft'))).toFixed(1);
-							fs.writeFileSync('../data/guildInfo.json', JSON.stringify(guildInfo));
+							fs.writeFileSync('./data/guildInfo.json', JSON.stringify(guildInfo));
 							guildInfo = require('../data/guildInfo.json');
 							resolve("The reference tree message has been saved/updated.");
 						});
@@ -209,7 +209,7 @@ const functions = {
 	},
 	reset(guildId) {
 		delete guildInfo[guildId];
-		fs.writeFileSync('../data/guildInfo.json', JSON.stringify(guildInfo));
+		fs.writeFileSync('./data/guildInfo.json', JSON.stringify(guildInfo));
 		guildInfo = require('../data/guildInfo.json');
 		return;
 	},
