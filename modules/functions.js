@@ -147,7 +147,7 @@ const functions = {
 		},
 		compare(interaction) {
 			if (guildInfo[interaction.guildId] == undefined) {
-				return `Please reset the reference messages! (${interaction.guildId})`;
+				return strings.error.noGuild;
 			}
 			let treeHeight = parseFloat(guildInfo[interaction.guildId].treeHeight).toFixed(1);
 			if ((guildInfo[interaction.guildId].rankings.length > 0) && (treeHeight > 0)) {
