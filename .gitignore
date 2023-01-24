@@ -5,6 +5,7 @@ package-lock.json
 env.dev
 env.prod
 .DS_Store
+data/guildInfo.json
 
 # Custom folders
 # gifs/*
