@@ -13,8 +13,9 @@ module.exports = {
 				"treeChannelId": "",
 				"rankMessageId": "",
 				"rankChannelId": "",
-				"rankings": [],
-				"treeHeight": 0
+				"treeName": "",
+				"treeHeight": 0,
+				"rankings": []
 			};
 		}
 		interaction.channel.messages.fetch({ limit: 20 }).then(msgs => {

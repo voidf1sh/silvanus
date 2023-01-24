@@ -71,7 +71,7 @@ const functions = {
 			const embed = new EmbedBuilder()
 				.setColor(0xFF0000)
 				.setTitle('Error!')
-				.setDescription(content)
+				.setDescription("Error: " + content)
 				.setFooter({ text: strings.embeds.footer });
 			const messageContents = { embeds: [embed], ephemeral: true };
 			return messageContents;
@@ -118,11 +118,17 @@ const functions = {
 								trimmedName = trimmedName.slice(0, trimmedName.indexOf('``'));
 		
 								let trimmedHeight = parseFloat(breakdown[2].slice(0, breakdown[2].indexOf('ft'))).toFixed(1);
+								let isMyTree = false;
+								let isMaybeMyTree = false;
+								if (breakdown[2].includes('📍')) isMyTree = true;
+								if (breakdown[1].includes(guildInfo[interaction.guildId].treeName)) maybeMyTree = true;
 		
 								rankings.push({
 									rank: trimmedRank,
 									name: trimmedName,
-									height: trimmedHeight
+									height: trimmedHeight,
+									myTree: isMyTree,
+									maybeMyTree: isMaybeMyTree
 								});
 							}
 		
@@ -146,22 +152,28 @@ const functions = {
 			let treeHeight = parseFloat(guildInfo[interaction.guildId].treeHeight).toFixed(1);
 			if ((guildInfo[interaction.guildId].rankings.length > 0) && (treeHeight > 0)) {
 				let replyString = 'Current Tree Height: ' + treeHeight + 'ft\n\n';
-				guildInfo[interaction.guildId].rankings.forEach(e => {
-					let difference = parseFloat(e.height).toFixed(1) - treeHeight;
-					let decimal = (e.height % 1).toFixed(1);
+				guildInfo[interaction.guildId].rankings.forEach(treeRanking => {
+					let difference = parseFloat(treeRanking.height).toFixed(1) - treeHeight;
+					let decimal = (treeRanking.height % 1).toFixed(1);
 					let growthIndicator = "";
 					if (decimal > 0) {
 						growthIndicator += "[+]";
 					}
 					const absDifference = parseFloat(Math.abs(difference)).toFixed(1);
-					if (difference > 0) {
-						replyString += `#${e.rank} - ${absDifference}ft${growthIndicator} shorter `;
-					} else if (difference < 0) {
-						replyString += `#${e.rank} - ${absDifference}ft${growthIndicator} taller `;
-					} else if (difference == 0) {
-						replyString += `#${e.rank} - Same height${growthIndicator} `;
+					if (treeRanking.myTree) {
+						replyString += "This is your tree. ";
+					} else if (treeRanking.maybeMyTree) {
+						replyString += "This might be your tree. Same height, same name. ";
+					} else {
+						if (difference > 0) {
+							replyString += `#${treeRanking.rank} - ${absDifference}ft${growthIndicator} shorter `;
+						} else if (difference < 0) {
+							replyString += `#${treeRanking.rank} - ${absDifference}ft${growthIndicator} taller `;
+						} else if (difference == 0) {
+							replyString += `#${treeRanking.rank} - Same Height${growthIndicator} `;
+						}
 					}
-					replyString += `[${functions.getWaterTime(e.height)}m]\n`;
+					replyString += `[${functions.getWaterTime(treeRanking.height)} mins]\n`;
 				});
 				return 'Here\'s how your tree compares: \n' + replyString;
 			} else {
@@ -186,8 +198,10 @@ const functions = {
 								return;
 							}
 							input = m.embeds[0].data.description;
+							let treeName = m.embeds[0].data.title;
 							let lines = input.split('\n');
 							guildInfo[interaction.guildId].treeHeight = parseFloat(lines[0].slice(lines[0].indexOf('is') + 3, lines[0].indexOf('ft'))).toFixed(1);
+							guildInfo[interaction.guildId].treeName = treeName;
 							fs.writeFileSync('./data/guildInfo.json', JSON.stringify(guildInfo));
 							guildInfo = require('../data/guildInfo.json');
 							resolve("The reference tree message has been saved/updated.");
