@@ -60,7 +60,7 @@ const functions = {
 		helpEmbed(content, private) {
 			const embed = new EmbedBuilder()
 				.setColor(strings.embeds.color)
-				.setTitle('Grow A Tree Analyzer Help')
+				.setTitle(strings.help.title)
 				.setDescription(content)
 				.setFooter({ text: strings.embeds.footer });
 			const privateBool = private == 'true';
