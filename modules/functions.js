@@ -247,7 +247,7 @@ const functions = {
 			if (thisGuildInfo.treeHeight != "") {
 				thisGuildInfoString += `Tree Height: ${thisGuildInfo.treeHeight}\n`;
 			}
-			return `Here if your servers setup info:\n${thisGuildInfoString}`;
+			return `Here is your servers setup info:\n${thisGuildInfoString}`;
 		} else {
 			return "Your guild hasn't been set up yet.";
 		}

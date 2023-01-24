@@ -7,7 +7,7 @@ const token = process.env.TOKEN;
 const statusChannelId = process.env.statusChannelId;
 
 // Discord.JS
-const { Client, GatewayIntentBits, Partials } = require('discord.js');
+const { Client, GatewayIntentBits, Partials, ActivityType } = require('discord.js');
 const client = new Client({
 	intents: [
 		GatewayIntentBits.Guilds,
@@ -29,6 +29,7 @@ const isDev = process.env.isDev;
 client.once('ready', () => {
 	fn.collections.slashCommands(client);
 	console.log('Ready!');
+	client.user.setActivity({ name: strings.activity.name, type: ActivityType.Watching });
 	client.channels.fetch(statusChannelId).then(channel => {
 		channel.send(`${new Date().toISOString()} -- \nStartup Sequence Complete`);
 	});
