@@ -21,7 +21,7 @@ module.exports = {
 		interaction.channel.messages.fetch({ limit: 20 }).then(msgs => {
 			let treeFound = false;
 			let rankFound = false;
-			msgs.forEach(msg => {
+			msgs.reverse().forEach(msg => {
 				if (msg.embeds.length > 0) {
 					if (msg.embeds[0].data.description.includes("Your tree is")) {
 						treeFound = true;
