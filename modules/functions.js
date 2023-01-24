@@ -238,16 +238,11 @@ const functions = {
 		if (thisGuildInfo != undefined) {
 			let thisGuildInfoString = "";
 			if (thisGuildInfo.treeMessageId != "") {
-				thisGuildInfoString += `Tree Message ID: ${thisGuildInfo.treeMessageId}\n`;
-			}
-			if (thisGuildInfo.treeChannelId != "") {
-				thisGuildInfoString += `Tree Channel ID: ${thisGuildInfo.treeChannelId}\n`;
+				thisGuildInfoString += `Tree Message: https://discord.com/channels/${guildId}/${thisGuildInfo.treeChannelId}/${thisGuildInfo.treeMessageId}\n`;
+
 			}
 			if (thisGuildInfo.rankMessageId != "") {
-				thisGuildInfoString += `Rank Message ID: ${thisGuildInfo.rankMessageId}\n`;
-			}
-			if (thisGuildInfo.rankChannelId != "") {
-				thisGuildInfoString += `Rank Channel ID: ${thisGuildInfo.rankChannelId}\n`;
+				thisGuildInfoString += `Rank Message: https://discord.com/channels/${guildId}/${thisGuildInfo.rankChannelId}/${thisGuildInfo.rankMessageId}\n`;
 			}
 			if (thisGuildInfo.treeHeight != "") {
 				thisGuildInfoString += `Tree Height: ${thisGuildInfo.treeHeight}\n`;
