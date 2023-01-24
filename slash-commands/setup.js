@@ -1,6 +1,7 @@
 const { SlashCommandBuilder } = require('discord.js');
 const fn = require('../modules/functions.js');
 const guildInfo = require('../data/guildInfo.json');
+const strings = require('../data/strings.json');
 
 module.exports = {
 	data: new SlashCommandBuilder()
@@ -37,11 +38,11 @@ module.exports = {
 				}
 			});
 			if (treeFound && !(rankFound)) {
-				interaction.reply(fn.builders.embed("A tree message was found, but a leaderboard message was not. Please run this command again in the channel containing the leaderboard if you haven't done so already.  Run ``/setupinfo`` to see if the message is set."));
+				interaction.reply(fn.builders.embed(strings.status.treeNoLeaderboard));
 			} else if (!(treeFound) && rankFound) {
-				interaction.reply(fn.builders.embed("A leaderboard message was found, but a tree message was not. Please run this command again in the channel containing the tree if you haven't done so already. Run ``/setupinfo`` to see if the message is set."));
+				interaction.reply(fn.builders.embed(strings.status.leaderboardNoTree));
 			} else if (treeFound && rankFound) {
-				interaction.reply(fn.builders.embed("Tree and leaderboard messages were both found, setup is complete. Run ``/setupinfo`` to verify."));
+				interaction.reply(fn.builders.embed(strings.status.treeAndLeaderboard));
 			}
 		});
 	},

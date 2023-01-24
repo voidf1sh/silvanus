@@ -90,7 +90,7 @@ const functions = {
 		parse(interaction) {
 			return new Promise ((resolve, reject) => {
 				if (guildInfo[interaction.guildId] == undefined) {
-					reject("The guild entry hasn't been created yet.");
+					reject(strings.error.noGuild);
 					return;
 				}
 				if (guildInfo[interaction.guildId].rankMessageId != undefined) {

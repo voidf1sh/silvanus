@@ -3,7 +3,7 @@
 		"name": "trees grow"
 	},
 	"help": {
-		"info": "This bot will analyze your tree (from the Grow A Tree Bot by Limbo Labs) and compare its growth to other trees displayed on the leaderboard.\n\nThis bot assumes that there is a single </tree:972648557796524032> message and a single </top trees:1051840665362894950> message that everyone uses. If everyone creates their own </tree:972648557796524032> and </top trees:1051840665362894950>, the reference messages will have to be updated every time, or old data will be displayed.",
+		"info": "This bot will analyze your tree (from the Grow A Tree Bot by Limbo Labs) and compare its growth to other trees displayed on the leaderboard.\n\nThis bot assumes that there is a single </tree:972648557796524032> message and a single </top trees:1051840665362894950> message that everyone uses. If everyone creates their own </tree:972648557796524032> and </top trees:1051840665362894950>, the reference messages will have to be updated every time, or old data will be displayed.\n\nSeeing old data? Try running </setup:1065407649363005561> again, sometimes configurations get lost.",
 		"setup": "To begin analyzing your Tree, first you must set up the reference messages.\n\n1. Run </setup:1065407649363005561> in the channel(s) that contain your server's tree and leaderboard messages.\n2. Now simply run </compare:1065346941166297128> where you want your analysis to be visible.",
 		"permissions": "At a minimum, Silvanus requires permissions to `Send Messages` and `Send Messages in Threads` if applicable. If Analyzer is given permission to `Manage Messages`, the bot will delete the `.settree` and `.setranks` messages to reduce spam."
 	},
@@ -20,6 +20,14 @@
 	},
 	"urls": {
 		"avatar": "https://cdn.discordapp.com/avatars/513184762073055252/12227aa23a06d5178853e59b72c7487b.webp?size=128"
+	},
+	"error": {
+		"noGuild": "Setup has not been completed yet. Try running </setup:1065407649363005561> or </help setup:1065346941166297129>"
+	},
+	"status": {
+		"treeAndLeaderboard": "Tree and leaderboard messages were both found, setup is complete. Run </setupinfo:1065413032374706196> to verify. Run </compare:1065346941166297128> to get started!",
+		"treeNoLeaderboard": "A tree message was found, but a leaderboard message was not. Please run this command again in the channel containing the leaderboard if you haven't done so already.  Run </setupinfo:1065413032374706196> to see if the message is set.",
+		"leaderboardNoTree": "A leaderboard message was found, but a tree message was not. Please run this command again in the channel containing the tree if you haven't done so already. Run </setupinfo:1065413032374706196> to see if the message is set."
 	},
 	"temp": {}
 }
