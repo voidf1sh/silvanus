@@ -44,20 +44,16 @@ db.connect((err) => {
 });
 
 db.on('error', function(err) {
-	if(err.code === 'PROTOCOL_CONNECTION_LOST' || err.code == 'ECONNRESET') {
-		db = mysql.createConnection({
-			host     : process.env.DBHOST,
-			user     : process.env.DBUSER,
-			password : process.env.DBPASS,
-			database : process.env.DBNAME,
-			port     : process.env.DBPORT
-		});
-		db.connect((err) => {
-			if (err) throw `Error connecting to the database: ${err.message}`;
-		});
-	} else {
-	  throw err;
-	}
+	db = mysql.createConnection({
+		host     : process.env.DBHOST,
+		user     : process.env.DBUSER,
+		password : process.env.DBPASS,
+		database : process.env.DBNAME,
+		port     : process.env.DBPORT
+	});
+	db.connect((err) => {
+		if (err) throw `Error connecting to the database: ${err.message}`;
+	});
   });
   
 
