@@ -183,7 +183,7 @@ const functions = {
 						const leaderboard = res.data;
 	
 						let replyString = 'Current Tree Height: ' + treeHeight + 'ft\n\n';
-						leaderboard.forEach(treeRanking => {
+						leaderboard.reverse().forEach(treeRanking => {
 							let difference = parseFloat(treeRanking.treeHeight).toFixed(1) - treeHeight;
 							let decimal = (treeRanking.treeHeight % 1).toFixed(1);
 							let growthIndicator = "";
