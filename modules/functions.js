@@ -3,6 +3,7 @@
 const dotenv = require('dotenv');
 dotenv.config();
 const isDev = process.env.isDev;
+const package = require('../package.json');
 
 // filesystem
 const fs = require('fs');
@@ -59,7 +60,7 @@ const functions = {
 				.setColor(strings.embeds.color)
 				.setTitle('Tree Growth Comparison')
 				.setDescription(content)
-				.setFooter({text: strings.embeds.footer});
+				.setFooter({text: `v${package.version} - ${strings.embeds.footer}`});
 			const messageContents = { embeds: [embed], components: [refreshActionRow] };
 			return messageContents;
 		},
@@ -68,7 +69,7 @@ const functions = {
 				.setColor(strings.embeds.color)
 				.setTitle(strings.help.title)
 				.setDescription(content)
-				.setFooter({ text: strings.embeds.footer });
+				.setFooter({ text: `v${package.version} - ${strings.embeds.footer}` });
 			const privateBool = private == 'true';
 			const messageContents = { embeds: [embed], ephemeral: privateBool };
 			return messageContents;
@@ -78,7 +79,7 @@ const functions = {
 				.setColor(0xFF0000)
 				.setTitle('Error!')
 				.setDescription("Error: " + content)
-				.setFooter({ text: strings.embeds.footer });
+				.setFooter({ text: `v${package.version} - ${strings.embeds.footer}` });
 			const messageContents = { embeds: [embed], ephemeral: true };
 			return messageContents;
 		},
@@ -87,7 +88,7 @@ const functions = {
 				.setColor(0x8888FF)
 				.setTitle('Information')
 				.setDescription(content)
-				.setFooter({ text: strings.embeds.footer });
+				.setFooter({ text: `v${package.version} - ${strings.embeds.footer}` });
 			const messageContents = { embeds: [embed], ephemeral: true };
 			return messageContents;
 		}
