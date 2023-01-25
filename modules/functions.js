@@ -304,7 +304,27 @@ const functions = {
 		});
 	},
 	getWaterTime(size) {
-		return Math.floor((Math.pow(size * 0.07 + 5, 1.1) / 60));
+		const seconds = Math.floor(Math.pow(size * 0.07 + 5, 1.1));
+		return (Math.floor((Math.pow(size * 0.07 + 5, 1.1))) / 60).toFixed(2);
+	},
+	timeToHeight(interaction, destHeight) {
+		return new Promise((resolve, reject) => {
+			dbfn.getGuildInfo(interaction.guildId).then(res => {
+				let guildInfo = res.data;
+				let currentHeight = parseInt(guildInfo.treeHeight);
+				let time = 0;
+				for (let i = currentHeight; i < destHeight; i++) {
+					const waterTime = parseFloat(functions.getWaterTime(i));
+					console.log("Height: " + i + "Time: " + waterTime);
+					time += waterTime;
+				}
+				resolve(time.toFixed(2));
+			}).catch(err => {
+				console.error(err);
+				reject(err);
+				return;
+			})
+		});
 	}
 };
 
