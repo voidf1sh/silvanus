@@ -6,7 +6,19 @@ module.exports = {
 		.setName('reset')
 		.setDescription('Reset all message assignments in your server'),
 	execute(interaction) {
-		fn.reset(interaction.guildId);
-		interaction.reply(fn.builders.embed("Assignments Reset"));
+		interaction.deferReply({ ephemeral: true }).then(() => {
+			fn.reset(interaction.guildId).then(res => {
+				interaction.editReply(fn.builders.embed("Assignments Reset")).catch(err => {
+					console.error(err);
+				});
+			}).catch(err => {
+				console.error(err);
+				interaction.editReply("There was a problem deleting your guild information, contact @voidf1sh#0420 for help.").catch(err => {
+					console.error(err);
+				});
+			});
+		}).catch(err => {
+			console.error(err);
+		});
 	},
 };

@@ -56,4 +56,8 @@ client.on('interactionCreate', async interaction => {
 	}
 });
 
+process.on('unhandledRejection', error => {
+	console.error('Unhandled promise rejection:', error);
+});
+
 client.login(token);
