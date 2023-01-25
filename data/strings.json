@@ -4,9 +4,18 @@
 	},
 	"help": {
 		"title": "Silvanus Help",
-		"info": "This bot will analyze your tree (from the Grow A Tree Bot by Limbo Labs) and compare its growth to other trees displayed on the leaderboard.\n\nThis bot assumes that there is a single </tree:972648557796524032> message and a single </top trees:1051840665362894950> message that everyone uses. If everyone creates their own </tree:972648557796524032> and </top trees:1051840665362894950>,  be sure to run </setup:1065407649363005561> before </comapare:1065346941166297128>. Support Server: https://discord.gg/g5JRGn7PxU",
+		"info": "Silvanus is the ultimate Grow A Tree companion bot! Quickly compare your server's tree to others on the leaderboard with automatic calculation of tree height differences, active growth detection, watering time calculations, and more! Get started with </help:1065346941166297129> and </setup:1065407649363005561>, then check out </compare:1065346941166297128>.\n\nImportant Note: Silvanus is only as up-to-date as your server's Tree and Tallest Trees messages. Make sure to refresh them before refreshing Silvanus' Compare message.\n\nFor the best experience we recommend the use of a single </tree:972648557796524032> and </top trees:1051840665362894950> message, otherwise make sure to run </setup:1065407649363005561> each time you run </compare:1065346941166297128>.",
 		"setup": "To begin analyzing your Tree, first you must set up the reference messages.\n\n1. Run </setup:1065407649363005561> in the channel(s) that contain your server's tree and leaderboard messages.\n2. Now simply run </compare:1065346941166297128> where you want your analysis to be visible.",
-		"permissions": "At a minimum, Silvanus requires permissions to `Send Messages` and `Send Messages in Threads` if applicable. If Analyzer is given permission to `Manage Messages`, the bot will delete the `.settree` and `.setranks` messages to reduce spam."
+		"permissions": "At a minimum, Silvanus requires permissions to `Send Messages` and `Send Messages in Threads` if applicable. If Analyzer is given permission to `Manage Messages`, the bot will delete the `.settree` and `.setranks` messages to reduce spam.",
+ 		"allCommands": "</compare:1065346941166297128> | </setup:1065407649363005561> | </watertime:1066970330029113444> | </setupinfo:1065413032374706196> | </reset:1065412317052944476> | </help:1065346941166297129>"
+	},
+	"commands": {
+		"compare": "</compare:1065346941166297128>",
+		"setup": "</setup:1065407649363005561>",
+		"watertime": "</watertime:1066970330029113444>",
+		"setupinfo": "</setupinfo:1065413032374706196>",
+		"reset": "</reset:1065412317052944476>",
+		"help": "</help:1065346941166297129>"
 	},
 	"embeds": {
 		"footer": "Silvanus is not affiliated with Grow A Tree or Limbo Labs",
@@ -20,7 +29,8 @@
 		"cancel": "❌"
 	},
 	"urls": {
-		"avatar": "https://cdn.discordapp.com/avatars/513184762073055252/12227aa23a06d5178853e59b72c7487b.webp?size=128"
+		"avatar": "https://cdn.discordapp.com/avatars/513184762073055252/12227aa23a06d5178853e59b72c7487b.webp?size=128",
+		"supportServer": "https://discord.gg/g5JRGn7PxU"
 	},
 	"error": {
 		"noGuild": "Setup has not been completed yet. Try running </setup:1065407649363005561> or </help setup:1065346941166297129>"
