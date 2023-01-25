@@ -1,50 +1,28 @@
-# Grow A Tree Analyzer
-This bot works with Grow A Tree Bot by Limbo Labs. This project is not affiliated with Limbo Labs in any way.
+# Silvanus
+Silvanus is the ultimate Grow A Tree companion bot! Quickly compare your server's tree to others on the leaderboard with automatic calculation of tree height differences, active growth detection, watering time calculations, and more! Get started with /help and /setup, then check out /compare.
 
-This bot allows easy comparison between a server's tree and other trees displayed on the leaderboard.
+Important Note: Silvanus is only as up-to-date as your server's Tree and Tallest Trees messages. Make sure to refresh them before refreshing Silvanus' Compare message.
 
-## Usage
-Add the bot to your server and make sure it has the proper permissions (`Send Messages` and `Send Messages in Threads` if applicable), then run `/setup` in the channel(s) that contain your server's tree and leaderboard messages.
+For the best experience we recommend the use of a single /tree and /top trees message, otherwise make sure to run /setup each time you run /compare.
+
+Silvanus is not affiliated with Grow A Tree or Limbo Labs. 
+
+## Add Silvanus to your server
+[Invite Silvanus to your Discord Server](https://discord.com/api/oauth2/authorize?client_id=521624335119810561&permissions=274877908992&scope=bot%20applications.commands)
+
+## voidf1sh Development Support Server
+[Join Discord Server](https://discord.gg/g5JRGn7PxU)
+
+## Setup
+To begin analyzing your Tree, first you must set up the reference messages.\n\n1. Run `/setup` in the channel(s) that contain your server's tree and leaderboard messages.\n2. Now simply run `/compare` where you want your analysis to be visible.
+
+## Permissions
+Silvanus requires permissions to `Send Messages` and `Send Messages in Threads` if applicable.
 
 ## Commands
-
-* `/setup` - Attempts automatic detection of your server's tree and leaderboard messages.
-* `/setupinfo` - Displays your server's current configuration.
-* `/reset` - Resets your server's configuration, run `/setup` again if needed.
-
-
-## Database Structure
-
-### Table: guild_info
-```
-+------------------------+-------------+------+-----+---------+----------------+
-| Field                  | Type        | Null | Key | Default | Extra          |
-+------------------------+-------------+------+-----+---------+----------------+
-| guild_id               | varchar(50) | NO   | PRI | NULL    | auto_increment |
-| tree_message_id        | varchar(50) | NO   |     |         |                |
-| tree_channel_id        | varchar(50) | NO   |     |         |                |
-| leaderboard_message_id | varchar(50) | NO   |     |         |                |
-| leaderboard_channel_id | varchar(50) | NO   |     |         |                |
-| tree_height            | varchar(10) | NO   |     | 0       |                |
-+------------------------+-------------+------+-----+---------+----------------+
-
-```
-### Table: leaderboard_info
-```
-+-------------+--------------+------+-----+---------+----------------+
-| Field       | Type         | Null | Key | Default | Extra          |
-+-------------+--------------+------+-----+---------+----------------+
-| id          | int(10)      | NO   | PRI | NULL    | auto_increment |
-| guild_id    | varchar(50)  | NO   |     |         |                |
-| tree_name   | varchar(100) | NO   |     |         |                |
-| tree_rank   | int(10)      | NO   |     |         |                |
-| tree_height | int(10)      | NO   |     | 0       |                |
-| has_pin     | tinyint(1)   | NO   |     | 0       |                |
-| timestamp   | varchar(50)  | NO   |     |         |                |
-+-------------+--------------+------+-----+---------+----------------+
-```
-
-## Changes to Implement
-
-* Move around some of the functions.
-* Migrate storage to SQLite.
+* `/setup` - Automatically detects and saves the location of your server's Tree and Tallest Trees messages. Run this command in the channel(s) that contain these messages.
+* `/setupinfo` - Displays links to the current Tree and Tallest Trees messages configured in your server.
+* `/compare` - Sends a refreshable embed that calculcates the height difference between your tree and the trees currently displayed on your Tallest Trees message. There is also an Active Growth Indicator (`[+]`) and a water wait time calculation (`[20 mins]`)
+* `/watertime height` - Calculates the wait time between waters for a tree of a given height.
+* `/reset` - Removes your server's configuration from the database.
+* `/help` - Displays the bot's help page and links to each command.
