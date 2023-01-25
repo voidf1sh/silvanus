@@ -165,6 +165,9 @@ const functions = {
 						reject("The leaderboardMessageId is undefined somehow");
 						return;
 					}
+				}).catch(err => {
+					reject(err);
+					return;
 				});
 			});
 			
@@ -209,6 +212,7 @@ const functions = {
 					});
 				}).catch(err => {
 					reject(err);
+					return;
 				});
 			});
 		}
