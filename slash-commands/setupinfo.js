@@ -6,7 +6,16 @@ module.exports = {
 		.setName('setupinfo')
 		.setDescription('View information about how the bot is set up in your server'),
 	execute(interaction) {
-		const embed = fn.builders.embed(fn.getInfo(interaction.guildId));
-		interaction.reply(embed);
+		interaction.deferReply({ephemeral: true}).then(() => {
+			fn.getInfo(interaction.guildId).then(res => {
+				const embed = fn.builders.embed(res);
+				interaction.editReply(embed);
+			}).catch(err => {
+				interaction.editReply(err);
+				console.error(err);
+			});
+		}).catch(err => {
+			console.error(err);
+		});
 	},
 };
