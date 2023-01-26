@@ -300,5 +300,38 @@ module.exports = {
 				resolve({ "status": "Successfully uploaded the leaderboard", "data": res });
 			});
 		});
-	}
+	},
+    get24hTree(guildId, treeName) {
+		const db = mysql.createConnection({
+			host     : process.env.DBHOST,
+			user     : process.env.DBUSER,
+			password : process.env.DBPASS,
+			database : process.env.DBNAME,
+			port     : process.env.DBPORT
+		});
+		db.connect((err) => {
+			if (err) throw `Error connecting to the database: ${err.message}`;
+		});
+		// Returns a Promise, resolve({ "status": "", "data": leaderboard })
+		const select24hTreeQuery = `SELECT id, tree_name, tree_rank, tree_height, has_pin FROM leaderboard WHERE guild_id = ${db.escape(guildId)} AND tree_name = ${db.escape(treeName)} AND timestamp > date_sub(now(), interval 1 day) ORDER BY id ASC LIMIT 1`;
+		// TODO run the query and return a promise then process the results. resolve with { "status": , "data": leaderboard }
+		return new Promise((resolve, reject) => {
+			db.query(select24hTreeQuery, (err, res) => {
+				if (err) {
+					console.error(err);
+					db.end();
+					reject("Error fetching the historic 24hr tree height: " + err.message);
+					return;
+				}
+				const hist24hTree = {
+					"treeName": res[0].tree_name,
+					"treeRank": res[0].tree_rank,
+					"treeHeight": res[0].tree_height,
+					"hasPin": res[0].has_pin
+				}
+				db.end();
+				resolve({ "status": "Successfully fetched historic 24hr tree.", "data": hist24hTree });
+			});
+		});
+    }
 };

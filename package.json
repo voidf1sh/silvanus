@@ -1,6 +1,6 @@
 {
   "name": "silvanus",
-  "version": "1.1.1",
+  "version": "1.1.2",
   "description": "Grow A Tree Comparison Tool",
   "main": "main.js",
   "scripts": {

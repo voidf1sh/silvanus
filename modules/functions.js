@@ -17,6 +17,7 @@ const config = require('../data/config.json');
 const strings = require('../data/strings.json');
 const slashCommandFiles = fs.readdirSync('./slash-commands/').filter(file => file.endsWith('.js'));
 const dbfn = require('./dbfn.js');
+const { finished } = require('stream');
 
 dbfn.createGuildTables().then(res => {
 	console.log(res.status);
@@ -173,49 +174,55 @@ const functions = {
 			});
 			
 		},
-		compare(interaction) {
-			return new Promise((resolve, reject) => {
-				dbfn.getGuildInfo(interaction.guildId).then(res => {
-					const guildInfo = res.data;
-					guildInfo.guildId = interaction.guildId;
-	
-					let treeHeight = parseFloat(guildInfo.treeHeight).toFixed(1);
-					dbfn.getLeaderboard(interaction.guildId).then(res => {
-						const leaderboard = res.data;
-	
-						let replyString = 'Current Tree Height: ' + treeHeight + 'ft\n\n';
-						leaderboard.reverse().forEach(treeRanking => {
-							let difference = parseFloat(treeRanking.treeHeight).toFixed(1) - treeHeight;
-							let decimal = (treeRanking.treeHeight % 1).toFixed(1);
-							let growthIndicator = "";
-							if (decimal > 0) {
-								growthIndicator += "[+]";
-							}
-							const absDifference = parseFloat(Math.abs(difference)).toFixed(1);
-							if (treeRanking.hasPin) {
-								replyString += "This is your tree. ";
-							} else if ((treeRanking.treeHeight == treeHeight) && (treeRanking.treeName == guildInfo.treeName)) {
-								replyString += "This might be your tree. Same height, same name. ";
-							} else {
-								if (difference > 0) {
-									replyString += `#${treeRanking.treeRank} - ${absDifference}ft${growthIndicator} shorter `;
-								} else if (difference < 0) {
-									replyString += `#${treeRanking.treeRank} - ${absDifference}ft${growthIndicator} taller `;
-								} else if (difference == 0) {
-									replyString += `#${treeRanking.treeRank} - Same Height${growthIndicator} `;
-								}
-							}
-							replyString += `[${functions.getWaterTime(treeRanking.treeHeight)} mins]\n`;
-						});
-						resolve('Here\'s how your tree compares: \n' + replyString);
-					}).catch(err => {
-						console.error(err);
-					});
-				}).catch(err => {
-					reject(err);
-					return;
-				});
-			});
+		async compare(interaction) {
+			try {
+				// fetch the guild's settings from the database
+				const guildInfoResponse = await dbfn.getGuildInfo(interaction.guildId);
+				const guildInfo = guildInfoResponse.data; // { "guildId": "123","treeName": "name","treeHeight": 123,"treeMessageId": "123","treeChannelId": "123","leaderboardMessageId": "123","leaderboardChannelId": "123"};
+				// Get the most recent leaderboard listing from the database
+				const getLeaderboardResponse = await dbfn.getLeaderboard(interaction.guildId);
+				const leaderboard = getLeaderboardResponse.data; // [ { treeName: "Name", treeHeight: 1234.5, treeRank: 67 }, {...}, {...} ]
+		
+				// Prepare the beginning of the comparison message
+				let comparisonReplyString = `Here\'s how your tree compares: \nCurrent Tree Height: ${guildInfo.treeHeight}ft\n\n`;
+				// Iterate over the leaderboard entries, backwards
+				for (let i = leaderboard.length - 1; i >= 0; i--) {
+					const leaderboardEntry = leaderboard[i];
+					// Setup the status indicator, default to blank, we'll change it later
+					let statusIndicator = "``[";
+					if ((leaderboardEntry.treeHeight % 1).toFixed(1) > 0) statusIndicator += "💧|";
+					
+					// Get the data for this tree from 24 hours ago
+					const get24hTreeResponse = await dbfn.get24hTree(interaction.guildId, leaderboardEntry.treeName);
+					const dayAgoTree = get24hTreeResponse.data;
+					const hist24hDifference = (leaderboardEntry.treeHeight - dayAgoTree.treeHeight).toFixed(1);
+					statusIndicator += `+${hist24hDifference}ft|`
+
+					// Get the watering time for this tree
+					const waterTime = functions.getWaterTime(leaderboardEntry.treeHeight);
+					statusIndicator += `${waterTime} mins]\`\``;
+		
+					// Determine if this tree is the guild's tree
+					if (leaderboardEntry.hasPin) {
+						comparisonReplyString += `#{leaderboardEntry.treeRank} - This is your tree`;
+					} else { // If it's another guild's tree
+						// Calculate the current height difference
+						const currentHeightDifference = guildInfo.treeHeight - leaderboardEntry.treeHeight;
+		
+						if (currentHeightDifference > 0) { // Guild Tree is taller than the leaderboard tree
+							comparisonReplyString += `#${leaderboardEntry.treeRank} - ${currentHeightDifference}ft taller`;
+						} else {
+							comparisonReplyString += `#${leaderboardEntry.treeRank} - ${Math.abs(currentHeightDifference)}ft shorter`;
+						}
+						// Build a string using the current leaderboard entry and the historic entry from 24 hours ago
+						comparisonReplyString += ` ${statusIndicator}\n`;
+					}
+				}
+				return comparisonReplyString;
+			} catch (err) {
+				console.error(err);
+				return 'An error occurred while comparing the trees.';
+			}
 		}
 	},
 	tree: {
