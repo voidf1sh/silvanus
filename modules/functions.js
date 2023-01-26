@@ -204,7 +204,7 @@ const functions = {
 		
 					// Determine if this tree is the guild's tree
 					if (leaderboardEntry.hasPin) {
-						comparisonReplyString += `#{leaderboardEntry.treeRank} - This is your tree`;
+						comparisonReplyString += `#${leaderboardEntry.treeRank} - This is your tree`;
 					} else { // If it's another guild's tree
 						// Calculate the current height difference
 						const currentHeightDifference = guildInfo.treeHeight - leaderboardEntry.treeHeight;
@@ -214,9 +214,9 @@ const functions = {
 						} else {
 							comparisonReplyString += `#${leaderboardEntry.treeRank} - ${Math.abs(currentHeightDifference).toFixed(1)}ft shorter`;
 						}
-						// Build a string using the current leaderboard entry and the historic entry from 24 hours ago
-						comparisonReplyString += ` ${statusIndicator}\n`;
 					}
+					// Build a string using the current leaderboard entry and the historic entry from 24 hours ago
+					comparisonReplyString += ` ${statusIndicator}\n`;
 				}
 				return comparisonReplyString;
 			} catch (err) {
