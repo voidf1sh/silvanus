@@ -199,7 +199,7 @@ const functions = {
 					statusIndicator += `+${hist24hDifference}ft|`
 
 					// Get the watering time for this tree
-					const waterTime = functions.getWaterTime(leaderboardEntry.treeHeight);
+					const waterTime = parseFloat(functions.getWaterTime(leaderboardEntry.treeHeight)).toFixed(0);
 					statusIndicator += `${waterTime} mins]\`\``;
 		
 					// Determine if this tree is the guild's tree
