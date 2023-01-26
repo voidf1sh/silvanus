@@ -210,9 +210,9 @@ const functions = {
 						const currentHeightDifference = guildInfo.treeHeight - leaderboardEntry.treeHeight;
 		
 						if (currentHeightDifference > 0) { // Guild Tree is taller than the leaderboard tree
-							comparisonReplyString += `#${leaderboardEntry.treeRank} - ${currentHeightDifference}ft taller`;
+							comparisonReplyString += `#${leaderboardEntry.treeRank} - ${currentHeightDifference.toFixed(1)}ft taller`;
 						} else {
-							comparisonReplyString += `#${leaderboardEntry.treeRank} - ${Math.abs(currentHeightDifference)}ft shorter`;
+							comparisonReplyString += `#${leaderboardEntry.treeRank} - ${Math.abs(currentHeightDifference).toFixed(1)}ft shorter`;
 						}
 						// Build a string using the current leaderboard entry and the historic entry from 24 hours ago
 						comparisonReplyString += ` ${statusIndicator}\n`;
