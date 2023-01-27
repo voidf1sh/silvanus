@@ -42,17 +42,26 @@ const functions = {
 		}
 	},
 	builders: {
-		refreshAction() {
+		async refreshAction(guildId) {
 			// Create the button to go in the Action Row
 			const refreshButton = new ButtonBuilder()
 				.setCustomId('refresh')
 				.setLabel('Refresh')
 				.setStyle(ButtonStyle.Primary);
+			const resetPingButton = new ButtonBuilder()
+				.setCustomId('resetping')
+				.setLabel('Reset Ping')
+				.setStyle(ButtonStyle.Secondary);
 			// Create the Action Row with the Button in it, to be sent with the Embed
-			const refreshActionRow = new ActionRowBuilder()
+			let refreshActionRow = new ActionRowBuilder()
 				.addComponents(
 					refreshButton
 				);
+			const getGuildInfoResponse = await dbfn.getGuildInfo(guildId);
+			const guildInfo = getGuildInfoResponse.data;
+			if (guildInfo.reminderMessage != "" && guildInfo.reminderChannelId != "") {
+				refreshActionRow.addComponents(resetPingButton);
+			}
 			return refreshActionRow;
 		},
 		comparisonEmbed(content, refreshActionRow) {
@@ -63,6 +72,16 @@ const functions = {
 				.setDescription(content)
 				.setFooter({text: `v${package.version} - ${strings.embeds.footer}`});
 			const messageContents = { embeds: [embed], components: [refreshActionRow] };
+			return messageContents;
+		},
+		reminderEmbed(content, guildInfo) {
+			// Create the embed using the content passed to this function
+			const embed = new EmbedBuilder()
+				.setColor(strings.embeds.color)
+				.setTitle('Water Reminder')
+				.setDescription(`${content}\n[Your Tree](https://discord.com/channels/${guildInfo.guildId}/${guildInfo.treeChannelId}/${guildInfo.treeMessageId})`)
+				.setFooter({text: `This message will self-destruct in 60 seconds...`});
+			const messageContents = { embeds: [embed] };
 			return messageContents;
 		},
 		helpEmbed(content, private) {
@@ -217,7 +236,7 @@ const functions = {
 					}
 					// Build a string using the current leaderboard entry and the historic entry from 24 hours ago
 					comparisonReplyString += `\n${statusIndicator}\n`;
-					if (process.env.isDev == 'true') comparisonReplyString += `Current Height: ${leaderboardEntry.treeHeight} 24h Ago Height: ${dayAgoTree.treeHeight}\n`;
+					// if (process.env.isDev == 'true') comparisonReplyString += `Current Height: ${leaderboardEntry.treeHeight} 24h Ago Height: ${dayAgoTree.treeHeight}\n`;
 				}
 				return comparisonReplyString;
 			} catch (err) {
@@ -270,8 +289,9 @@ const functions = {
 	refresh(interaction) {
 		functions.rankings.parse(interaction).then(r1 => {
 			functions.tree.parse(interaction).then(r2 => {
-				functions.rankings.compare(interaction).then(res => {
-					const embed = functions.builders.comparisonEmbed(res, functions.builders.refreshAction())
+				functions.rankings.compare(interaction).then(async res => {
+					const refreshActionRow = await functions.builders.refreshAction(interaction.guildId);
+					const embed = functions.builders.comparisonEmbed(res, refreshActionRow)
 					interaction.update(embed);
 				}).catch(err => {
 					console.error(err);
@@ -341,17 +361,71 @@ const functions = {
 			resolve(time + units);
 		});
 	},
-	setReminder(interaction, time, pingRoleId) {
-		const reminderChannel = interaction.channel;
-		setTimeout(function () {
-			reminderChannel.send(`<@&${pingRoleId}>`).then(m => {
-				if (m.deletable) {
-					setTimeout(function() {
-						m.delete();
-					}, 60000);
-				}
+	sleep(ms) {
+		return new Promise(resolve => setTimeout(resolve, ms));
+	},
+	async sendReminder(guildInfo, guild) {
+		const { guildId, reminderChannelId, reminderMessage } = guildInfo;
+		const reminderChannel = await guild.channels.fetch(reminderChannelId);
+		const reminderEmbed = functions.builders.reminderEmbed(reminderMessage, guildInfo);
+		reminderChannel.send(reminderEmbed).then(async m => {
+			await dbfn.setRemindedStatus(guildId, 1);
+			if (m.deletable) {
+				setTimeout(function() {
+					m.delete();
+				}, 60000);
+			}
+		}).catch(err => {
+			console.error(err);
+		});
+	},
+	async setReminder(interaction, ms) {
+		setTimeout(this.sendReminder(interaction), ms);
+	},
+	async checkReady(client) { // Check if the guilds trees are ready to water
+		// TODO This is hard coded for the dev server, need to change it to lookup each server and iterate over them
+		// Would also be helpful to have an opt-in or opt-out ability for water checks
+		try {
+			const getOptedInGuildsResponse = await dbfn.getOptedInGuilds();
+			if (getOptedInGuildsResponse.status != "No servers have opted in yet") {
+				const guilds = getOptedInGuildsResponse.data;
+				guilds.forEach(async guildInfo => {
+					const { guildId, treeChannelId, treeMessageId, remindedStatus } = guildInfo;
+	
+					if (remindedStatus == 0) {
+						const guild = await client.guilds.fetch(guildId);
+						const treeChannel = await guild.channels.fetch(treeChannelId);
+						const treeMessage = await treeChannel.messages.fetch(treeMessageId);
+						const readyToWater = treeMessage.embeds[0].description.includes('Ready to be watered');
+						if (readyToWater) {
+							console.log("Ready to water");
+							this.sendReminder(guildInfo, guild);
+							this.sleep(5000).then(() => {
+								this.checkReady(client);
+							});
+						} else {
+							console.log("Not ready to water");
+							this.sleep(5000).then(() => {
+								this.checkReady(client);
+							});
+						}
+					}
+				});
+			} else {
+				// console.log(getOptedInGuildsResponse.status);
+				this.sleep(5000).then(() => {
+					this.checkReady(client);
+				});
+			}
+		} catch(err) {
+			console.error(err);
+			this.sleep(30000).then(() => {
+				this.checkReady(client);
 			});
-		}, time);
+		}
+	},
+	resetPing(interaction) {
+		dbfn.setRemindedStatus(interaction.guildId, 0);
 	}
 };
 

@@ -81,7 +81,7 @@ module.exports = {
 			if (err) throw `Error connecting to the database: ${err.message}`;
 		});
         // Get a server's tree information from the database
-		const selectGuildInfoQuery = `SELECT tree_name, tree_height, tree_message_id, tree_channel_id, leaderboard_message_id, leaderboard_channel_id, ping_role_id FROM guild_info WHERE guild_id = ${db.escape(guildId)}`;
+		const selectGuildInfoQuery = `SELECT tree_name, tree_height, tree_message_id, tree_channel_id, leaderboard_message_id, leaderboard_channel_id, ping_role_id, ping_channel_id, reminded_status FROM guild_info WHERE guild_id = ${db.escape(guildId)}`;
 		// TODO run this query and return a promise then structure the output into a GuildInfo object. resolve with { "status": , "data": guildInfo }
 		return new Promise((resolve, reject) => {
 			db.query(selectGuildInfoQuery, (err, res) => {
@@ -98,7 +98,9 @@ module.exports = {
 					"treeChannelId": "123",
 					"leaderboardMessageId": "123",
 					"leaderboardChannelId": "123",
-					"pingRoleId": "123"
+					"reminderMessage": "Abc",
+					"reminderChannelId": "123",
+					"remindedStatus": 0
 				};*/
 				if (res.length == 0) {
 					reject("There is no database entry for your guild yet. Try running /setup");
@@ -113,7 +115,9 @@ module.exports = {
 					"treeChannelId": row.tree_channel_id,
 					"leaderboardMessageId": row.leaderboard_message_id,
 					"leaderboardChannelId": row.leaderboard_channel_id,
-					"pingRoleId": row.ping_role_id
+					"pingRoleId": row.ping_role_id,
+					"pingChannelId": row.ping_channel_id,
+					"remindedStatus": row.reminded_status
 				};
 				db.end();
 				resolve({ "status": "Successfully fetched guild information", "data": guildInfo });
@@ -336,7 +340,7 @@ module.exports = {
 			});
 		});
     },
-	setPingRole(guildId, pingRoleId) {
+	setReminderInfo(guildId, reminderMessage, reminderChannelId) {
 		const db = mysql.createConnection({
 			host     : process.env.DBHOST,
 			user     : process.env.DBUSER,
@@ -348,18 +352,131 @@ module.exports = {
 			if (err) throw `Error connecting to the database: ${err.message}`;
 		});
 		// Returns a Promise, resolve({ "status": "", "data": leaderboard })
-		const insertPingRoleQuery = `UPDATE guild_info SET ping_role_id = ${db.escape(pingRoleId)} WHERE guild_id = ${db.escape(guildId)}`;
+		const insertReminderInfoQuery = `UPDATE guild_info SET ping_role_id = ${db.escape(reminderMessage)}, ping_channel_id = ${db.escape(reminderChannelId)} WHERE guild_id = ${db.escape(guildId)}`;
 		// TODO run the query and return a promise then process the results. resolve with { "status": , "data": leaderboard }
 		return new Promise((resolve, reject) => {
-			db.query(insertPingRoleQuery, (err, res) => {
+			db.query(insertReminderInfoQuery, (err, res) => {
 				if (err) {
 					console.error(err);
 					db.end();
-					reject("Error updating the ping role ID: " + err.message);
+					reject("Error updating the reminder info: " + err.message);
 					return;
 				}
 				db.end();
-				resolve({ "status": `Successfully set the ping role to <@&${pingRoleId}>.`, "data": res });
+				resolve({ "status": `Successfully set the reminder message to "${reminderMessage}" in <#${reminderChannelId}>`, "data": res });
+			});
+		});
+	},
+	setRemindedStatus(guildId, remindedStatus) {
+		const db = mysql.createConnection({
+			host     : process.env.DBHOST,
+			user     : process.env.DBUSER,
+			password : process.env.DBPASS,
+			database : process.env.DBNAME,
+			port     : process.env.DBPORT
+		});
+		db.connect((err) => {
+			if (err) throw `Error connecting to the database: ${err.message}`;
+		});
+		// Returns a Promise, resolve({ "status": "", "data": leaderboard })
+		const setRemindedStatusQuery = `UPDATE guild_info SET reminded_status = ${db.escape(remindedStatus)} WHERE guild_id = ${db.escape(guildId)}`;
+		// TODO run the query and return a promise then process the results. resolve with { "status": , "data": leaderboard }
+		return new Promise((resolve, reject) => {
+			db.query(setRemindedStatusQuery, (err, res) => {
+				if (err) {
+					console.error(err);
+					db.end();
+					reject("Error updating the reminded status: " + err.message);
+					return;
+				}
+				db.end();
+				resolve({ "status": `Successfully set the reminded status to ${remindedStatus}`, "data": res });
+			});
+		});
+	},
+	setReminderOptIn(guildId, optIn) {
+		const db = mysql.createConnection({
+			host     : process.env.DBHOST,
+			user     : process.env.DBUSER,
+			password : process.env.DBPASS,
+			database : process.env.DBNAME,
+			port     : process.env.DBPORT
+		});
+		db.connect((err) => {
+			if (err) throw `Error connecting to the database: ${err.message}`;
+		});
+		// Returns a Promise, resolve({ "status": "", "data": leaderboard })
+		const setReminderOptInQuery = `UPDATE guild_info SET reminder_optin = ${db.escape(optIn)} WHERE guild_id = ${db.escape(guildId)}`;
+		// TODO run the query and return a promise then process the results. resolve with { "status": , "data": leaderboard }
+		return new Promise((resolve, reject) => {
+			db.query(setReminderOptInQuery, (err, res) => {
+				if (err) {
+					console.error(err);
+					db.end();
+					reject("Error updating the reminder opt-in status: " + err.message);
+					return;
+				}
+				db.end();
+				resolve({ "status": `Successfully set the reminder opt-in status to ${optIn}`, "data": res });
+			});
+		});
+	},
+	getOptedInGuilds() {
+		const db = mysql.createConnection({
+			host     : process.env.DBHOST,
+			user     : process.env.DBUSER,
+			password : process.env.DBPASS,
+			database : process.env.DBNAME,
+			port     : process.env.DBPORT
+		});
+		db.connect((err) => {
+			if (err) throw `Error connecting to the database: ${err.message}`;
+		});
+        // Get a server's tree information from the database
+		const getOptedInGuildsQuery = `SELECT guild_id, tree_name, tree_height, tree_message_id, tree_channel_id, leaderboard_message_id, leaderboard_channel_id, ping_role_id, ping_channel_id, reminded_status FROM guild_info WHERE reminder_optin = 1 AND reminded_status = 0`;
+		// TODO run this query and return a promise then structure the output into a GuildInfo object. resolve with { "status": , "data": guildInfo }
+		return new Promise((resolve, reject) => {
+			db.query(getOptedInGuildsQuery, (err, res) => {
+				if (err) {
+					console.error(err);
+					reject("Error fetching guild information: " + err.message);
+					db.end();
+					return;
+				}
+				/*const guildInfo = { "guildId": "123",
+					"treeName": "name",
+					"treeHeight": 123,
+					"treeMessageId": "123",
+					"treeChannelId": "123",
+					"leaderboardMessageId": "123",
+					"leaderboardChannelId": "123",
+					"reminderMessage": "Abc",
+					"reminderChannelId": "123",
+					"remindedStatus": 0
+				};*/
+				if (res.length == 0) {
+					resolve({"status": "No servers have opted in yet"});
+					db.end();
+					return;
+				}
+				row = res[0];
+				let guilds = [];
+				res.forEach(row => {
+					guilds.push({
+						"guildId": row.guild_id,
+						"treeName": row.tree_name,
+						"treeHeight": row.tree_height,
+						"treeMessageId": row.tree_message_id,
+						"treeChannelId": row.tree_channel_id,
+						"leaderboardMessageId": row.leaderboard_message_id,
+						"leaderboardChannelId": row.leaderboard_channel_id,
+						"reminderMessage": row.ping_role_id,
+						"reminderChannelId": row.ping_channel_id,
+						"remindedStatus": row.reminded_status
+					});
+				});
+				db.end();
+				resolve({ "status": "Successfully fetched guild information", "data": guilds });
 			});
 		});
 	}

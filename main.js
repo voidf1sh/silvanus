@@ -32,8 +32,11 @@ client.once('ready', () => {
 	client.user.setActivity({ name: strings.activity.name, type: ActivityType.Watching });
 	if (isDev == 'false') {
 		client.channels.fetch(statusChannelId).then(channel => {
-		channel.send(`${new Date().toISOString()} -- \nStartup Sequence Complete <@481933290912350209>`);
-	});
+			channel.send(`${new Date().toISOString()} -- \nStartup Sequence Complete <@481933290912350209>`);
+		});
+	} else {
+		// Dev shit
+		fn.checkReady(client);
 	}
 });
 
@@ -55,6 +58,9 @@ client.on('interactionCreate', async interaction => {
 
 	if (interaction.isButton() && interaction.component.customId == 'refresh') {
 		fn.refresh(interaction);
+	} else if (interaction.isButton() && interaction.component.customId == 'resetping') {
+		fn.resetPing(interaction);
+		interaction.reply({ content: "Reset water readiness detection system.", ephemeral: true });
 	}
 });
 
