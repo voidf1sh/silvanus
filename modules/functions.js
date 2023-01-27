@@ -340,6 +340,18 @@ const functions = {
 			}
 			resolve(time + units);
 		});
+	},
+	setReminder(interaction, time, pingRoleId) {
+		const reminderChannel = interaction.channel;
+		setTimeout(function () {
+			reminderChannel.send(`<@&${pingRoleId}>`).then(m => {
+				if (m.deletable) {
+					setTimeout(function() {
+						m.delete();
+					}, 60000);
+				}
+			});
+		}, time);
 	}
 };
 

@@ -81,7 +81,7 @@ module.exports = {
 			if (err) throw `Error connecting to the database: ${err.message}`;
 		});
         // Get a server's tree information from the database
-		const selectGuildInfoQuery = `SELECT tree_name, tree_height, tree_message_id, tree_channel_id, leaderboard_message_id, leaderboard_channel_id FROM guild_info WHERE guild_id = ${db.escape(guildId)}`;
+		const selectGuildInfoQuery = `SELECT tree_name, tree_height, tree_message_id, tree_channel_id, leaderboard_message_id, leaderboard_channel_id, ping_role_id FROM guild_info WHERE guild_id = ${db.escape(guildId)}`;
 		// TODO run this query and return a promise then structure the output into a GuildInfo object. resolve with { "status": , "data": guildInfo }
 		return new Promise((resolve, reject) => {
 			db.query(selectGuildInfoQuery, (err, res) => {
@@ -97,7 +97,8 @@ module.exports = {
 					"treeMessageId": "123",
 					"treeChannelId": "123",
 					"leaderboardMessageId": "123",
-					"leaderboardChannelId": "123"
+					"leaderboardChannelId": "123",
+					"pingRoleId": "123"
 				};*/
 				if (res.length == 0) {
 					reject("There is no database entry for your guild yet. Try running /setup");
@@ -111,7 +112,8 @@ module.exports = {
 					"treeMessageId": row.tree_message_id,
 					"treeChannelId": row.tree_channel_id,
 					"leaderboardMessageId": row.leaderboard_message_id,
-					"leaderboardChannelId": row.leaderboard_channel_id
+					"leaderboardChannelId": row.leaderboard_channel_id,
+					"pingRoleId": row.ping_role_id
 				};
 				db.end();
 				resolve({ "status": "Successfully fetched guild information", "data": guildInfo });
@@ -333,5 +335,32 @@ module.exports = {
 				resolve({ "status": "Successfully fetched historic 24hr tree.", "data": hist24hTree });
 			});
 		});
-    }
+    },
+	setPingRole(guildId, pingRoleId) {
+		const db = mysql.createConnection({
+			host     : process.env.DBHOST,
+			user     : process.env.DBUSER,
+			password : process.env.DBPASS,
+			database : process.env.DBNAME,
+			port     : process.env.DBPORT
+		});
+		db.connect((err) => {
+			if (err) throw `Error connecting to the database: ${err.message}`;
+		});
+		// Returns a Promise, resolve({ "status": "", "data": leaderboard })
+		const insertPingRoleQuery = `UPDATE guild_info SET ping_role_id = ${db.escape(pingRoleId)} WHERE guild_id = ${db.escape(guildId)}`;
+		// TODO run the query and return a promise then process the results. resolve with { "status": , "data": leaderboard }
+		return new Promise((resolve, reject) => {
+			db.query(insertPingRoleQuery, (err, res) => {
+				if (err) {
+					console.error(err);
+					db.end();
+					reject("Error updating the ping role ID: " + err.message);
+					return;
+				}
+				db.end();
+				resolve({ "status": `Successfully set the ping role to <@&${pingRoleId}>.`, "data": res });
+			});
+		});
+	}
 };
