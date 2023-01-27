@@ -198,9 +198,9 @@ const functions = {
 					const hist24hDifference = (leaderboardEntry.treeHeight - dayAgoTree.treeHeight).toFixed(1);
 					statusIndicator += `+${hist24hDifference}ft|`
 
-					// Get the watering time for this tree
-					const waterTime = parseFloat(functions.getWaterTime(leaderboardEntry.treeHeight)).toFixed(0);
-					statusIndicator += `${waterTime} mins]\`\``;
+					// Get the 24h watering time for this tree
+					const totalWaterTime = await functions.timeToHeight(dayAgoTree.treeHeight, leaderboardEntry.treeHeight);
+					statusIndicator += `${totalWaterTime}]\`\``;
 		
 					// Determine if this tree is the guild's tree
 					if (leaderboardEntry.hasPin) {
@@ -216,7 +216,8 @@ const functions = {
 						}
 					}
 					// Build a string using the current leaderboard entry and the historic entry from 24 hours ago
-					comparisonReplyString += ` ${statusIndicator}\n`;
+					comparisonReplyString += `\n${statusIndicator}\n`;
+					if (process.env.isDev == 'true') comparisonReplyString += `Current Height: ${leaderboardEntry.treeHeight} 24h Ago Height: ${dayAgoTree.treeHeight}\n`;
 				}
 				return comparisonReplyString;
 			} catch (err) {
@@ -311,26 +312,33 @@ const functions = {
 		});
 	},
 	getWaterTime(size) {
-		const seconds = Math.floor(Math.pow(size * 0.07 + 5, 1.1));
-		return (Math.floor((Math.pow(size * 0.07 + 5, 1.1))) / 60).toFixed(2);
+		return Math.floor(Math.pow(size * 0.07 + 5, 1.1)); // Seconds
 	},
-	timeToHeight(interaction, destHeight) {
+	timeToHeight(beginHeight, destHeight) {
 		return new Promise((resolve, reject) => {
-			dbfn.getGuildInfo(interaction.guildId).then(res => {
-				let guildInfo = res.data;
-				let currentHeight = parseInt(guildInfo.treeHeight);
-				let time = 0;
-				for (let i = currentHeight; i < destHeight; i++) {
-					const waterTime = parseFloat(functions.getWaterTime(i));
-					console.log("Height: " + i + "Time: " + waterTime);
-					time += waterTime;
-				}
-				resolve(time.toFixed(2));
-			}).catch(err => {
-				console.error(err);
-				reject(err);
-				return;
-			})
+			let time = 0;
+			for (let i = beginHeight; i < destHeight; i++) {
+				const waterTime = parseFloat(functions.getWaterTime(i));
+				// console.log("Height: " + i + "Time: " + waterTime);
+				time += waterTime;
+			}
+
+			// 60 secs in min
+			// 3600 secs in hr
+			// 86400 sec in day
+
+			let units = " secs";
+			if ( 60 < time && time <= 3600 ) { // Minutes
+				time = parseFloat(time / 60).toFixed(1);
+				units = " mins";
+			} else if ( 3600 < time && time <= 86400 ) {
+				time = parseFloat(time / 3600).toFixed(1);
+				units = " hrs";
+			} else if ( 86400 < time ) {
+				time = parseFloat(time / 86400).toFixed(1);
+				units = " days";
+			}
+			resolve(time + units);
 		});
 	}
 };
