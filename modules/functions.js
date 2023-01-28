@@ -79,7 +79,7 @@ const functions = {
 			const embed = new EmbedBuilder()
 				.setColor(strings.embeds.color)
 				.setTitle('Water Reminder')
-				.setDescription(`${content}\n[Your Tree](https://discord.com/channels/${guildInfo.guildId}/${guildInfo.treeChannelId}/${guildInfo.treeMessageId})`)
+				.setDescription(`${content}\n[Click Here To Go To Your Tree](https://discord.com/channels/${guildInfo.guildId}/${guildInfo.treeChannelId}/${guildInfo.treeMessageId})`)
 				.setFooter({text: `This message will self-destruct in 60 seconds...`});
 			const messageContents = { embeds: [embed] };
 			return messageContents;
@@ -208,18 +208,18 @@ const functions = {
 				for (let i = leaderboard.length - 1; i >= 0; i--) {
 					const leaderboardEntry = leaderboard[i];
 					// Setup the status indicator, default to blank, we'll change it later
-					let statusIndicator = "``[";
-					if ((leaderboardEntry.treeHeight % 1).toFixed(1) > 0) statusIndicator += "💧|";
+					let statusIndicator = "";
+					if ((leaderboardEntry.treeHeight % 1).toFixed(1) > 0) statusIndicator += "``[💧]``";
 					
 					// Get the data for this tree from 24 hours ago
-					const get24hTreeResponse = await dbfn.get24hTree(interaction.guildId, leaderboardEntry.treeName);
-					const dayAgoTree = get24hTreeResponse.data;
-					const hist24hDifference = (leaderboardEntry.treeHeight - dayAgoTree.treeHeight).toFixed(1);
-					statusIndicator += `+${hist24hDifference}ft|`
+					// const get24hTreeResponse = await dbfn.get24hTree(interaction.guildId, leaderboardEntry.treeName);
+					// const dayAgoTree = get24hTreeResponse.data;
+					// const hist24hDifference = (leaderboardEntry.treeHeight - dayAgoTree.treeHeight).toFixed(1);
+					// statusIndicator += `+${hist24hDifference}ft|`
 
 					// Get the 24h watering time for this tree
-					const totalWaterTime = await functions.timeToHeight(dayAgoTree.treeHeight, leaderboardEntry.treeHeight);
-					statusIndicator += `${totalWaterTime}]\`\``;
+					// const totalWaterTime = await functions.timeToHeight(dayAgoTree.treeHeight, leaderboardEntry.treeHeight);
+					// statusIndicator += `${totalWaterTime}]\`\``;
 		
 					// Determine if this tree is the guild's tree
 					if (leaderboardEntry.hasPin) {
@@ -235,7 +235,7 @@ const functions = {
 						}
 					}
 					// Build a string using the current leaderboard entry and the historic entry from 24 hours ago
-					comparisonReplyString += `\n${statusIndicator}\n`;
+					comparisonReplyString += `${statusIndicator}\n`;
 					// if (process.env.isDev == 'true') comparisonReplyString += `Current Height: ${leaderboardEntry.treeHeight} 24h Ago Height: ${dayAgoTree.treeHeight}\n`;
 				}
 				return comparisonReplyString;
@@ -398,13 +398,13 @@ const functions = {
 						const treeMessage = await treeChannel.messages.fetch(treeMessageId);
 						const readyToWater = treeMessage.embeds[0].description.includes('Ready to be watered');
 						if (readyToWater) {
-							console.log("Ready to water");
+							// console.log("Ready to water");
 							this.sendReminder(guildInfo, guild);
 							this.sleep(5000).then(() => {
 								this.checkReady(client);
 							});
 						} else {
-							console.log("Not ready to water");
+							// console.log("Not ready to water");
 							this.sleep(5000).then(() => {
 								this.checkReady(client);
 							});

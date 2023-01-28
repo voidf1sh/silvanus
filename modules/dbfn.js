@@ -115,8 +115,8 @@ module.exports = {
 					"treeChannelId": row.tree_channel_id,
 					"leaderboardMessageId": row.leaderboard_message_id,
 					"leaderboardChannelId": row.leaderboard_channel_id,
-					"pingRoleId": row.ping_role_id,
-					"pingChannelId": row.ping_channel_id,
+					"reminderMessage": row.ping_role_id,
+					"reminderChannelId": row.ping_channel_id,
 					"remindedStatus": row.reminded_status
 				};
 				db.end();
@@ -329,12 +329,20 @@ module.exports = {
 					reject("Error fetching the historic 24hr tree height: " + err.message);
 					return;
 				}
-				const hist24hTree = {
-					"treeName": res[0].tree_name,
-					"treeRank": res[0].tree_rank,
-					"treeHeight": res[0].tree_height,
-					"hasPin": res[0].has_pin
+				let hist24hTree = {};
+				if (res.length > 0) {
+					hist24hTree = {
+						"treeName": res[0].tree_name,
+						"treeRank": res[0].tree_rank,
+						"treeHeight": res[0].tree_height,
+						"hasPin": res[0].has_pin
+					}
+				} else {
+					hist24hTree = {
+
+					}
 				}
+				
 				db.end();
 				resolve({ "status": "Successfully fetched historic 24hr tree.", "data": hist24hTree });
 			});

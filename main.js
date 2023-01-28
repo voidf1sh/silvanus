@@ -60,7 +60,7 @@ client.on('interactionCreate', async interaction => {
 		fn.refresh(interaction);
 	} else if (interaction.isButton() && interaction.component.customId == 'resetping') {
 		fn.resetPing(interaction);
-		interaction.reply({ content: "Reset water readiness detection system.", ephemeral: true });
+		interaction.reply({ content: "Water Readiness Detection System: [ARMED]", ephemeral: true });
 	}
 });
 
