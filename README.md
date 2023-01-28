@@ -1,9 +1,9 @@
 # Silvanus
-Silvanus is the ultimate Grow A Tree companion bot! Quickly compare your server's tree to others on the leaderboard with automatic calculation of tree height differences, active growth detection, watering time calculations, and more! Get started with /help and /setup, then check out /compare.
+Silvanus is the ultimate Grow A Tree companion bot! Quickly compare your server's tree to others on the leaderboard with automatic calculation of tree height differences, active growth detection, watering time calculations, and more! Get started with `/help` and `/setup`, then check out `/compare`.
 
 Important Note: Silvanus is only as up-to-date as your server's Tree and Tallest Trees messages. Make sure to refresh them before refreshing Silvanus' Compare message.
 
-For the best experience we recommend the use of a single /tree and /top trees message, otherwise make sure to run /setup each time you run /compare.
+For the best experience we recommend the use of a single /tree and /top trees message, otherwise make sure to run /setup each time you run `/compare`.
 
 Silvanus is not affiliated with Grow A Tree or Limbo Labs. 
 
