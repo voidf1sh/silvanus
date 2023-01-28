@@ -30,6 +30,7 @@ client.once('ready', () => {
 	fn.collections.slashCommands(client);
 	console.log('Ready!');
 	client.user.setActivity({ name: strings.activity.name, type: ActivityType.Watching });
+	fn.checkReady(client);
 	if (isDev == 'false') {
 		client.channels.fetch(statusChannelId).then(channel => {
 			channel.send(`${new Date().toISOString()} -- \nStartup Sequence Complete <@481933290912350209>`);
