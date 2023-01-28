@@ -14,7 +14,9 @@ Silvanus is not affiliated with Grow A Tree or Limbo Labs.
 [Join Discord Server](https://discord.gg/g5JRGn7PxU)
 
 ## Setup
-To begin analyzing your Tree, first you must set up the reference messages.\n\n1. Run `/setup` in the channel(s) that contain your server's tree and leaderboard messages.\n2. Now simply run `/compare` where you want your analysis to be visible.
+To begin analyzing your Tree, first you must set up the reference messages.
+1. Run `/setup` in the channel(s) that contain your server's tree and leaderboard messages.
+2. Now simply run `/compare` where you want your analysis to be visible.
 
 ## Permissions
 Silvanus requires permissions to `Send Messages` and `Send Messages in Threads` if applicable.
