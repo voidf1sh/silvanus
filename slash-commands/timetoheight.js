@@ -15,7 +15,7 @@ module.exports = {
 			 .setDescription('Ending tree height in feet, numbers ONLY')
 			 .setRequired(true)),
 	async execute(interaction) {
-		await interaction.deferReply();
+		await interaction.deferReply({ ephemeral: true });
 		const beginHeight = interaction.options.getString('beginheight');
 		const endHeight = interaction.options.getString('endheight');
         fn.timeToHeight(beginHeight, endHeight).then(res => {
