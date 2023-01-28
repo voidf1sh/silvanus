@@ -24,5 +24,8 @@ Silvanus requires permissions to `Send Messages` and `Send Messages in Threads` 
 * `/setupinfo` - Displays links to the current Tree and Tallest Trees messages configured in your server.
 * `/compare` - Sends a refreshable embed that calculcates the height difference between your tree and the trees currently displayed on your Tallest Trees message. There is also an Active Growth Indicator (`[+]`) and a water wait time calculation (`[20 mins]`)
 * `/watertime height` - Calculates the wait time between waters for a tree of a given height.
+* `/timetoheight` - Calculates how long it would take to go from `beginheight` to `endheight`.
+* `/setping` - Guild members with the `Manage Roles` permission can run this command to set a Ready to Water reminder meaage and set the channel to send it in. Once this command has been run a new `Reset Ping` button will appear next time you refresh the `/compare` message.
+* `/optout` - Disable automatic water reminder messages.
 * `/reset` - Removes your server's configuration from the database.
 * `/help` - Displays the bot's help page and links to each command.
