@@ -1,3 +1,0 @@
-If your `/tree` and `/top trees` messages are in the same channel, simple run `/compare` in that channel and you're good to go!
-
-Otherwise, run `/setup` to set the proper channels for the bot to look in for the `/tree` and `/top trees` messages;
