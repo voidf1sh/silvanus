@@ -35,9 +35,6 @@ client.once('ready', () => {
 		client.channels.fetch(statusChannelId).then(channel => {
 			channel.send(`${new Date().toISOString()} -- \nStartup Sequence Complete <@481933290912350209>`);
 		});
-	} else {
-		// Dev shit
-		fn.checkReady(client);
 	}
 });
 
@@ -58,7 +55,9 @@ client.on('interactionCreate', async interaction => {
 	}
 
 	if (interaction.isButton() && interaction.component.customId == 'refresh') {
-		fn.refresh(interaction);
+		fn.refresh(interaction).catch(err => {
+			interaction.update(fn.builders.errorEmbed(err));
+		});
 	} else if (interaction.isButton() && interaction.component.customId == 'resetping') {
 		fn.resetPing(interaction);
 		interaction.reply({ content: "Water Readiness Detection System: [ARMED]", ephemeral: true });

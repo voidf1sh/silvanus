@@ -19,6 +19,8 @@
   "dependencies": {
     "discord.js": "^14.7.1",
     "dotenv": "^16.0.3",
-    "mysql": "^2.18.1"
+    "mysql": "^2.18.1",
+    "string-replace-all": "^2.0.0",
+    "string.prototype.replaceall": "^1.0.7"
   }
 }

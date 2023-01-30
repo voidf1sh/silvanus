@@ -108,7 +108,7 @@ module.exports = {
 					return;
 				}
 				row = res[0];
-				const guildInfo = { "guildId": row.guild_id,
+				const guildInfo = { "guildId": guildId,
 					"treeName": row.tree_name,
 					"treeHeight": row.tree_height,
 					"treeMessageId": row.tree_message_id,
