@@ -35,16 +35,16 @@ leaderboard
 module.exports = {
 	createGuildTables(guildId) {
 		const db = mysql.createConnection({
-			host     : process.env.DBHOST,
-			user     : process.env.DBUSER,
-			password : process.env.DBPASS,
-			database : process.env.DBNAME,
-			port     : process.env.DBPORT
+			host: process.env.DBHOST,
+			user: process.env.DBUSER,
+			password: process.env.DBPASS,
+			database: process.env.DBNAME,
+			port: process.env.DBPORT
 		});
 		db.connect((err) => {
 			if (err) throw `Error connecting to the database: ${err.message}`;
 		});
-        // Create the guild-information and rank-information tables to be used.
+		// Create the guild-information and rank-information tables to be used.
 		const createGuildInfoTableQuery = "CREATE TABLE IF NOT EXISTS guild_info(guild_id VARCHAR(50) NOT NULL, tree_name VARCHAR(100) NOT NULL DEFAULT 'Run /setup where your tree is.', tree_height INT(10) NOT NULL DEFAULT 0, tree_message_id VARCHAR(50) NOT NULL DEFAULT 'Run /setup where your tree is.', tree_channel_id VARCHAR(50) NOT NULL DEFAULT 'Run /setup where your tree is.', leaderboard_message_id VARCHAR(50) NOT NULL DEFAULT 'Run /setup where your leaderboard is.', leaderboard_channel_id VARCHAR(50) NOT NULL DEFAULT 'Run /setup where your leaderboard is.', CONSTRAINT guild_pk PRIMARY KEY (guild_id))";
 		const createLeaderboardTableQuery = "CREATE TABLE IF NOT EXISTS leaderboard(id INT(10) NOT NULL AUTO_INCREMENT,guild_id VARCHAR(50) NOT NULL,tree_name VARCHAR(100) NOT NULL,tree_rank INT(10) NOT NULL,tree_height INT(10) NOT NULL DEFAULT 1,has_pin TINYINT(1) NOT NULL DEFAULT 0,timestamp DATETIME DEFAULT CURRENT_TIMESTAMP, CONSTRAINT id_pk PRIMARY KEY(id))";
 		// TODO run the queries, then add a call to this function at the beginning of main.js or functions.js
@@ -68,20 +68,20 @@ module.exports = {
 				});
 			});
 		});
-    },
-    getGuildInfo(guildId) {
+	},
+	getGuildInfo(guildId) {
 		const db = mysql.createConnection({
-			host     : process.env.DBHOST,
-			user     : process.env.DBUSER,
-			password : process.env.DBPASS,
-			database : process.env.DBNAME,
-			port     : process.env.DBPORT
+			host: process.env.DBHOST,
+			user: process.env.DBUSER,
+			password: process.env.DBPASS,
+			database: process.env.DBNAME,
+			port: process.env.DBPORT
 		});
 		db.connect((err) => {
 			if (err) throw `Error connecting to the database: ${err.message}`;
 		});
-        // Get a server's tree information from the database
-		const selectGuildInfoQuery = `SELECT tree_name, tree_height, tree_message_id, tree_channel_id, leaderboard_message_id, leaderboard_channel_id, ping_role_id, ping_channel_id, reminded_status FROM guild_info WHERE guild_id = ${db.escape(guildId)}`;
+		// Get a server's tree information from the database
+		const selectGuildInfoQuery = `SELECT tree_name, tree_height, tree_message_id, tree_channel_id, leaderboard_message_id, leaderboard_channel_id, ping_role_id, ping_channel_id, reminded_status, reminder_optin FROM guild_info WHERE guild_id = ${db.escape(guildId)}`;
 		// TODO run this query and return a promise then structure the output into a GuildInfo object. resolve with { "status": , "data": guildInfo }
 		return new Promise((resolve, reject) => {
 			db.query(selectGuildInfoQuery, (err, res) => {
@@ -108,7 +108,8 @@ module.exports = {
 					return;
 				}
 				row = res[0];
-				const guildInfo = { "guildId": guildId,
+				const guildInfo = {
+					"guildId": guildId,
 					"treeName": row.tree_name,
 					"treeHeight": row.tree_height,
 					"treeMessageId": row.tree_message_id,
@@ -117,27 +118,28 @@ module.exports = {
 					"leaderboardChannelId": row.leaderboard_channel_id,
 					"reminderMessage": row.ping_role_id,
 					"reminderChannelId": row.ping_channel_id,
-					"remindedStatus": row.reminded_status
+					"remindedStatus": row.reminded_status,
+					"reminderOptIn": row.reminder_optin
 				};
 				db.end();
 				resolve({ "status": "Successfully fetched guild information", "data": guildInfo });
 			});
 		});
-    },
-    setGuildInfo(guildInfo) {
+	},
+	setGuildInfo(guildInfo) {
 		const db = mysql.createConnection({
-			host     : process.env.DBHOST,
-			user     : process.env.DBUSER,
-			password : process.env.DBPASS,
-			database : process.env.DBNAME,
-			port     : process.env.DBPORT
+			host: process.env.DBHOST,
+			user: process.env.DBUSER,
+			password: process.env.DBPASS,
+			database: process.env.DBNAME,
+			port: process.env.DBPORT
 		});
 		db.connect((err) => {
 			if (err) throw `Error connecting to the database: ${err.message}`;
 		});
 		// Returns a Promise, resolve({ "status": "", "data": null })
 		// guildInfo = { "guildId": "123", "treeName": "name", "treeHeight": 123, "treeMessageId": "123", "treeChannelId": "123", "leaderboardMessageId": "123", "leaderboardChannelId": "123"}
-        // Set a server's tree information in the database
+		// Set a server's tree information in the database
 		const insertGuildInfoQuery = `INSERT INTO guild_info (guild_id, tree_name, tree_height, tree_message_id, tree_channel_id, leaderboard_message_id, leaderboard_channel_id) VALUES (${db.escape(guildInfo.guildId)}, ${db.escape(guildInfo.treeName)}, ${db.escape(guildInfo.treeHeight)},${db.escape(guildInfo.treeMessageId)}, ${db.escape(guildInfo.treeChannelId)}, ${db.escape(guildInfo.leaderboardMessageId)}, ${db.escape(guildInfo.leaderboardChannelId)}) ON DUPLICATE KEY UPDATE tree_name = ${db.escape(guildInfo.treeName)},tree_height = ${db.escape(guildInfo.treeHeight)},tree_message_id = ${db.escape(guildInfo.treeMessageId)},tree_channel_id = ${db.escape(guildInfo.treeChannelId)},leaderboard_message_id = ${db.escape(guildInfo.leaderboardMessageId)},leaderboard_channel_id = ${db.escape(guildInfo.leaderboardChannelId)}`;
 		// TODO run this query and return a promise, then resolve with { "status": , "data": null }
 		return new Promise((resolve, reject) => {
@@ -152,21 +154,21 @@ module.exports = {
 				resolve({ "status": "Successfully set the guild information", "data": null });
 			});
 		});
-    },
-    setTreeInfo(guildInfo) {
+	},
+	setTreeInfo(guildInfo) {
 		const db = mysql.createConnection({
-			host     : process.env.DBHOST,
-			user     : process.env.DBUSER,
-			password : process.env.DBPASS,
-			database : process.env.DBNAME,
-			port     : process.env.DBPORT
+			host: process.env.DBHOST,
+			user: process.env.DBUSER,
+			password: process.env.DBPASS,
+			database: process.env.DBNAME,
+			port: process.env.DBPORT
 		});
 		db.connect((err) => {
 			if (err) throw `Error connecting to the database: ${err.message}`;
 		});
 		// Returns a Promise, resolve({ "status": "", "data": null })
 		// guildInfo = { "guildId": "123", "treeName": "name", "treeHeight": 123, "treeMessageId": "123", "treeChannelId": "123", "leaderboardMessageId": "123", "leaderboardChannelId": "123"}
-        // Set a server's tree information in the database)
+		// Set a server's tree information in the database)
 		const insertGuildInfoQuery = `INSERT INTO guild_info (guild_id, tree_name, tree_height, tree_message_id, tree_channel_id) VALUES (${db.escape(guildInfo.guildId)}, ${db.escape(guildInfo.treeName)}, ${db.escape(guildInfo.treeHeight)},${db.escape(guildInfo.treeMessageId)}, ${db.escape(guildInfo.treeChannelId)}) ON DUPLICATE KEY UPDATE tree_name = ${db.escape(guildInfo.treeName)},tree_height = ${db.escape(guildInfo.treeHeight)},tree_message_id = ${db.escape(guildInfo.treeMessageId)},tree_channel_id = ${db.escape(guildInfo.treeChannelId)}`;
 		// TODO run this query and return a promise, then resolve with { "status": , "data": null }
 		return new Promise((resolve, reject) => {
@@ -181,21 +183,21 @@ module.exports = {
 				resolve({ "status": "Successfully set the guild information", "data": null });
 			});
 		});
-    },
-    setLeaderboardInfo(guildInfo) {
+	},
+	setLeaderboardInfo(guildInfo) {
 		const db = mysql.createConnection({
-			host     : process.env.DBHOST,
-			user     : process.env.DBUSER,
-			password : process.env.DBPASS,
-			database : process.env.DBNAME,
-			port     : process.env.DBPORT
+			host: process.env.DBHOST,
+			user: process.env.DBUSER,
+			password: process.env.DBPASS,
+			database: process.env.DBNAME,
+			port: process.env.DBPORT
 		});
 		db.connect((err) => {
 			if (err) throw `Error connecting to the database: ${err.message}`;
 		});
 		// Returns a Promise, resolve({ "status": "", "data": null })
 		// guildInfo = { "guildId": "123", "treeName": "name", "treeHeight": 123, "treeMessageId": "123", "treeChannelId": "123", "leaderboardMessageId": "123", "leaderboardChannelId": "123"}
-        // Set a server's tree information in the database
+		// Set a server's tree information in the database
 		const insertGuildInfoQuery = `INSERT INTO guild_info (guild_id, leaderboard_message_id, leaderboard_channel_id) VALUES (${db.escape(guildInfo.guildId)}, ${db.escape(guildInfo.leaderboardMessageId)}, ${db.escape(guildInfo.leaderboardChannelId)}) ON DUPLICATE KEY UPDATE leaderboard_message_id = ${db.escape(guildInfo.leaderboardMessageId)},leaderboard_channel_id = ${db.escape(guildInfo.leaderboardChannelId)}`;
 		// TODO run this query and return a promise, then resolve with { "status": , "data": null }
 		return new Promise((resolve, reject) => {
@@ -210,21 +212,21 @@ module.exports = {
 				resolve({ "status": "Successfully set the guild information", "data": null });
 			});
 		});
-    },
+	},
 	deleteGuildInfo(guildId) {
 		const db = mysql.createConnection({
-			host     : process.env.DBHOST,
-			user     : process.env.DBUSER,
-			password : process.env.DBPASS,
-			database : process.env.DBNAME,
-			port     : process.env.DBPORT
+			host: process.env.DBHOST,
+			user: process.env.DBUSER,
+			password: process.env.DBPASS,
+			database: process.env.DBNAME,
+			port: process.env.DBPORT
 		});
 		db.connect((err) => {
 			if (err) throw `Error connecting to the database: ${err.message}`;
 		});
 		// Returns a Promise, resolve({ "status": "", "data": null })
 		// guildInfo = { "guildId": "123", "treeName": "name", "treeHeight": 123, "treeMessageId": "123", "treeChannelId": "123", "leaderboardMessageId": "123", "leaderboardChannelId": "123"}
-        // Set a server's tree information in the database
+		// Set a server's tree information in the database
 		const deleteGuildInfoQuery = `DELETE FROM guild_info WHERE guild_id = ${db.escape(guildId)}`;
 		// TODO run this query and return a promise, then resolve with { "status": , "data": null }
 		return new Promise((resolve, reject) => {
@@ -240,13 +242,13 @@ module.exports = {
 			});
 		});
 	},
-    getLeaderboard(guildId) {
+	getLeaderboard(guildId) {
 		const db = mysql.createConnection({
-			host     : process.env.DBHOST,
-			user     : process.env.DBUSER,
-			password : process.env.DBPASS,
-			database : process.env.DBNAME,
-			port     : process.env.DBPORT
+			host: process.env.DBHOST,
+			user: process.env.DBUSER,
+			password: process.env.DBPASS,
+			database: process.env.DBNAME,
+			port: process.env.DBPORT
 		});
 		db.connect((err) => {
 			if (err) throw `Error connecting to the database: ${err.message}`;
@@ -275,14 +277,14 @@ module.exports = {
 				resolve({ "status": "Successfully fetched leaderboard.", "data": leaderboard });
 			});
 		});
-    },
+	},
 	uploadLeaderboard(leaderboard) {
 		const db = mysql.createConnection({
-			host     : process.env.DBHOST,
-			user     : process.env.DBUSER,
-			password : process.env.DBPASS,
-			database : process.env.DBNAME,
-			port     : process.env.DBPORT
+			host: process.env.DBHOST,
+			user: process.env.DBUSER,
+			password: process.env.DBPASS,
+			database: process.env.DBNAME,
+			port: process.env.DBPORT
 		});
 		db.connect((err) => {
 			if (err) throw `Error connecting to the database: ${err.message}`;
@@ -307,13 +309,13 @@ module.exports = {
 			});
 		});
 	},
-    get24hTree(guildId, treeName) {
+	get24hTree(guildId, treeName) {
 		const db = mysql.createConnection({
-			host     : process.env.DBHOST,
-			user     : process.env.DBUSER,
-			password : process.env.DBPASS,
-			database : process.env.DBNAME,
-			port     : process.env.DBPORT
+			host: process.env.DBHOST,
+			user: process.env.DBUSER,
+			password: process.env.DBPASS,
+			database: process.env.DBNAME,
+			port: process.env.DBPORT
 		});
 		db.connect((err) => {
 			if (err) throw `Error connecting to the database: ${err.message}`;
@@ -342,19 +344,19 @@ module.exports = {
 
 					}
 				}
-				
+
 				db.end();
 				resolve({ "status": "Successfully fetched historic 24hr tree.", "data": hist24hTree });
 			});
 		});
-    },
+	},
 	setReminderInfo(guildId, reminderMessage, reminderChannelId) {
 		const db = mysql.createConnection({
-			host     : process.env.DBHOST,
-			user     : process.env.DBUSER,
-			password : process.env.DBPASS,
-			database : process.env.DBNAME,
-			port     : process.env.DBPORT
+			host: process.env.DBHOST,
+			user: process.env.DBUSER,
+			password: process.env.DBPASS,
+			database: process.env.DBNAME,
+			port: process.env.DBPORT
 		});
 		db.connect((err) => {
 			if (err) throw `Error connecting to the database: ${err.message}`;
@@ -377,11 +379,11 @@ module.exports = {
 	},
 	setRemindedStatus(guildId, remindedStatus) {
 		const db = mysql.createConnection({
-			host     : process.env.DBHOST,
-			user     : process.env.DBUSER,
-			password : process.env.DBPASS,
-			database : process.env.DBNAME,
-			port     : process.env.DBPORT
+			host: process.env.DBHOST,
+			user: process.env.DBUSER,
+			password: process.env.DBPASS,
+			database: process.env.DBNAME,
+			port: process.env.DBPORT
 		});
 		db.connect((err) => {
 			if (err) throw `Error connecting to the database: ${err.message}`;
@@ -404,11 +406,11 @@ module.exports = {
 	},
 	setReminderOptIn(guildId, optIn) {
 		const db = mysql.createConnection({
-			host     : process.env.DBHOST,
-			user     : process.env.DBUSER,
-			password : process.env.DBPASS,
-			database : process.env.DBNAME,
-			port     : process.env.DBPORT
+			host: process.env.DBHOST,
+			user: process.env.DBUSER,
+			password: process.env.DBPASS,
+			database: process.env.DBNAME,
+			port: process.env.DBPORT
 		});
 		db.connect((err) => {
 			if (err) throw `Error connecting to the database: ${err.message}`;
@@ -431,16 +433,16 @@ module.exports = {
 	},
 	getOptedInGuilds() {
 		const db = mysql.createConnection({
-			host     : process.env.DBHOST,
-			user     : process.env.DBUSER,
-			password : process.env.DBPASS,
-			database : process.env.DBNAME,
-			port     : process.env.DBPORT
+			host: process.env.DBHOST,
+			user: process.env.DBUSER,
+			password: process.env.DBPASS,
+			database: process.env.DBNAME,
+			port: process.env.DBPORT
 		});
 		db.connect((err) => {
 			if (err) throw `Error connecting to the database: ${err.message}`;
 		});
-        // Get a server's tree information from the database
+		// Get a server's tree information from the database
 		const getOptedInGuildsQuery = `SELECT guild_id, tree_name, tree_height, tree_message_id, tree_channel_id, leaderboard_message_id, leaderboard_channel_id, ping_role_id, ping_channel_id, reminded_status FROM guild_info WHERE reminder_optin = 1 AND reminded_status = 0`;
 		// TODO run this query and return a promise then structure the output into a GuildInfo object. resolve with { "status": , "data": guildInfo }
 		return new Promise((resolve, reject) => {
@@ -463,7 +465,7 @@ module.exports = {
 					"remindedStatus": 0
 				};*/
 				if (res.length == 0) {
-					resolve({"status": "No servers have opted in yet"});
+					resolve({ "status": "No servers have opted in yet" });
 					db.end();
 					return;
 				}
@@ -485,6 +487,33 @@ module.exports = {
 				});
 				db.end();
 				resolve({ "status": "Successfully fetched guild information", "data": guilds });
+			});
+		});
+	},
+	setComparisonMessage(comparisonMessageId, guildId) {
+		const db = mysql.createConnection({
+			host: process.env.DBHOST,
+			user: process.env.DBUSER,
+			password: process.env.DBPASS,
+			database: process.env.DBNAME,
+			port: process.env.DBPORT
+		});
+		db.connect((err) => {
+			if (err) throw `Error connecting to the database: ${err.message}`;
+		});
+		// Returns a Promise, resolve({ "status": "", "data": leaderboard })
+		const setRemindedStatusQuery = `UPDATE guild_info SET comparison_message_id = ${db.escape(comparisonMessageId)} WHERE guild_id = ${db.escape(guildId)}`;
+		// TODO run the query and return a promise then process the results. resolve with { "status": , "data": leaderboard }
+		return new Promise((resolve, reject) => {
+			db.query(setRemindedStatusQuery, (err, res) => {
+				if (err) {
+					console.error(err);
+					db.end();
+					reject("Error updating the comparison message ID: " + err.message);
+					return;
+				}
+				db.end();
+				resolve({ "status": `Successfully set the comparison message ID: ${comparisonMessageId}`, "data": res });
 			});
 		});
 	}

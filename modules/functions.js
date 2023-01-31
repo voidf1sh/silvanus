@@ -42,6 +42,43 @@ const functions = {
 		}
 	},
 	builders: {
+		actionRows: {
+			reminderActionRow() {
+				const deleteButton = new ButtonBuilder()
+					.setCustomId('deleteping')
+					.setEmoji('♻️')
+					.setStyle(ButtonStyle.Danger);
+				const actionRow = new ActionRowBuilder()
+					.addComponents(deleteButton);
+				return actionRow;
+			},
+			comparisonActionRow(guildInfo) {
+				// Create the button to go in the Action Row
+				const refreshButton = new ButtonBuilder()
+					.setCustomId('refresh')
+					.setEmoji('🔄')
+					.setStyle(ButtonStyle.Primary);
+				// Create the Action Row with the Button in it, to be sent with the Embed
+				let refreshActionRow = new ActionRowBuilder()
+					.addComponents(
+						refreshButton
+					);
+				if (guildInfo.reminderOptIn == 1 && guildInfo.remindedStatus == 1) {
+					const resetPingButton = new ButtonBuilder()
+						.setCustomId('resetping')
+						.setLabel('Reset Ping')
+						.setStyle(ButtonStyle.Secondary);
+					refreshActionRow.addComponents(resetPingButton);
+				} else if (guildInfo.reminderOptIn == 1 && guildInfo.remindedStatus == 0) {
+					const resetPingButton = new ButtonBuilder()
+						.setCustomId('resetping')
+						.setLabel('[Armed]')
+						.setStyle(ButtonStyle.Secondary);
+					refreshActionRow.addComponents(resetPingButton);
+				}
+				return refreshActionRow;
+			}
+		},
 		async refreshAction(guildId) {
 			// Create the button to go in the Action Row
 			const refreshButton = new ButtonBuilder()
@@ -64,14 +101,14 @@ const functions = {
 			}
 			return refreshActionRow;
 		},
-		comparisonEmbed(content, refreshActionRow) {
+		comparisonEmbed(content, guildInfo) {
 			// Create the embed using the content passed to this function
 			const embed = new EmbedBuilder()
 				.setColor(strings.embeds.color)
-				.setTitle('Tree Growth Comparison')
+				.setTitle('Tallest Trees Comparison')
 				.setDescription(content)
 				.setFooter({ text: `v${package.version} - ${strings.embeds.footer}` });
-			const messageContents = { embeds: [embed], components: [refreshActionRow] };
+			const messageContents = { embeds: [embed], components: [this.actionRows.comparisonActionRow(guildInfo)] };
 			return messageContents;
 		},
 		reminderEmbed(content, guildInfo) {
@@ -80,8 +117,8 @@ const functions = {
 				.setColor(strings.embeds.color)
 				.setTitle('Water Reminder')
 				.setDescription(`[Click here to go to your Tree](https://discord.com/channels/${guildInfo.guildId}/${guildInfo.treeChannelId}/${guildInfo.treeMessageId})`)
-				.setFooter({ text: `This message will self-destruct in 60 seconds.` });
-			const messageContents = { content: content, embeds: [embed] };
+				.setFooter({ text: `Click ♻️ to delete this message` });
+			const messageContents = { content: content, embeds: [embed], components: [this.actionRows.reminderActionRow()] };
 			return messageContents;
 		},
 		helpEmbed(content, private) {
@@ -432,10 +469,8 @@ const functions = {
 			await this.rankings.parse(interaction, guildInfo);
 			// Build the string that shows the comparison // TODO Move the string building section to fn.builders?
 			const comparedRankings = await this.rankings.compare(interaction, guildInfo);
-			// Build the Action Row that will contain the Refresh and Reset Ping buttons
-			const compareActionRow = await this.builders.refreshAction(interaction.guildId);
 
-			const embed = this.builders.comparisonEmbed(comparedRankings, compareActionRow);
+			const embed = this.builders.comparisonEmbed(comparedRankings, guildInfo);
 			await interaction.update(embed);
 		} else {
 			await interaction.update(this.builders.errorEmbed(findMessagesResponse.status));
@@ -506,11 +541,7 @@ const functions = {
 		const reminderEmbed = functions.builders.reminderEmbed(reminderMessage, guildInfo);
 		reminderChannel.send(reminderEmbed).then(async m => {
 			await dbfn.setRemindedStatus(guildId, 1);
-			if (m.deletable) {
-				setTimeout(function () {
-					m.delete();
-				}, 60000);
-			}
+			return 1;
 		}).catch(err => {
 			console.error(err);
 		});
@@ -560,8 +591,8 @@ const functions = {
 			});
 		}
 	},
-	resetPing(interaction) {
-		dbfn.setRemindedStatus(interaction.guildId, 0);
+	async resetPing(interaction) {
+		await dbfn.setRemindedStatus(interaction.guildId, 0);
 	}
 };
 

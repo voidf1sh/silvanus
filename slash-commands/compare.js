@@ -20,10 +20,8 @@ module.exports = {
 					await fn.rankings.parse(interaction, guildInfo);
 					// Build the string that shows the comparison // TODO Move the string building section to fn.builders?
 					const comparedRankings = await fn.rankings.compare(interaction, guildInfo);
-					// Build the Action Row that will contain the Refresh and Reset Ping buttons
-					const compareActionRow = await fn.builders.refreshAction(interaction.guildId);
 
-					const embed = fn.builders.comparisonEmbed(comparedRankings, compareActionRow);
+					const embed = fn.builders.comparisonEmbed(comparedRankings, guildInfo);
 					await interaction.editReply(embed);
 				} else {
 					await interaction.editReply(fn.builders.errorEmbed(findMessagesResponse.status));
@@ -52,11 +50,7 @@ module.exports = {
 					if (findMessagesResponse.code == 1) {
 						// Build the string that shows the comparison // TODO Move the string building section to fn.builders?
 						const comparedRankings = await fn.rankings.compare(interaction, guildInfo);
-						// Build the Action Row that will contain the Refresh and Reset Ping buttons
-						const compareActionRow = await fn.builders.refreshAction(interaction.guildId);
-
-
-						const embed = fn.builders.comparisonEmbed(comparedRankings, compareActionRow);
+						const embed = fn.builders.comparisonEmbed(comparedRankings, guildInfo);
 						await interaction.editReply(embed);
 					} else {
 						await interaction.editReply(fn.builders.errorEmbed(findMessagesResponse.status));

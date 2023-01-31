@@ -55,12 +55,20 @@ client.on('interactionCreate', async interaction => {
 	}
 
 	if (interaction.isButton() && interaction.component.customId == 'refresh') {
-		fn.refresh(interaction).catch(err => {
+		await fn.refresh(interaction).catch(err => {
 			interaction.update(fn.builders.errorEmbed(err));
 		});
 	} else if (interaction.isButton() && interaction.component.customId == 'resetping') {
-		fn.resetPing(interaction);
-		interaction.reply({ content: "Water Readiness Detection System: [ARMED]", ephemeral: true });
+		await fn.resetPing(interaction);
+		await fn.refresh(interaction).catch(err => {
+			interaction.update(fn.builders.errorEmbed(err));
+		});
+	} else if (interaction.isButton() && interaction.component.customId == 'deleteping') {
+		if (interaction.message.deletable) {
+			await interaction.message.delete().catch(err => {
+				console.error(err);
+			});
+		}
 	}
 });
 
