@@ -586,7 +586,7 @@ const functions = {
 			}
 		} catch (err) {
 			console.error(err);
-			await this.sleep(30000).then(() => {
+			await this.sleep(5000).then(() => {
 				this.checkReady(client);
 			});
 		}
