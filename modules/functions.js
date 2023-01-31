@@ -539,8 +539,8 @@ const functions = {
 		const { guildId, reminderChannelId, reminderMessage } = guildInfo;
 		const reminderChannel = await guild.channels.fetch(reminderChannelId);
 		const reminderEmbed = functions.builders.reminderEmbed(reminderMessage, guildInfo);
-		reminderChannel.send(reminderEmbed).then(async m => {
-			await dbfn.setRemindedStatus(guildId, 1);
+		await reminderChannel.send(reminderEmbed).then(async m => {
+			const setRemindedStatusReponse = await dbfn.setRemindedStatus(guildId, 1);
 			return 1;
 		}).catch(err => {
 			console.error(err);
@@ -550,51 +550,68 @@ const functions = {
 		setTimeout(this.sendReminder(interaction), ms);
 	},
 	async checkReady(client) { // Check if the guilds trees are ready to water
-		// TODO This is hard coded for the dev server, need to change it to lookup each server and iterate over them
-		// Would also be helpful to have an opt-in or opt-out ability for water checks
 		try {
+			// Get the guildInfos for each guild that is opted in and waiting to send a reminder
 			const getOptedInGuildsResponse = await dbfn.getOptedInGuilds();
-			// console.log(JSON.stringify(getOptedInGuildsResponse));
+			// getOptedInGuilds will return this if it gets an empty set from the database
 			if (getOptedInGuildsResponse.status != "No servers have opted in yet") {
+				// Get the Array of Guilds from the response
 				const guilds = getOptedInGuildsResponse.data;
+				// Iterate over the Array
 				for (let i = 0; i < guilds.length; i++) {
+					// console.log(`iter: ${i}`);
+					// Save the 'old' guild info that came from getOptedInGuilds
 					const oldGuildInfo = guilds[i];
+					// Get up-to-date guildInfo from the database, probably unnecessary and redundant
 					const getGuildInfoResponse = await dbfn.getGuildInfo(oldGuildInfo.guildId);
+					// Save the new guildInfo so we can reference its remindedStatus
 					const guildInfo = getGuildInfoResponse.data;
 					const { guildId, treeChannelId, treeMessageId, remindedStatus } = guildInfo;
-
+					// console.log(`${guildInfo.treeName}: ${remindedStatus}`);
+					// Double check the remindedStatus to prevent double pings
 					if (remindedStatus == 0) {
+						// Fetch the guild
 						const guild = await client.guilds.fetch(guildId);
+						// Fetch the tree channel
 						const treeChannel = await guild.channels.fetch(treeChannelId);
+						// Fetch the tree message
 						const treeMessage = await treeChannel.messages.fetch(treeMessageId);
+						// Get the description from the embed of the tree message
 						const description = treeMessage.embeds[0].description;
+						// Default to not being ready to water
 						let readyToWater = false;
+						// Obviously if the tree says it's Ready to be watered, it's ready
 						if (description.includes("Ready to be watered")) {
 							readyToWater = true;
+						// But sometimes the tree doesn't refresh the embed, in that case we'll do a secondary check using the
+						// timestamp included in the embed.
 						} else {
 							const beginWaterTimestamp = description.indexOf("<t:") + 3;
 							const endWaterTimestamp = description.indexOf(":>");
+							// Split the description starting at "<t:" and ending at ":>" to get just the numerical timestamp
 							const waterTimestamp = parseInt(description.slice(beginWaterTimestamp, endWaterTimestamp));
+							// The Discord timestamp is in seconds, not ms so we need to divide by 1000
 							const nowTimestamp = (Date.now() / 1000);
 							readyToWater = (nowTimestamp > waterTimestamp);
 						}
 
 						if (readyToWater) {
-							// console.log("Ready to water");
+							// Send the reminder message
 							await this.sendReminder(guildInfo, guild);
-							this.sleep(5000).then(async () => {
-								await this.checkReady(client);
-							});
-							return;
-						} else {
-							// console.log("Not ready to water\n" + `Water At: ${waterTimestamp} | Now: ${nowTimestamp}`);
-							this.sleep(5000).then(async () => {
-								await this.checkReady(client);
-							});
-							return;
 						}
+					} else {
+						// const guild = await client.guilds.fetch(guildInfo.guildId);
+						// const comparisonChannel = await guild.channels.fetch(guildInfo.comparisonChannelId);
+						// const comparisonMessage = await comparisonChannel.messages.fetch(guildInfo.comparisonMessageId);
+						// const embed = comparisonMessage.embeds[0];
+						// const actionRow = this.builders.actionRows.comparisonActionRow(guildInfo);
+						// comparisonMessage.edit({ embeds: [embed], components: [actionRow] });
 					}
 				}
+				// Wait for .5 seconds before looping back to check other trees
+				this.sleep(500).then(async () => {
+					await this.checkReady(client);
+				});
 			} else {
 				// console.log(getOptedInGuildsResponse.status);
 				this.sleep(5000).then(async () => {

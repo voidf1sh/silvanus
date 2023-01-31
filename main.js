@@ -56,7 +56,7 @@ client.on('interactionCreate', async interaction => {
 
 	if (interaction.isButton() && interaction.component.customId == 'refresh') {
 		await fn.refresh(interaction).catch(err => {
-			interaction.update(fn.builders.errorEmbed(err));
+			interaction.channel.send(fn.builders.errorEmbed(err));
 		});
 	} else if (interaction.isButton() && interaction.component.customId == 'resetping') {
 		await fn.resetPing(interaction);

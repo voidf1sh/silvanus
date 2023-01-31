@@ -81,7 +81,7 @@ module.exports = {
 			if (err) throw `Error connecting to the database: ${err.message}`;
 		});
 		// Get a server's tree information from the database
-		const selectGuildInfoQuery = `SELECT tree_name, tree_height, tree_message_id, tree_channel_id, leaderboard_message_id, leaderboard_channel_id, ping_role_id, ping_channel_id, reminded_status, reminder_optin FROM guild_info WHERE guild_id = ${db.escape(guildId)}`;
+		const selectGuildInfoQuery = `SELECT * FROM guild_info WHERE guild_id = ${db.escape(guildId)}`;
 		// TODO run this query and return a promise then structure the output into a GuildInfo object. resolve with { "status": , "data": guildInfo }
 		return new Promise((resolve, reject) => {
 			db.query(selectGuildInfoQuery, (err, res) => {
@@ -100,7 +100,8 @@ module.exports = {
 					"leaderboardChannelId": "123",
 					"reminderMessage": "Abc",
 					"reminderChannelId": "123",
-					"remindedStatus": 0
+					"remindedStatus": 0,
+					"comparisonMessageId": "123"
 				};*/
 				if (res.length == 0) {
 					reject("There is no database entry for your guild yet. Try running /setup");
@@ -119,7 +120,9 @@ module.exports = {
 					"reminderMessage": row.ping_role_id,
 					"reminderChannelId": row.ping_channel_id,
 					"remindedStatus": row.reminded_status,
-					"reminderOptIn": row.reminder_optin
+					"reminderOptIn": row.reminder_optin,
+					"comparisonMessageId": row.comparison_message_id,
+					"comparisonChannelId": row.comparison_channel_id
 				};
 				db.end();
 				resolve({ "status": "Successfully fetched guild information", "data": guildInfo });
@@ -401,6 +404,7 @@ module.exports = {
 				}
 				db.end();
 				resolve({ "status": `Successfully set the reminded status to ${remindedStatus}`, "data": res });
+				// console.log("Boop: " + remindedStatus);
 			});
 		});
 	},
@@ -443,7 +447,7 @@ module.exports = {
 			if (err) throw `Error connecting to the database: ${err.message}`;
 		});
 		// Get a server's tree information from the database
-		const getOptedInGuildsQuery = `SELECT guild_id, tree_name, tree_height, tree_message_id, tree_channel_id, leaderboard_message_id, leaderboard_channel_id, ping_role_id, ping_channel_id, reminded_status FROM guild_info WHERE reminder_optin = 1 AND reminded_status = 0`;
+		const getOptedInGuildsQuery = `SELECT * FROM guild_info WHERE reminder_optin = 1`;
 		// TODO run this query and return a promise then structure the output into a GuildInfo object. resolve with { "status": , "data": guildInfo }
 		return new Promise((resolve, reject) => {
 			db.query(getOptedInGuildsQuery, (err, res) => {
@@ -462,7 +466,8 @@ module.exports = {
 					"leaderboardChannelId": "123",
 					"reminderMessage": "Abc",
 					"reminderChannelId": "123",
-					"remindedStatus": 0
+					"remindedStatus": 0,
+					"comparisonMessageId": "123"
 				};*/
 				if (res.length == 0) {
 					resolve({ "status": "No servers have opted in yet" });
@@ -482,7 +487,9 @@ module.exports = {
 						"leaderboardChannelId": row.leaderboard_channel_id,
 						"reminderMessage": row.ping_role_id,
 						"reminderChannelId": row.ping_channel_id,
-						"remindedStatus": row.reminded_status
+						"remindedStatus": row.reminded_status,
+						"comparisonMessageId": row.comparison_message_id,
+						"comparisonChannelId": row.comparison_channel_id
 					});
 				});
 				db.end();
@@ -490,7 +497,7 @@ module.exports = {
 			});
 		});
 	},
-	setComparisonMessage(comparisonMessageId, guildId) {
+	setComparisonMessage(comparisonMessage, guildId) {
 		const db = mysql.createConnection({
 			host: process.env.DBHOST,
 			user: process.env.DBUSER,
@@ -502,10 +509,11 @@ module.exports = {
 			if (err) throw `Error connecting to the database: ${err.message}`;
 		});
 		// Returns a Promise, resolve({ "status": "", "data": leaderboard })
-		const setRemindedStatusQuery = `UPDATE guild_info SET comparison_message_id = ${db.escape(comparisonMessageId)} WHERE guild_id = ${db.escape(guildId)}`;
+		const setComparisonMessageQuery = `UPDATE guild_info SET comparison_message_id = ${db.escape(comparisonMessage.id)}, comparison_channel_id = ${db.escape(comparisonMessage.interaction.channelId)} WHERE guild_id = ${db.escape(guildId)}`;
+		// console.log(JSON.stringify(comparisonMessage));
 		// TODO run the query and return a promise then process the results. resolve with { "status": , "data": leaderboard }
 		return new Promise((resolve, reject) => {
-			db.query(setRemindedStatusQuery, (err, res) => {
+			db.query(setComparisonMessageQuery, (err, res) => {
 				if (err) {
 					console.error(err);
 					db.end();
@@ -513,7 +521,7 @@ module.exports = {
 					return;
 				}
 				db.end();
-				resolve({ "status": `Successfully set the comparison message ID: ${comparisonMessageId}`, "data": res });
+				resolve({ "status": `Successfully set the comparison message ID: ${comparisonMessage}`, "data": res });
 			});
 		});
 	}
