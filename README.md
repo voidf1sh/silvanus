@@ -1,9 +1,7 @@
 # Silvanus
-Silvanus is the ultimate Grow A Tree companion bot! Quickly compare your server's tree to others on the leaderboard with automatic calculation of tree height differences, active growth detection, watering time calculations, and more! Get started with `/help` and `/setup`, then check out `/compare`.
+Silvanus is the ultimate Grow A Tree companion bot! Quickly compare your server's tree to others on the leaderboard with automatic calculation of tree height differences, active growth detection, watering time calculations, and more!
 
-Important Note: Silvanus is only as up-to-date as your server's Tree and Tallest Trees messages. Make sure to refresh them before refreshing Silvanus' Compare message.
-
-For the best experience we recommend the use of a single /tree and /top trees message, otherwise make sure to run /setup each time you run `/compare`.
+Important Note: Silvanus is only as up-to-date as your server's newest Tree and Tallest Trees messages. Make sure to refresh them before refreshing Silvanus' Compare message.
 
 Silvanus is not affiliated with Grow A Tree or Limbo Labs. 
 
@@ -14,9 +12,12 @@ Silvanus is not affiliated with Grow A Tree or Limbo Labs.
 [Join Discord Server](https://discord.gg/g5JRGn7PxU)
 
 ## Setup
-To begin analyzing your Tree, first you must set up the reference messages.
-1. Run `/setup` in the channel(s) that contain your server's tree and leaderboard messages.
-2. Now simply run `/compare` where you want your analysis to be visible.
+
+If your `/tree` and `/top trees` messages are in the same channel, simple run `/compare` in that channel and you're good to go!
+
+Otherwise, run `/setup` to set the proper channels for the bot to look in for the `/tree` and `/top trees` messages.
+
+Use `/commands` to view a description of all my commands.
 
 ## Permissions
 Silvanus requires permissions to `Send Messages` and `Send Messages in Threads` if applicable.

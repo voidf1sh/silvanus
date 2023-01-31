@@ -6,6 +6,7 @@ env.dev
 env.prod
 .DS_Store
 data/guildInfo.json
+data/rawstring.txt
 
 # Custom folders
 # gifs/*
