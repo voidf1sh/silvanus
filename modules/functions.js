@@ -557,7 +557,8 @@ const functions = {
 			// console.log(JSON.stringify(getOptedInGuildsResponse));
 			if (getOptedInGuildsResponse.status != "No servers have opted in yet") {
 				const guilds = getOptedInGuildsResponse.data;
-				guilds.forEach(async oldGuildInfo => {
+				for (let i = 0; i < guilds.length; i++) {
+					const oldGuildInfo = guilds[i];
 					const getGuildInfoResponse = await dbfn.getGuildInfo(oldGuildInfo.guildId);
 					const guildInfo = getGuildInfoResponse.data;
 					const { guildId, treeChannelId, treeMessageId, remindedStatus } = guildInfo;
@@ -567,11 +568,17 @@ const functions = {
 						const treeChannel = await guild.channels.fetch(treeChannelId);
 						const treeMessage = await treeChannel.messages.fetch(treeMessageId);
 						const description = treeMessage.embeds[0].description;
-						const beginWaterTimestamp = description.indexOf("<t:") + 3;
-						const endWaterTimestamp = description.indexOf(":>");
-						const waterTimestamp = parseInt(description.slice(beginWaterTimestamp, endWaterTimestamp));
-						const nowTimestamp = (Date.now() / 1000);
-						const readyToWater = (nowTimestamp > waterTimestamp);
+						let readyToWater = false;
+						if (description.includes("Ready to be watered")) {
+							readyToWater = true;
+						} else {
+							const beginWaterTimestamp = description.indexOf("<t:") + 3;
+							const endWaterTimestamp = description.indexOf(":>");
+							const waterTimestamp = parseInt(description.slice(beginWaterTimestamp, endWaterTimestamp));
+							const nowTimestamp = (Date.now() / 1000);
+							readyToWater = (nowTimestamp > waterTimestamp);
+						}
+
 						if (readyToWater) {
 							// console.log("Ready to water");
 							await this.sendReminder(guildInfo, guild);
@@ -587,7 +594,7 @@ const functions = {
 							return;
 						}
 					}
-				});
+				}
 			} else {
 				// console.log(getOptedInGuildsResponse.status);
 				this.sleep(5000).then(async () => {
