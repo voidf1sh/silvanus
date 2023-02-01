@@ -1,6 +1,6 @@
 {
   "name": "silvanus",
-  "version": "1.1.1",
+  "version": "1.1.4",
   "description": "Grow A Tree Comparison Tool",
   "main": "main.js",
   "scripts": {
@@ -19,6 +19,8 @@
   "dependencies": {
     "discord.js": "^14.7.1",
     "dotenv": "^16.0.3",
-    "mysql": "^2.18.1"
+    "mysql": "^2.18.1",
+    "string-replace-all": "^2.0.0",
+    "string.prototype.replaceall": "^1.0.7"
   }
 }

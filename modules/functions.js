@@ -17,6 +17,7 @@ const config = require('../data/config.json');
 const strings = require('../data/strings.json');
 const slashCommandFiles = fs.readdirSync('./slash-commands/').filter(file => file.endsWith('.js'));
 const dbfn = require('./dbfn.js');
+const { finished } = require('stream');
 
 dbfn.createGuildTables().then(res => {
 	console.log(res.status);
@@ -41,27 +42,84 @@ const functions = {
 		}
 	},
 	builders: {
-		refreshAction() {
+		actionRows: {
+			reminderActionRow() {
+				const deleteButton = new ButtonBuilder()
+					.setCustomId('deleteping')
+					.setEmoji('♻️')
+					.setStyle(ButtonStyle.Danger);
+				const actionRow = new ActionRowBuilder()
+					.addComponents(deleteButton);
+				return actionRow;
+			},
+			comparisonActionRow(guildInfo) {
+				// console.log(guildInfo);
+				// Create the button to go in the Action Row
+				const refreshButton = new ButtonBuilder()
+					.setCustomId('refresh')
+					.setEmoji('🔄')
+					.setStyle(ButtonStyle.Primary);
+				// Create the Action Row with the Button in it, to be sent with the Embed
+				let refreshActionRow = new ActionRowBuilder()
+					.addComponents(
+						refreshButton
+					);
+				if (guildInfo.reminderOptIn == 1 && guildInfo.remindedStatus == 1) {
+					const resetPingButton = new ButtonBuilder()
+						.setCustomId('resetping')
+						.setLabel('Reset Ping')
+						.setStyle(ButtonStyle.Secondary);
+					refreshActionRow.addComponents(resetPingButton);
+				} else if (guildInfo.reminderOptIn == 1 && guildInfo.remindedStatus == 0) {
+					const resetPingButton = new ButtonBuilder()
+						.setCustomId('resetping')
+						.setLabel('[Armed]')
+						.setStyle(ButtonStyle.Secondary);
+					refreshActionRow.addComponents(resetPingButton);
+				}
+				return refreshActionRow;
+			}
+		},
+		async refreshAction(guildId) {
 			// Create the button to go in the Action Row
 			const refreshButton = new ButtonBuilder()
 				.setCustomId('refresh')
 				.setLabel('Refresh')
 				.setStyle(ButtonStyle.Primary);
+			const resetPingButton = new ButtonBuilder()
+				.setCustomId('resetping')
+				.setLabel('Reset Ping')
+				.setStyle(ButtonStyle.Secondary);
 			// Create the Action Row with the Button in it, to be sent with the Embed
-			const refreshActionRow = new ActionRowBuilder()
+			let refreshActionRow = new ActionRowBuilder()
 				.addComponents(
 					refreshButton
 				);
+			const getGuildInfoResponse = await dbfn.getGuildInfo(guildId);
+			const guildInfo = getGuildInfoResponse.data;
+			if (guildInfo.reminderMessage != "" && guildInfo.reminderChannelId != "") {
+				refreshActionRow.addComponents(resetPingButton);
+			}
 			return refreshActionRow;
 		},
-		comparisonEmbed(content, refreshActionRow) {
+		comparisonEmbed(content, guildInfo) {
 			// Create the embed using the content passed to this function
 			const embed = new EmbedBuilder()
 				.setColor(strings.embeds.color)
-				.setTitle('Tree Growth Comparison')
+				.setTitle('Tallest Trees Comparison')
 				.setDescription(content)
-				.setFooter({text: `v${package.version} - ${strings.embeds.footer}`});
-			const messageContents = { embeds: [embed], components: [refreshActionRow] };
+				.setFooter({ text: `v${package.version} - ${strings.embeds.footer}` });
+			const messageContents = { embeds: [embed], components: [this.actionRows.comparisonActionRow(guildInfo)] };
+			return messageContents;
+		},
+		reminderEmbed(content, guildInfo) {
+			// Create the embed using the content passed to this function
+			const embed = new EmbedBuilder()
+				.setColor(strings.embeds.color)
+				.setTitle('Water Reminder')
+				.setDescription(`[Click here to go to your Tree](https://discord.com/channels/${guildInfo.guildId}/${guildInfo.treeChannelId}/${guildInfo.treeMessageId})`)
+				.setFooter({ text: `Click ♻️ to delete this message` });
+			const messageContents = { content: content, embeds: [embed], components: [this.actionRows.reminderActionRow()] };
 			return messageContents;
 		},
 		helpEmbed(content, private) {
@@ -94,188 +152,333 @@ const functions = {
 		}
 	},
 	rankings: {
-		parse(interaction) {
-			return new Promise ((resolve, reject) => {
-				dbfn.getGuildInfo(interaction.guildId).then(res => {
-					const guildInfo = res.data;
-					if (guildInfo.guildId == "") {
-						reject(strings.error.noGuild);
-						return;
-					}
-					if (guildInfo.leaderboardMessageId != undefined) {
-						interaction.guild.channels.fetch(guildInfo.leaderboardChannelId).then(c => {
-							c.messages.fetch(guildInfo.leaderboardMessageId).then(leaderboardMessage => {
-								if ((leaderboardMessage.embeds.length == 0) || (leaderboardMessage.embeds[0].data.title != 'Tallest Trees' )) {
-									reject("This doesn't appear to be a valid ``/top trees`` message.");
-									return;
-								}
-								let lines = leaderboardMessage.embeds[0].data.description.split('\n');
-								let leaderboard = {
-									"guildId": interaction.guildId,
-									"entries": []
-								};
-								for (let i = 0; i < 10; i++) {
-									// Breakdown each line separating it on each -
-									let breakdown = lines[i].split(' - ');
-
-									// Check if the first part, the ranking, has these emojis to detect first second and third place
-									if (breakdown[0].includes('🥇')) {
-										breakdown[0] = '``#1 ``'
-									} else if (breakdown[0].includes('🥈')) {
-										breakdown[0] = '``#2 ``'
-									} else if (breakdown[0].includes('🥉')) {
-										breakdown[0] = '``#3 ``'
-									}
-									
-									// Clean off the excess and get just the number from the rank, make sure it's an int not string
-									let trimmedRank = parseInt(breakdown[0].slice(breakdown[0].indexOf('#') + 1, breakdown[0].lastIndexOf('``')));
-									
-									// Clean off the excess and get just the tree name
-									let trimmedName = breakdown[1].slice(breakdown[1].indexOf('``') + 2);
-									trimmedName = trimmedName.slice(0, trimmedName.indexOf('``'));
-									
-									// Clean off the excess and get just the tree height, make sure it's a 1 decimal float
-									let trimmedHeight = parseFloat(breakdown[2].slice(0, breakdown[2].indexOf('ft'))).toFixed(1);
-									let isMyTree = false;
-									let isMaybeMyTree = false;
-									if (breakdown[2].includes('📍')) isMyTree = true;
-									if (breakdown[1].includes(guildInfo.treeName)) maybeMyTree = true;
-
-									// "entries": [ { "treeHeight": 12, "treeRank": 34, "treeName": "name" }, ] }
-									
-									
-									leaderboard.entries.push({
-										treeRank: trimmedRank,
-										treeName: trimmedName,
-										treeHeight: trimmedHeight,
-										hasPin: isMyTree
-									});
-								}
-			
-								dbfn.uploadLeaderboard(leaderboard).then(res => {
-									console.log(res.status);
-									resolve(res.status);
-								}).catch(err => {
-									console.error(err);
-									reject(err);
-									return;
-								});
-							});
-						});
-					} else {
-						reject("The leaderboardMessageId is undefined somehow");
-						return;
-					}
-				}).catch(err => {
-					reject(err);
-					return;
-				});
-			});
-			
-		},
-		compare(interaction) {
+		parse(interaction, guildInfo) {
 			return new Promise((resolve, reject) => {
-				dbfn.getGuildInfo(interaction.guildId).then(res => {
-					const guildInfo = res.data;
-					guildInfo.guildId = interaction.guildId;
-	
-					let treeHeight = parseFloat(guildInfo.treeHeight).toFixed(1);
-					dbfn.getLeaderboard(interaction.guildId).then(res => {
-						const leaderboard = res.data;
-	
-						let replyString = 'Current Tree Height: ' + treeHeight + 'ft\n\n';
-						leaderboard.reverse().forEach(treeRanking => {
-							let difference = parseFloat(treeRanking.treeHeight).toFixed(1) - treeHeight;
-							let decimal = (treeRanking.treeHeight % 1).toFixed(1);
-							let growthIndicator = "";
-							if (decimal > 0) {
-								growthIndicator += "[+]";
-							}
-							const absDifference = parseFloat(Math.abs(difference)).toFixed(1);
-							if (treeRanking.hasPin) {
-								replyString += "This is your tree. ";
-							} else if ((treeRanking.treeHeight == treeHeight) && (treeRanking.treeName == guildInfo.treeName)) {
-								replyString += "This might be your tree. Same height, same name. ";
-							} else {
-								if (difference > 0) {
-									replyString += `#${treeRanking.treeRank} - ${absDifference}ft${growthIndicator} shorter `;
-								} else if (difference < 0) {
-									replyString += `#${treeRanking.treeRank} - ${absDifference}ft${growthIndicator} taller `;
-								} else if (difference == 0) {
-									replyString += `#${treeRanking.treeRank} - Same Height${growthIndicator} `;
-								}
-							}
-							replyString += `[${functions.getWaterTime(treeRanking.treeHeight)} mins]\n`;
-						});
-						resolve('Here\'s how your tree compares: \n' + replyString);
-					}).catch(err => {
-						console.error(err);
-					});
-				}).catch(err => {
-					reject(err);
+				if (guildInfo.guildId == "") {
+					reject(strings.error.noGuild);
 					return;
-				});
+				}
+				if (guildInfo.leaderboardMessageId != undefined) {
+					interaction.guild.channels.fetch(guildInfo.leaderboardChannelId).then(c => {
+						c.messages.fetch(guildInfo.leaderboardMessageId).then(leaderboardMessage => {
+							if ((leaderboardMessage.embeds.length == 0) || (leaderboardMessage.embeds[0].data.title != 'Tallest Trees')) {
+								reject("This doesn't appear to be a valid ``/top trees`` message.");
+								return;
+							}
+							let lines = leaderboardMessage.embeds[0].data.description.split('\n');
+							let leaderboard = {
+								"guildId": interaction.guildId,
+								"entries": []
+							};
+							for (let i = 0; i < 10; i++) {
+								// Breakdown each line separating it on each -
+								let breakdown = lines[i].split(' - ');
+
+								// Check if the first part, the ranking, has these emojis to detect first second and third place
+								if (breakdown[0].includes('🥇')) {
+									breakdown[0] = '``#1 ``'
+								} else if (breakdown[0].includes('🥈')) {
+									breakdown[0] = '``#2 ``'
+								} else if (breakdown[0].includes('🥉')) {
+									breakdown[0] = '``#3 ``'
+								}
+
+								// Clean off the excess and get just the number from the rank, make sure it's an int not string
+								let trimmedRank = parseInt(breakdown[0].slice(breakdown[0].indexOf('#') + 1, breakdown[0].lastIndexOf('``')));
+
+								// Clean off the excess and get just the tree name
+								let trimmedName = breakdown[1].slice(breakdown[1].indexOf('``') + 2);
+								trimmedName = trimmedName.slice(0, trimmedName.indexOf('``'));
+
+								// Clean off the excess and get just the tree height, make sure it's a 1 decimal float
+								let trimmedHeight = parseFloat(breakdown[2].slice(0, breakdown[2].indexOf('ft'))).toFixed(1);
+								let isMyTree = false;
+								let isMaybeMyTree = false;
+								if (breakdown[2].includes('📍')) isMyTree = true;
+								if (breakdown[1].includes(guildInfo.treeName)) maybeMyTree = true;
+
+								// "entries": [ { "treeHeight": 12, "treeRank": 34, "treeName": "name" }, ] }
+
+
+								leaderboard.entries.push({
+									treeRank: trimmedRank,
+									treeName: trimmedName,
+									treeHeight: trimmedHeight,
+									hasPin: isMyTree
+								});
+							}
+
+							dbfn.uploadLeaderboard(leaderboard).then(res => {
+								resolve(res.status);
+							}).catch(err => {
+								console.error(err);
+								reject(err);
+								return;
+							});
+						}).catch(err => {
+							reject(strings.status.missingLeaderboardMessage);
+							console.error(err);
+							return;
+						});
+					}).catch(err => {
+						reject(strings.status.missingLeaderboardChannel);
+						console.error(err);
+						return;
+					});
+				} else {
+					reject("The leaderboardMessageId is undefined somehow");
+					return;
+				}
 			});
+
+		},
+		async compare(interaction, guildInfo) {
+			try {
+				const getLeaderboardResponse = await dbfn.getLeaderboard(interaction.guildId);
+				const leaderboard = getLeaderboardResponse.data; // [ { treeName: "Name", treeHeight: 1234.5, treeRank: 67 }, {...}, {...} ]
+
+				// Prepare the beginning of the comparison message
+				let comparisonReplyString = `Here\'s how your tree compares: \nCurrent Tree Height: ${guildInfo.treeHeight}ft\n\n`;
+				// Iterate over the leaderboard entries, backwards
+				for (let i = leaderboard.length - 1; i >= 0; i--) {
+					const leaderboardEntry = leaderboard[i];
+					// Setup the status indicator, default to blank, we'll change it later
+					let statusIndicator = "";
+					if ((leaderboardEntry.treeHeight % 1).toFixed(1) > 0) statusIndicator += "``[💧]``";
+
+					// Get the data for this tree from 24 hours ago
+					// const get24hTreeResponse = await dbfn.get24hTree(interaction.guildId, leaderboardEntry.treeName);
+					// const dayAgoTree = get24hTreeResponse.data;
+					// const hist24hDifference = (leaderboardEntry.treeHeight - dayAgoTree.treeHeight).toFixed(1);
+					// statusIndicator += `+${hist24hDifference}ft|`
+
+					// Get the 24h watering time for this tree
+					// const totalWaterTime = await functions.timeToHeight(dayAgoTree.treeHeight, leaderboardEntry.treeHeight);
+					// statusIndicator += `${totalWaterTime}]\`\``;
+
+					// Determine if this tree is the guild's tree
+					if (leaderboardEntry.hasPin) {
+						comparisonReplyString += `#${leaderboardEntry.treeRank} - This is your tree`;
+					} else { // If it's another guild's tree
+						// Calculate the current height difference
+						const currentHeightDifference = guildInfo.treeHeight - leaderboardEntry.treeHeight;
+
+						if (currentHeightDifference > 0) { // Guild Tree is taller than the leaderboard tree
+							comparisonReplyString += `#${leaderboardEntry.treeRank} - ${currentHeightDifference.toFixed(1)}ft taller`;
+						} else {
+							comparisonReplyString += `#${leaderboardEntry.treeRank} - ${Math.abs(currentHeightDifference).toFixed(1)}ft shorter`;
+						}
+					}
+					// Build a string using the current leaderboard entry and the historic entry from 24 hours ago
+					comparisonReplyString += `${statusIndicator}\n`;
+					// if (process.env.isDev == 'true') comparisonReplyString += `Current Height: ${leaderboardEntry.treeHeight} 24h Ago Height: ${dayAgoTree.treeHeight}\n`;
+				}
+				return comparisonReplyString;
+			} catch (err) {
+				throw err;
+			}
 		}
 	},
 	tree: {
-		parse(interaction) {
+		parse(interaction, guildInfo) {
 			let input;
 			return new Promise((resolve, reject) => {
-				dbfn.getGuildInfo(interaction.guildId).then(res => {
-					const guildInfo = res.data;
-					guildInfo.guildId = interaction.guildId;
-					if (guildInfo == undefined) {
-						reject(`The guild entry hasn't been created yet. [${interaction.guildId || interaction.commandGuildId}]`);
-						return;
-					}
-					if (guildInfo.treeMessageId != "Run /setup where your tree is.") {
-						interaction.guild.channels.fetch(guildInfo.treeChannelId).then(c => {
-							c.messages.fetch(guildInfo.treeMessageId).then(m => {
-								if ( (m.embeds.length == 0) || !(m.embeds[0].data.description.includes('Your tree is')) ) {
-									reject("This doesn't appear to be a valid ``/tree`` message.");
-									return;
-								}
-								input = m.embeds[0].data.description;
-								let treeName = m.embeds[0].data.title;
-								let lines = input.split('\n');
-								guildInfo.treeHeight = parseFloat(lines[0].slice(lines[0].indexOf('is') + 3, lines[0].indexOf('ft'))).toFixed(1);
-								guildInfo.treeName = treeName;
-								dbfn.setTreeInfo(guildInfo).then(res => {
-									resolve("The reference tree message has been saved/updated.");
-								});
-							});
-						})
-					} else {
-						console.error('treeMessageId undefined');
-						reject("There was an unknown error while setting the tree message.");
-						return;
-					}
-				}).catch(err => {
-					reject(err);
-					console.error(err);
+				if (guildInfo == undefined) {
+					reject(`The guild entry hasn't been created yet. [${interaction.guildId || interaction.commandGuildId}]`);
 					return;
-				});
+				}
+				if (guildInfo.treeMessageId != "Run /setup where your tree is.") {
+					interaction.guild.channels.fetch(guildInfo.treeChannelId).then(c => {
+						c.messages.fetch(guildInfo.treeMessageId).then(m => {
+							if ((m.embeds.length == 0) || !(m.embeds[0].data.description.includes('Your tree is'))) {
+								reject("This doesn't appear to be a valid ``/tree`` message.");
+								return;
+							}
+							input = m.embeds[0].data.description;
+							let treeName = m.embeds[0].data.title;
+							let lines = input.split('\n');
+							guildInfo.treeHeight = parseFloat(lines[0].slice(lines[0].indexOf('is') + 3, lines[0].indexOf('ft'))).toFixed(1);
+							guildInfo.treeName = treeName;
+							dbfn.setTreeInfo(guildInfo).then(res => {
+								resolve("The reference tree message has been saved/updated.");
+							});
+						}).catch(err => {
+							reject(strings.status.missingTreeMessage);
+							console.error(err);
+							return;
+						});
+					}).catch(err => {
+						reject(strings.status.missingTreeChannel);
+						console.error(err);
+						return;
+					});
+				} else {
+					console.error('treeMessageId undefined');
+					reject("There was an unknown error while setting the tree message.");
+					return;
+				}
 			});
 		}
 	},
-	refresh(interaction) {
-		functions.rankings.parse(interaction).then(r1 => {
-			functions.tree.parse(interaction).then(r2 => {
-				functions.rankings.compare(interaction).then(res => {
-					const embed = functions.builders.comparisonEmbed(res, functions.builders.refreshAction())
-					interaction.update(embed);
-				}).catch(err => {
-					console.error(err);
-				});
-			}).catch(e => {
-				console.error(e);
-				interaction.reply(functions.builders.errorEmbed(e));
+	messages: {
+		async find(interaction, guildInfo) {
+			try {
+				let response = { status: "Incomplete", data: undefined, code: 0 };
+				// If the tree channel ID and leaderboard channel ID are both set
+				if (guildInfo.treeChannelId != "" || guildInfo.leaderboardChannelId != "") {
+					// If one us unset, we'll set it to the current channel just to check
+					if (guildInfo.treeChannelId == "") {
+						guildInfo.treeChannelId = `${guildInfo.leaderboardChannelId}`;
+					} else if (guildInfo.leaderboardChannelId == "") {
+						guildInfo.leaderboardChannelId = `${guildInfo.treeChannelId}`;
+					}
+					let treeFound, leaderboardFound = false;
+					// If these values have already been set in the database, we don't want to report that they weren't found
+					// they'll still get updated later if applicable.
+					treeFound = (guildInfo.treeMessageId != "");
+					leaderboardFound = (guildInfo.leaderboardMessageId != "");
+					// If the Tree and Leaderboard messages are in the same channel
+					if (guildInfo.treeChannelId == guildInfo.leaderboardChannelId) {
+						// Fetch the tree channel so we can get the most recent messages
+						const treeChannel = await interaction.guild.channels.fetch(guildInfo.treeChannelId);
+						// Fetch the last 20 messages in the channel
+						const treeChannelMessageCollection = await treeChannel.messages.fetch({ limit: 20 });
+						// Create a basic array of [Message, Message, ...] from the Collection
+						const treeChannelMessages = Array.from(treeChannelMessageCollection.values());
+						// Iterate over the Messages in reverse order (newest messages first)
+						for (let i = treeChannelMessages.length - 1; i >= 0; i--) {
+							let treeChannelMessage = treeChannelMessages[i];
+
+							if (this.isTree(treeChannelMessage)) { // This is a tree message
+								// Set the tree message ID
+								guildInfo.treeMessageId = treeChannelMessage.id;
+								// Parse out the tree name
+								input = treeChannelMessage.embeds[0].data.description;
+								let treeName = treeChannelMessage.embeds[0].data.title;
+								// And tree height
+								let lines = input.split('\n');
+								guildInfo.treeHeight = parseFloat(lines[0].slice(lines[0].indexOf('is') + 3, lines[0].indexOf('ft'))).toFixed(1);
+								guildInfo.treeName = treeName;
+								// Upload the found messages to the database
+								await dbfn.setTreeInfo(guildInfo);
+								// Let the end of the function know we found a tree message and successfully uploaded it
+								treeFound = true;
+							} else if (this.isLeaderboard(treeChannelMessage)) { // This is a leaderboard message
+								// Set the leaderboard message ID
+								guildInfo.leaderboardMessageId = treeChannelMessage.id;
+								// Upload it to the database
+								await dbfn.setLeaderboardInfo(guildInfo);
+								// Let the end of the function know we found a leaderboard message and successfully uploaded it
+								leaderboardFound = true;
+							}
+						}
+					} else { // If the tree and leaderboard are in different channels
+						// Fetch the tree channel so we can get the most recent messages
+						const treeChannel = await interaction.guild.channels.fetch(guildInfo.treeChannelId);
+						// Fetch the last 20 messages in the tree channel
+						const treeChannelMessageCollection = await treeChannel.messages.fetch({ limit: 20 });
+						// Create an Array like [Message, Message, ...] from the Collection
+						const treeChannelMessages = Array.from(treeChannelMessageCollection.values());
+						// Iterate over the Array of Messages in reverse order (newest messages first)
+						for (let i = treeChannelMessages.length - 1; i >= 0; i--) {
+							let treeChannelMessage = treeChannelMessages[i];
+
+							if (this.isTree(treeChannelMessage)) { // This is a tree message
+								// Set the tree message ID
+								guildInfo.treeMessageId = treeChannelMessage.id;
+								// Parse out the tree name
+								input = treeChannelMessage.embeds[0].data.description;
+								let treeName = treeChannelMessage.embeds[0].data.title;
+								// And tree height
+								let lines = input.split('\n');
+								guildInfo.treeHeight = parseFloat(lines[0].slice(lines[0].indexOf('is') + 3, lines[0].indexOf('ft'))).toFixed(1);
+								guildInfo.treeName = treeName;
+								// Upload the found messages to the database
+								await dbfn.setTreeInfo(guildInfo);
+								// Let the end of the function know we found a tree message and successfully uploaded it
+								treeFound = true;
+							}
+						}
+
+						// Fetch the tree channel so we can get the most recent messages
+						const leaderboardChannel = await interaction.guild.channels.fetch(guildInfo.leaderboardChannelId);
+						// Fetch the last 20 messages in the leaderboard channel
+						const leaderboardChannelMessageCollection = await leaderboardChannel.messages.fetch({ limit: 20 });
+						// Create an Array like [Message, Message, ...] from the Collection
+						const leaderboardChannelMessages = Array.from(leaderboardChannelMessageCollection.values());
+						// Iterate over the Array of Messages in reverse order (newest messages first)
+						for (let i = leaderboardChannelMessages.length - 1; i >= 0; i--) {
+							let leaderboardChannelMessage = leaderboardChannelMessages[i];
+
+							if (this.isLeaderboard(leaderboardChannelMessage)) { // This is a leaderboard message
+								// Set the leaderboard message ID
+								guildInfo.leaderboardMessageId = leaderboardChannelMessage.id;
+								// Upload it to the database
+								await dbfn.setLeaderboardInfo(guildInfo);
+								// Let the end of the function know we've found a leaderboard
+								leaderboardFound = true;
+							}
+						}
+					}
+
+					// await dbfn.setGuildInfo(guildInfo);
+					// Bundle guildInfo into the response
+					const getGuildInfoResponse = await dbfn.getGuildInfo(guildInfo.guildId);
+					response.data = getGuildInfoResponse.data;
+
+					// Set the response status, this is only used as a response to /setup
+					if (treeFound && leaderboardFound) { // we found both the tree and leaderboard
+						response.status = strings.status.treeAndLeaderboard;
+						response.code = 1;
+					} else if (treeFound || leaderboardFound) { // Only found the tree
+						response.status = strings.status.missingMessage;
+						response.code = 2;
+					} else { // Didn't find any
+						response.status = strings.status.noneFound;
+						response.code = 3;
+					}
+					return response;
+				} else { // This should only ever occur if some weird database stuff happens
+					response.status = "It looks like this channel doesn't contain both your ``/tree`` and ``/top trees`` messages, please run ``/setup``";
+					return response;
+				}
+
+			} catch (err) {
+				throw "Problem checking messages: " + err;
+			}
+		},
+		isTree(message) {
+			if (message.embeds.length > 0) {
+				return message.embeds[0].data.description.includes("Your tree is");
+			}
+		},
+		isLeaderboard(message) {
+			if (message.embeds.length > 0) {
+				return message.embeds[0].data.title == "Tallest Trees";
+			}
+		}
+	},
+	async refresh(interaction) {
+		const getGuildInfoResponse = await dbfn.getGuildInfo(interaction.guildId);
+		let guildInfo = getGuildInfoResponse.data;
+		const findMessagesResponse = await this.messages.find(interaction, guildInfo);
+		if (findMessagesResponse.code == 1) {
+			guildInfo = findMessagesResponse.data;
+			// Parse the tree
+			await this.tree.parse(interaction, guildInfo);
+			// Parse the leaderboard
+			await this.rankings.parse(interaction, guildInfo);
+			// Build the string that shows the comparison // TODO Move the string building section to fn.builders?
+			const comparedRankings = await this.rankings.compare(interaction, guildInfo);
+
+			const embed = this.builders.comparisonEmbed(comparedRankings, guildInfo);
+			await interaction.update(embed).then(async interactionResponse => {
+				// console.log(interactionResponse.interaction.message);
+				await dbfn.setComparisonMessage(interactionResponse.interaction.message, interaction.guildId);
 			});
-		}).catch(e => {
-			console.error(e);
-			interaction.reply(functions.builders.errorEmbed(e));
-		});
+		} else {
+			await interaction.update(this.builders.errorEmbed(findMessagesResponse.status));
+		}
 	},
 	reset(guildId) {
 		return new Promise((resolve, reject) => {
@@ -304,27 +507,140 @@ const functions = {
 		});
 	},
 	getWaterTime(size) {
-		const seconds = Math.floor(Math.pow(size * 0.07 + 5, 1.1));
-		return (Math.floor((Math.pow(size * 0.07 + 5, 1.1))) / 60).toFixed(2);
+		return Math.floor(Math.pow(size * 0.07 + 5, 1.1)); // Seconds
 	},
-	timeToHeight(interaction, destHeight) {
+	timeToHeight(beginHeight, destHeight) {
 		return new Promise((resolve, reject) => {
-			dbfn.getGuildInfo(interaction.guildId).then(res => {
-				let guildInfo = res.data;
-				let currentHeight = parseInt(guildInfo.treeHeight);
-				let time = 0;
-				for (let i = currentHeight; i < destHeight; i++) {
-					const waterTime = parseFloat(functions.getWaterTime(i));
-					console.log("Height: " + i + "Time: " + waterTime);
-					time += waterTime;
-				}
-				resolve(time.toFixed(2));
-			}).catch(err => {
-				console.error(err);
-				reject(err);
-				return;
-			})
+			let time = 0;
+			for (let i = beginHeight; i < destHeight; i++) {
+				const waterTime = parseFloat(functions.getWaterTime(i));
+				// console.log("Height: " + i + "Time: " + waterTime);
+				time += waterTime;
+			}
+
+			// 60 secs in min
+			// 3600 secs in hr
+			// 86400 sec in day
+
+			let units = " secs";
+			if (60 < time && time <= 3600) { // Minutes
+				time = parseFloat(time / 60).toFixed(1);
+				units = " mins";
+			} else if (3600 < time && time <= 86400) {
+				time = parseFloat(time / 3600).toFixed(1);
+				units = " hrs";
+			} else if (86400 < time) {
+				time = parseFloat(time / 86400).toFixed(1);
+				units = " days";
+			}
+			resolve(time + units);
 		});
+	},
+	sleep(ms) {
+		// console.log(`Begin Sleep: ${new Date(Date.now()).getSeconds()}`);
+		return new Promise(resolve => {
+			setTimeout(function () {
+				resolve();
+				// console.log(`End Sleep: ${new Date(Date.now()).getSeconds()}`);
+			}, ms);
+		});
+	},
+	async sendReminder(guildInfo, guild) {
+		const { guildId, reminderChannelId, reminderMessage } = guildInfo;
+		const reminderChannel = await guild.channels.fetch(reminderChannelId);
+		const reminderEmbed = functions.builders.reminderEmbed(reminderMessage, guildInfo);
+		await reminderChannel.send(reminderEmbed).then(async m => {
+			const setRemindedStatusReponse = await dbfn.setRemindedStatus(guildId, 1);
+			return 1;
+		}).catch(err => {
+			console.error(err);
+		});
+	},
+	async setReminder(interaction, ms) {
+		setTimeout(this.sendReminder(interaction), ms);
+	},
+	async checkReady(client) { // Check if the guilds trees are ready to water
+		// let time = new Date(Date.now());
+		// console.log("Ready check " + time.getSeconds());
+		try {
+			// Get the guildInfos for each guild that is opted in and waiting to send a reminder
+			const getOptedInGuildsResponse = await dbfn.getOptedInGuilds();
+			// getOptedInGuilds will return this if it gets an empty set from the database
+			if (getOptedInGuildsResponse.status != "No servers have opted in yet") {
+				// Get the Array of Guilds from the response
+				const guilds = getOptedInGuildsResponse.data;
+				// Iterate over the Array
+				for (let i = 0; i < guilds.length; i++) {
+					// console.log(`iter: ${i}`);
+					// Save the 'old' guild info that came from getOptedInGuilds
+					const oldGuildInfo = guilds[i];
+					// Get up-to-date guildInfo from the database, probably unnecessary and redundant
+					const getGuildInfoResponse = await dbfn.getGuildInfo(oldGuildInfo.guildId);
+					// Save the new guildInfo so we can reference its remindedStatus
+					const guildInfo = getGuildInfoResponse.data;
+					const { guildId, treeChannelId, treeMessageId, remindedStatus } = guildInfo;
+					// console.log(`${guildInfo.treeName}: ${remindedStatus}`);
+					// Double check the remindedStatus to prevent double pings
+					if (remindedStatus == 0) {
+						// Fetch the guild
+						const guild = await client.guilds.fetch(guildId);
+						// Fetch the tree channel
+						const treeChannel = await guild.channels.fetch(treeChannelId);
+						// Fetch the tree message
+						const treeMessage = await treeChannel.messages.fetch(treeMessageId);
+						// Get the description from the embed of the tree message
+						const description = treeMessage.embeds[0].description;
+						// Default to not being ready to water
+						let readyToWater = false;
+						// Obviously if the tree says it's Ready to be watered, it's ready
+						if (description.includes("Ready to be watered")) {
+							readyToWater = true;
+							// But sometimes the tree doesn't refresh the embed, in that case we'll do a secondary check using the
+							// timestamp included in the embed.
+						} else {
+							const beginWaterTimestamp = description.indexOf("<t:") + 3;
+							const endWaterTimestamp = description.indexOf(":>");
+							// Split the description starting at "<t:" and ending at ":>" to get just the numerical timestamp
+							const waterTimestamp = parseInt(description.slice(beginWaterTimestamp, endWaterTimestamp));
+							// The Discord timestamp is in seconds, not ms so we need to divide by 1000
+							const nowTimestamp = (Date.now() / 1000);
+							readyToWater = (nowTimestamp > waterTimestamp);
+						}
+
+						if (readyToWater) {
+							// Send the reminder message
+							await this.sendReminder(guildInfo, guild);
+							guildInfo.remindedStatus = 1;
+							await this.refreshComparisonMessage(client, guildInfo);
+						}
+					}
+				}
+				await this.sleep(5000);
+				this.checkReady(client);
+			} else {
+				// console.log(getOptedInGuildsResponse.status);
+				await this.sleep(5000);
+				this.checkReady(client);
+			}
+		} catch (err) {
+			console.error(err);
+			await this.sleep(30000);
+			this.checkReady(client);
+		}
+	},
+	async refreshComparisonMessage(client, guildInfo) {
+		if (guildInfo.comparisonChannelId != "" && guildInfo.comparisonMessageId != "") {
+			const guild = await client.guilds.fetch(guildInfo.guildId);
+			const comparisonChannel = await guild.channels.fetch(guildInfo.comparisonChannelId);
+			const comparisonMessage = await comparisonChannel.messages.fetch(guildInfo.comparisonMessageId);
+			const embed = comparisonMessage.embeds[0];
+			const actionRow = this.builders.actionRows.comparisonActionRow(guildInfo);
+			await comparisonMessage.edit({ components: [actionRow] });
+			return;
+		}
+	},
+	async resetPing(interaction) {
+		await dbfn.setRemindedStatus(interaction.guildId, 0);
 	}
 };
 

@@ -24,15 +24,19 @@ const client = new Client({
 // Various imports
 const fn = require('./modules/functions.js');
 const strings = require('./data/strings.json');
+const dbfn = require('./modules/dbfn.js');
 const isDev = process.env.isDev;
 
 client.once('ready', () => {
 	fn.collections.slashCommands(client);
 	console.log('Ready!');
 	client.user.setActivity({ name: strings.activity.name, type: ActivityType.Watching });
-	client.channels.fetch(statusChannelId).then(channel => {
-		channel.send(`${new Date().toISOString()} -- \nStartup Sequence Complete`);
-	});
+	fn.checkReady(client);
+	if (isDev == 'false') {
+		client.channels.fetch(statusChannelId).then(channel => {
+			channel.send(`${new Date().toISOString()} -- \nStartup Sequence Complete <@481933290912350209>`);
+		});
+	}
 });
 
 // slash-commands
@@ -52,7 +56,26 @@ client.on('interactionCreate', async interaction => {
 	}
 
 	if (interaction.isButton() && interaction.component.customId == 'refresh') {
-		fn.refresh(interaction);
+		// console.log(JSON.stringify(interaction));
+		await fn.refresh(interaction).catch(err => {
+			interaction.channel.send(fn.builders.errorEmbed(err));
+		});
+	} else if (interaction.isButton() && interaction.component.customId == 'resetping') {
+		await fn.resetPing(interaction);
+		await fn.refresh(interaction).catch(err => {
+			interaction.channel.send(fn.builders.errorEmbed(err));
+		});
+	} else if (interaction.isButton() && interaction.component.customId == 'deleteping') {
+		if (interaction.message.deletable) {
+			await dbfn.setRemindedStatus(interaction.guildId, 0);
+			await dbfn.getGuildInfo(interaction.guildId).then(async res => {
+				const guildInfo = res.data;
+				await fn.refreshComparisonMessage(interaction.client, guildInfo);
+			});
+			await interaction.message.delete().catch(err => {
+				console.error(err);
+			});
+		}
 	}
 });
 
