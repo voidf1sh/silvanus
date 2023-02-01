@@ -22,7 +22,9 @@ module.exports = {
 					const comparedRankings = await fn.rankings.compare(interaction, guildInfo);
 
 					const embed = fn.builders.comparisonEmbed(comparedRankings, guildInfo);
-					await interaction.editReply(embed);
+					await interaction.editReply(embed).then(async message => {
+						await dbfn.setComparisonMessage(message, interaction.guildId);
+					});
 				} else {
 					await interaction.editReply(fn.builders.errorEmbed(findMessagesResponse.status));
 				}
@@ -51,7 +53,9 @@ module.exports = {
 						// Build the string that shows the comparison // TODO Move the string building section to fn.builders?
 						const comparedRankings = await fn.rankings.compare(interaction, guildInfo);
 						const embed = fn.builders.comparisonEmbed(comparedRankings, guildInfo);
-						await interaction.editReply(embed);
+						await interaction.editReply(embed).then(async message => {
+							await dbfn.setComparisonMessage(message.id, interaction.guildId);
+						});
 					} else {
 						await interaction.editReply(fn.builders.errorEmbed(findMessagesResponse.status));
 					}

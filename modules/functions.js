@@ -53,6 +53,7 @@ const functions = {
 				return actionRow;
 			},
 			comparisonActionRow(guildInfo) {
+				// console.log(guildInfo);
 				// Create the button to go in the Action Row
 				const refreshButton = new ButtonBuilder()
 					.setCustomId('refresh')
@@ -471,7 +472,10 @@ const functions = {
 			const comparedRankings = await this.rankings.compare(interaction, guildInfo);
 
 			const embed = this.builders.comparisonEmbed(comparedRankings, guildInfo);
-			await interaction.update(embed);
+			await interaction.update(embed).then(async interactionResponse => {
+				// console.log(interactionResponse.interaction.message);
+				await dbfn.setComparisonMessage(interactionResponse.interaction.message, interaction.guildId);
+			});
 		} else {
 			await interaction.update(this.builders.errorEmbed(findMessagesResponse.status));
 		}
@@ -533,7 +537,13 @@ const functions = {
 		});
 	},
 	sleep(ms) {
-		return new Promise(resolve => setTimeout(resolve, ms));
+		// console.log(`Begin Sleep: ${new Date(Date.now()).getSeconds()}`);
+		return new Promise(resolve => {
+			setTimeout(function () {
+				resolve();
+				// console.log(`End Sleep: ${new Date(Date.now()).getSeconds()}`);
+			}, ms);
+		});
 	},
 	async sendReminder(guildInfo, guild) {
 		const { guildId, reminderChannelId, reminderMessage } = guildInfo;
@@ -550,6 +560,8 @@ const functions = {
 		setTimeout(this.sendReminder(interaction), ms);
 	},
 	async checkReady(client) { // Check if the guilds trees are ready to water
+		// let time = new Date(Date.now());
+		// console.log("Ready check " + time.getSeconds());
 		try {
 			// Get the guildInfos for each guild that is opted in and waiting to send a reminder
 			const getOptedInGuildsResponse = await dbfn.getOptedInGuilds();
@@ -583,8 +595,8 @@ const functions = {
 						// Obviously if the tree says it's Ready to be watered, it's ready
 						if (description.includes("Ready to be watered")) {
 							readyToWater = true;
-						// But sometimes the tree doesn't refresh the embed, in that case we'll do a secondary check using the
-						// timestamp included in the embed.
+							// But sometimes the tree doesn't refresh the embed, in that case we'll do a secondary check using the
+							// timestamp included in the embed.
 						} else {
 							const beginWaterTimestamp = description.indexOf("<t:") + 3;
 							const endWaterTimestamp = description.indexOf(":>");
@@ -598,32 +610,32 @@ const functions = {
 						if (readyToWater) {
 							// Send the reminder message
 							await this.sendReminder(guildInfo, guild);
+							guildInfo.remindedStatus = 1;
+							await this.refreshComparisonMessage(client, guildInfo);
 						}
-					} else {
-						// const guild = await client.guilds.fetch(guildInfo.guildId);
-						// const comparisonChannel = await guild.channels.fetch(guildInfo.comparisonChannelId);
-						// const comparisonMessage = await comparisonChannel.messages.fetch(guildInfo.comparisonMessageId);
-						// const embed = comparisonMessage.embeds[0];
-						// const actionRow = this.builders.actionRows.comparisonActionRow(guildInfo);
-						// comparisonMessage.edit({ embeds: [embed], components: [actionRow] });
 					}
 				}
-				// Wait for .5 seconds before looping back to check other trees
-				this.sleep(500).then(async () => {
-					await this.checkReady(client);
-				});
+				await this.sleep(5000);
+				this.checkReady(client);
 			} else {
 				// console.log(getOptedInGuildsResponse.status);
-				this.sleep(5000).then(async () => {
-					await this.checkReady(client);
-				});
-				return;
+				await this.sleep(5000);
+				this.checkReady(client);
 			}
 		} catch (err) {
 			console.error(err);
-			this.sleep(5000).then(async () => {
-				await this.checkReady(client);
-			});
+			await this.sleep(30000);
+			this.checkReady(client);
+		}
+	},
+	async refreshComparisonMessage(client, guildInfo) {
+		if (guildInfo.comparisonChannelId != "" && guildInfo.comparisonMessageId != "") {
+			const guild = await client.guilds.fetch(guildInfo.guildId);
+			const comparisonChannel = await guild.channels.fetch(guildInfo.comparisonChannelId);
+			const comparisonMessage = await comparisonChannel.messages.fetch(guildInfo.comparisonMessageId);
+			const embed = comparisonMessage.embeds[0];
+			const actionRow = this.builders.actionRows.comparisonActionRow(guildInfo);
+			await comparisonMessage.edit({ components: [actionRow] });
 			return;
 		}
 	},

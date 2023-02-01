@@ -509,7 +509,7 @@ module.exports = {
 			if (err) throw `Error connecting to the database: ${err.message}`;
 		});
 		// Returns a Promise, resolve({ "status": "", "data": leaderboard })
-		const setComparisonMessageQuery = `UPDATE guild_info SET comparison_message_id = ${db.escape(comparisonMessage.id)}, comparison_channel_id = ${db.escape(comparisonMessage.interaction.channelId)} WHERE guild_id = ${db.escape(guildId)}`;
+		const setComparisonMessageQuery = `UPDATE guild_info SET comparison_message_id = ${db.escape(comparisonMessage.id)}, comparison_channel_id = ${db.escape(comparisonMessage.channel.id)} WHERE guild_id = ${db.escape(guildId)}`;
 		// console.log(JSON.stringify(comparisonMessage));
 		// TODO run the query and return a promise then process the results. resolve with { "status": , "data": leaderboard }
 		return new Promise((resolve, reject) => {
