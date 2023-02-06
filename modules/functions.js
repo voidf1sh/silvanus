@@ -30,15 +30,39 @@ const functions = {
 	collections: {
 		// Create the collection of slash commands
 		slashCommands(client) {
+			// Create the Collection if it doesn't already exist
 			if (!client.slashCommands) client.slashCommands = new Discord.Collection();
+			// Empty the Collection to make sure there's no duplication of data
 			client.slashCommands.clear();
+			// Iterate over every *.js file in ./slash-commands
 			for (const file of slashCommandFiles) {
+				// Require the file so we can reference it and save it to the Collection
 				const slashCommand = require(`../slash-commands/${file}`);
+				// Make sure that the file has a data export, otherwise it's not valid
 				if (slashCommand.data != undefined) {
+					// Set a new key, value pair in the Collection
+					// The Key is the command name, the Value is the command itself
 					client.slashCommands.set(slashCommand.data.name, slashCommand);
 				}
 			}
 			if (isDev) console.log('Slash Commands Collection Built');
+		},
+		async guildInfos(client) {
+			// Build a Collection of all guilds and their guildInfo from the database
+			try {
+				// Create the collection if it doesn't already exist
+				if (!client.guildInfos) client.guildInfos = new Discord.Collection();
+				// Empty the collection to prevent duplication of data if the Collection already existed
+				client.guildInfos.clear();
+				const getAllGuildInfosResponse = await dbfn.getAllGuildInfos();
+				const guildInfos = getAllGuildInfosResponse.data;
+				for (const guildInfo of guildInfos) {
+					client.guildInfos.set(guildInfo.guildId, guildInfo);
+				}
+				if (isDev) console.log("guildInfos Collection Built");
+			} catch(err) {
+				throw "There was a problem getting all guilds information: " + err;
+			}
 		}
 	},
 	builders: {
