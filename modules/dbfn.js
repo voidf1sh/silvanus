@@ -129,6 +129,73 @@ module.exports = {
 			});
 		});
 	},
+	getAllGuildInfos() {
+		const db = mysql.createConnection({
+			host: process.env.DBHOST,
+			user: process.env.DBUSER,
+			password: process.env.DBPASS,
+			database: process.env.DBNAME,
+			port: process.env.DBPORT
+		});
+		db.connect((err) => {
+			if (err) throw `Error connecting to the database: ${err.message}`;
+		});
+		// Get a server's tree information from the database
+		const selectAllGuildInfosQuery = `SELECT * FROM guild_info`;
+		// TODO run this query and return a promise then structure the output into a GuildInfo object. resolve with { "status": , "data": guildInfo }
+		return new Promise((resolve, reject) => {
+			db.query(selectAllGuildInfosQuery, (err, res) => {
+				if (err) {
+					console.error(err);
+					reject("Error fetching all guilds information: " + err.message);
+					db.end();
+					return;
+				}
+				/*const guildInfo = { "guildId": "123",
+					"treeName": "name",
+					"treeHeight": 123,
+					"treeMessageId": "123",
+					"treeChannelId": "123",
+					"leaderboardMessageId": "123",
+					"leaderboardChannelId": "123",
+					"reminderMessage": "Abc",
+					"reminderChannelId": "123",
+					"remindedStatus": 0,
+					"comparisonMessageId": "123"
+				};*/
+				if (res.length == 0) {
+					reject("There are no guilds set up yet.");
+					db.end();
+					return;
+				}
+				
+				let guildInfos = new Array();
+
+				for (let i = 0; i < res.length; i++) {
+					let row = res[i];
+					let guildInfo = {
+						"guildId": row.guild_id,
+						"treeName": row.tree_name,
+						"treeHeight": row.tree_height,
+						"treeMessageId": row.tree_message_id,
+						"treeChannelId": row.tree_channel_id,
+						"leaderboardMessageId": row.leaderboard_message_id,
+						"leaderboardChannelId": row.leaderboard_channel_id,
+						"reminderMessage": row.ping_role_id,
+						"reminderChannelId": row.ping_channel_id,
+						"remindedStatus": row.reminded_status,
+						"reminderOptIn": row.reminder_optin,
+						"comparisonMessageId": row.comparison_message_id,
+						"comparisonChannelId": row.comparison_channel_id
+					};
+					guildInfos.push(guildInfo);
+				}
+				
+				db.end();
+				resolve({ "status": "Successfully fetched all guilds information", "data": guildInfos });
+			});
+		});
+	},
 	setGuildInfo(guildInfo) {
 		const db = mysql.createConnection({
 			host: process.env.DBHOST,
