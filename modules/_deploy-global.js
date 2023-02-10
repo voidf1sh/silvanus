@@ -18,7 +18,7 @@ for (const file of commandFiles) {
 	}
 }
 
-console.log(commands);
+console.log(`Token: ${token} Client ID: ${clientId}`);
 
 const rest = new REST({ version: '9' }).setToken(token);
 
