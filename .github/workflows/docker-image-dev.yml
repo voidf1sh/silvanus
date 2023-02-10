@@ -22,3 +22,8 @@ jobs:
       run: docker login -u $DHUB_UNAME -p $DHUB_PWORD
     - name: Push image to Docker Hub
       run: docker push v0idf1sh/silvanus-dev
+    - name: Set up a skeleton .env file
+      run: echo "TOKEN=${{secrets.DEVTOKEN}}" > .env
+      run: echo "clientId=${{ secrets.clientId }}" >> .env
+    - name: Refresh commands with Discord
+      run: node _modules/_deploy-global.js
