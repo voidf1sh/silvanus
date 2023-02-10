@@ -1,4 +1,4 @@
-name: Silvanus Dockerization
+name: Silvanus-Dev Dockerization
 
 on:
   pull_request:
@@ -22,3 +22,9 @@ jobs:
       run: docker login -u $DHUB_UNAME -p $DHUB_PWORD
     - name: Push image to Docker Hub
       run: docker push v0idf1sh/silvanus
+    - name: Set up a skeleton .env file
+      run: echo "TOKEN=${{secrets.PRODTOKEN}}" > .env && echo "clientId=${{ secrets.PRODCLIENTID }}" >> .env
+    - name: Install modules
+      run: npm i
+    - name: Refresh commands with Discord
+      run: node modules/_deploy-global.js
