@@ -1,7 +1,7 @@
 {
   "name": "silvanus",
   "version": "1.1.4",
-  "description": "Grow A Tree Comparison Tool",
+  "description": "Grow A Tree Companion Bot",
   "main": "main.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
