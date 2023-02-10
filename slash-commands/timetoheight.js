@@ -7,13 +7,13 @@ module.exports = {
 		.setName('timetoheight')
 		.setDescription('Calculate how long it would take to reach a given height')
 		.addStringOption(o => 
-			o.setName('beginheight')
-			 .setDescription('Begining tree height in feet')
-			 .setRequired(false))
-		.addStringOption(o => 
 			o.setName('endheight')
 			 .setDescription('Ending tree height in feet')
-			 .setRequired(true)),
+			 .setRequired(true))
+		.addStringOption(o => 
+			o.setName('beginheight')
+			 .setDescription('Beginning tree height in feet')
+			 .setRequired(false)),
 	async execute(interaction) {
 		await interaction.deferReply({ ephemeral: true });
 		const beginHeight = interaction.options.getString('beginheight');
