@@ -16,7 +16,7 @@ module.exports = {
 			 .setRequired(false)),
 	async execute(interaction) {
 		await interaction.deferReply({ ephemeral: true });
-		const beginHeight = interaction.options.getString('beginheight');
+		let beginHeight = interaction.options.getString('beginheight');
 		const endHeight = interaction.options.getString('endheight');
 		if (!beginHeight) {
 			const getGuildInfoResponse = await dbfn.getGuildInfo(interaction.guildId);
