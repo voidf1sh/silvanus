@@ -19,12 +19,6 @@ const slashCommandFiles = fs.readdirSync('./slash-commands/').filter(file => fil
 const dbfn = require('./dbfn.js');
 const { finished } = require('stream');
 
-dbfn.createGuildTables().then(res => {
-	console.log(res.status);
-}).catch(err => {
-	console.error(err);
-});
-
 const functions = {
 	// Functions for managing and creating Collections
 	collections: {
