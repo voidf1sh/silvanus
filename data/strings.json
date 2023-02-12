@@ -35,7 +35,9 @@
 		"next": "⏭️",
 		"previous": "⏮️",
 		"confirm": "☑️",
-		"cancel": "❌"
+		"cancel": "❌",
+		"water": "💧",
+		"fruit": "🍎"
 	},
 	"urls": {
 		"avatar": "https://cdn.discordapp.com/avatars/513184762073055252/12227aa23a06d5178853e59b72c7487b.webp?size=128",
