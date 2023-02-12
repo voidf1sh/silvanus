@@ -72,10 +72,12 @@ client.on('interactionCreate', async interaction => {
 				}
 				break;
 			case 'waterpingrole':
-				await interaction.reply(fn.buttonHandlers.waterPing(interaction)).catch(err => console.error(err));
+				const waterPingStatus = await fn.buttonHandlers.waterPing(interaction);
+				await interaction.reply(waterPingStatus).catch(err => console.error(err));
 				break;
 			case 'fruitpingrole':
-				await interaction.reply(fn.buttonHandlers.fruitPing(interaction)).catch(err => console.error(err));
+				const fruitPingStatus = await fn.buttonHandlers.fruitPing(interaction);
+				await interaction.reply(fruitPingStatus).catch(err => console.error(err));
 				break;
 			default:
 				break;

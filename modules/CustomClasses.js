@@ -57,6 +57,7 @@ module.exports = {
         setRoles(waterRoleId, fruitRoleId) {
             this.waterRoleId = waterRoleId;
             if (fruitRoleId) this.fruitRoleId = fruitRoleId;
+            return this;
         }
         queryBuilder(query) {
             let queryParts = [];
@@ -128,7 +129,7 @@ module.exports = {
                 case "setRoles":
                     queryParts = [
                         `UPDATE guild_info SET water_role_id = ${db.escape(this.waterRoleId)}, `,
-                        `fruit_role_id = ${db.escape(this.fruitRoleId)}, `,
+                        `fruit_role_id = ${db.escape(this.fruitRoleId)} `,
                         `WHERE guild_id = ${db.escape(this.guildId)}`
                     ];
                     return queryParts.join('');

@@ -507,6 +507,17 @@ const functions = {
 			}
 		}
 	},
+	roles: {
+		async fetchRole(guild, roleId) {
+			return await guild.roles.fetch(roleId).catch(err => console.error("Error fetching the role: " + err + "\n" + roleId));
+		},
+		async giveRole(member, role) {
+			await member.roles.add(role).catch(err => console.error("Error giving the role: " + err + "\n" + JSON.stringify(role)));
+		},
+		async takeRole(member, role) {
+			await member.roles.remove(role).catch(err => console.error("Error taking the role: " + err + "\n" + JSON.stringify(role)));
+		}
+	},
 	async refresh(interaction) {
 		// const getGuildInfoResponse = await dbfn.getGuildInfo(interaction.guildId);
 		// let guildInfo = getGuildInfoResponse.data;

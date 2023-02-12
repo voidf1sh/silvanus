@@ -1,4 +1,5 @@
 const { SlashCommandBuilder } = require('discord.js');
+const dbfn = require('../modules/dbfn.js');
 const fn = require('../modules/functions.js');
 
 module.exports = {
@@ -18,6 +19,8 @@ module.exports = {
         if (interaction.client.guildInfos.has(interaction.guildId)) {
             let guildInfo = interaction.client.guildInfos.get(interaction.guildId);
             guildInfo.setRoles(interaction.options.getRole('waterrole').id, interaction.options.getRole('fruitrole').id);
+            await dbfn.setGuildInfo(guildInfo.queryBuilder("setRoles"));
+            await fn.collectionBuilders.guildInfos(interaction.client);
             await interaction.editReply(fn.builders.embeds.treeRoleMenu(guildInfo)).catch(err => console.error(err));
         } else {
             await interaction.editReply(fn.builders.errorEmbed("No information is known about your server yet, please run /setup or /compare")).catch(err => console.error(err));
