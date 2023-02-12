@@ -69,6 +69,49 @@ const functions = {
 						refreshButton
 					);
 				return refreshActionRow;
+			},
+			treeRoleMenu() {
+				return new ActionRowBuilder()
+					.addComponents(
+						this.buttons.waterPing(),
+						this.buttons.fruitPing()
+					);
+			},
+			buttons: {
+				acceptRules() {
+					return new ButtonBuilder()
+						.setCustomId('acceptrules')
+						.setLabel(`${strings.emoji.confirm} Accept Rules`)
+						.setStyle(ButtonStyle.Primary);
+				},
+				waterPing() {
+					return new ButtonBuilder()
+						.setCustomId('waterpingrole')
+						.setLabel(strings.emoji.water)
+						.setStyle(ButtonStyle.Primary);
+				},
+				fruitPing() {
+					return new ButtonBuilder()
+						.setCustomId('fruitpingrole')
+						.setLabel(strings.emoji.fruit)
+						.setStyle(ButtonStyle.Primary);
+				}
+			}
+		},
+		embeds: {
+			treeRoleMenu(guildInfo) {
+				const actionRow = functions.builders.actionRows.treeRoleMenu();
+				let tempStrings = strings.embeds.treeRoleMenu;
+				let description = tempStrings[0] + tempStrings[1] + `<@&${guildInfo.waterRoleId}>` + tempStrings[2];
+				if (guildInfo.fruitRoleId != undefined) {
+					description += tempStrings[3] + `<@&${guildInfo.fruitRoleId}>` + tempStrings[4];
+				}
+				const embed = new EmbedBuilder()
+					.setColor(strings.embeds.color)
+					.setTitle(strings.embeds.roleMenuTitle)
+					.setDescription(description)
+					.setFooter({ text: strings.embeds.roleMenuFooter });
+				return { embeds: [embed], components: [actionRow] };
 			}
 		},
 		comparisonEmbed(content, guildInfo) {
@@ -425,6 +468,42 @@ const functions = {
 		isLeaderboard(message) {
 			if (message.embeds.length > 0) {
 				return message.embeds[0].data.title == "Tallest Trees";
+			}
+		}
+	},
+	buttonHandlers: {
+		async fruitPing(interaction) {
+			if (interaction.client.guildInfos.has(interaction.guildId)) {
+				let guildInfo = interaction.client.guildInfos.get(interaction.guildId);
+				const role = await functions.roles.fetchRole(interaction.guild, guildInfo.fruitRoleId);
+				let status = "No Changes Made";
+				if (interaction.member.roles.cache.some(role => role.id == guildInfo.fruitRoleId)) {
+					await functions.roles.takeRole(interaction.member, role);
+					status = "Removed the fruit role.";
+				} else {
+					await functions.roles.giveRole(interaction.member, role);
+					status = "Added the fruit role.";
+				}
+				return functions.builders.embed(status);
+			} else {
+				throw "Guild doesn't exist in database!";
+			}
+		},
+		async waterPing(interaction) {
+			if (interaction.client.guildInfos.has(interaction.guildId)) {
+				let guildInfo = interaction.client.guildInfos.get(interaction.guildId);
+				let status = "No Changes Made";
+				const role = await functions.roles.fetchRole(interaction.guild, guildInfo.waterRoleId);
+				if (interaction.member.roles.cache.some(role => role.id == guildInfo.waterRoleId)) {
+					await functions.roles.takeRole(interaction.member, role);
+					status = "Removed the water role.";
+				} else {
+					await functions.roles.giveRole(interaction.member, role);
+					status = "Added the water role.";
+				}
+				return functions.builders.embed(status);
+			} else {
+				throw "Guild doesn't exist in database!";
 			}
 		}
 	},

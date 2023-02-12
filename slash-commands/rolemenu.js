@@ -15,6 +15,12 @@ module.exports = {
              .setRequired(false)),
 	async execute(interaction) {
 		await interaction.deferReply().catch(err => console.error(err));
-		await interaction.editReply(fn.builders.embeds.treeRoleMenu()).catch(err => console.error(err));
+        if (interaction.client.guildInfos.has(interaction.guildId)) {
+            let guildInfo = interaction.client.guildInfos.get(interaction.guildId);
+            guildInfo.setRoles(interaction.options.getRole('waterrole').id, interaction.options.getRole('fruitrole').id);
+            await interaction.editReply(fn.builders.embeds.treeRoleMenu(guildInfo)).catch(err => console.error(err));
+        } else {
+            await interaction.editReply(fn.builders.errorEmbed("No information is known about your server yet, please run /setup or /compare")).catch(err => console.error(err));
+        }
 	},
 };

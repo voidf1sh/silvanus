@@ -56,16 +56,29 @@ client.on('interactionCreate', async interaction => {
 		}
 	}
 
-	if (interaction.isButton() && interaction.component.customId == 'refresh') {
-		// console.log(JSON.stringify(interaction));
-		await fn.refresh(interaction).catch(err => {
-			interaction.channel.send(fn.builders.errorEmbed(err));
-		});
-	} else if (interaction.isButton() && interaction.component.customId == 'deleteping') {
-		if (interaction.message.deletable) {
-			await interaction.message.delete().catch(err => {
-				console.error(err);
-			});
+	if (interaction.isButton()) {
+		switch (interaction.component.customId) {
+			case 'refresh':
+				// console.log(JSON.stringify(interaction));
+				await fn.refresh(interaction).catch(err => {
+					interaction.channel.send(fn.builders.errorEmbed(err));
+				});
+				break;
+			case 'deleteping':
+				if (interaction.message.deletable) {
+					await interaction.message.delete().catch(err => {
+						console.error(err);
+					});
+				}
+				break;
+			case 'waterpingrole':
+				await interaction.reply(fn.buttonHandlers.waterPing(interaction)).catch(err => console.error(err));
+				break;
+			case 'fruitpingrole':
+				await interaction.reply(fn.buttonHandlers.fruitPing(interaction)).catch(err => console.error(err));
+				break;
+			default:
+				break;
 		}
 	}
 });

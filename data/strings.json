@@ -19,7 +19,16 @@
 	},
 	"embeds": {
 		"footer": "Silvanus is not affiliated with Grow A Tree or Limbo Labs",
-		"color": "0x55FF55"
+		"color": "0x55FF55",
+		"roleMenuTitle": "Role Menu",
+		"treeRoleMenu": [
+			"Use the buttons below to give yourself roles.\n\n",
+			"``💧`` - ",
+			": Get notifications when the tree is ready to be watered.",
+			"\n``🍎`` - ",
+			": Get notifications when fruit is falling from the tree."
+		],
+		"roleMenuFooter": "Tip: Tap the button again to remove the role."
 	},
 	"emoji": {
 		"joint": "<:joint:862082955902976000>",
