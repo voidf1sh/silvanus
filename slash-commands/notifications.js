@@ -41,6 +41,7 @@ module.exports = {
 				console.log(query);
 				await dbfn.setGuildInfo(query);
 				await interaction.editReply(`I'll watch <#${watchChannel.id}> for Grow A Tree Notifications and relay them to <#${reminderChannel.id}>.`).catch(e => console.error(e));
+				fn.collectionBuilders.guildInfos(interaction.client);
 			}
 		} catch (err) {
 			console.error("Error occurred while setting up a notification relay: " + err);

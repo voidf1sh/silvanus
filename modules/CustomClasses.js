@@ -18,7 +18,9 @@ module.exports = {
             this.leaderboardMessageId = "";
             this.leaderboardChannelId = "";
             this.waterMessage = "";
+            this.waterRoleId = "";
             this.fruitMessage = "";
+            this.fruitRoleId = "";
             this.reminderChannelId = "";
             this.watchChannelId = "";
         }
@@ -51,6 +53,10 @@ module.exports = {
             this.reminderChannelId = reminderChannelId;
             this.watchChannelId = watchChannelId;
             return this;
+        }
+        setRoles(waterRoleId, fruitRoleId) {
+            this.waterRoleId = waterRoleId;
+            if (fruitRoleId) this.fruitRoleId = fruitRoleId;
         }
         queryBuilder(query) {
             let queryParts = [];
@@ -119,7 +125,15 @@ module.exports = {
                     ];
                     return queryParts.join('');
                     break;
-                default:
+                case "setRoles":
+                    queryParts = [
+                        `UPDATE guild_info SET water_role_id = ${db.escape(this.waterRoleId)}, `,
+                        `fruit_role_id = ${db.escape(this.fruitRoleId)}, `,
+                        `WHERE guild_id = ${db.escape(this.guildId)}`
+                    ];
+                    return queryParts.join('');
+                    break;
+                    default:
                     break;
             }
         }

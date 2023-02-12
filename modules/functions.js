@@ -537,9 +537,10 @@ const functions = {
 				const collector = channel.createMessageCollector({ filter });
 				collector.on('collect', message => {
 					if (message.embeds.length == 0) return;
+					console.log(message.embeds);
 					if (message.embeds[0].data.description.includes(strings.notifications.water)) {
 						this.sendReminder(guildInfo, guildInfo.waterMessage, guildInfo.reminderChannelId, guild);
-					} else if (message.embeds[0].data.descriprion.includes(strings.notifications.fruit)) {
+					} else if (message.embeds[0].data.description.includes(strings.notifications.fruit)) {
 						this.sendReminder(guildInfo, guildInfo.fruitMessage, guildInfo.reminderChannelId, guild);
 					}
 				});
