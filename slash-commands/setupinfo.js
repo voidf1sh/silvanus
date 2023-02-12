@@ -7,7 +7,7 @@ module.exports = {
 		.setDescription('View information about how the bot is set up in your server'),
 	execute(interaction) {
 		interaction.deferReply({ephemeral: true}).then(() => {
-			fn.getInfo(interaction.guildId).then(res => {
+			fn.getInfo(interaction).then(res => {
 				const embed = fn.builders.embed(res);
 				interaction.editReply(embed);
 			}).catch(err => {

@@ -11,6 +11,7 @@ const fs = require('fs');
 // Discord.js
 const Discord = require('discord.js');
 const { EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle } = Discord;
+const { GuildInfo } = require('./CustomClasses');
 
 // Various imports from other files
 const config = require('../data/config.json');
@@ -21,7 +22,7 @@ const { finished } = require('stream');
 
 const functions = {
 	// Functions for managing and creating Collections
-	collections: {
+	collectionBuilders: {
 		// Create the collection of slash commands
 		slashCommands(client) {
 			if (!client.slashCommands) client.slashCommands = new Discord.Collection();
@@ -33,6 +34,15 @@ const functions = {
 				}
 			}
 			if (isDev) console.log('Slash Commands Collection Built');
+		},
+		async guildInfos(client) {
+			const guildInfos = await dbfn.getAllGuildInfos();
+			if (!client.guildInfos) client.guildInfos = new Discord.Collection();
+			client.guildInfos.clear();
+			for (const guildInfo of guildInfos) {
+				client.guildInfos.set(guildInfo.guildId, guildInfo);
+			}
+			return 'guildInfos Collection Built';
 		}
 	},
 	builders: {
@@ -58,43 +68,8 @@ const functions = {
 					.addComponents(
 						refreshButton
 					);
-				if (guildInfo.reminderOptIn == 1 && guildInfo.remindedStatus == 1) {
-					const resetPingButton = new ButtonBuilder()
-						.setCustomId('resetping')
-						.setLabel('Reset Ping')
-						.setStyle(ButtonStyle.Secondary);
-					refreshActionRow.addComponents(resetPingButton);
-				} else if (guildInfo.reminderOptIn == 1 && guildInfo.remindedStatus == 0) {
-					const resetPingButton = new ButtonBuilder()
-						.setCustomId('resetping')
-						.setLabel('[Armed]')
-						.setStyle(ButtonStyle.Secondary);
-					refreshActionRow.addComponents(resetPingButton);
-				}
 				return refreshActionRow;
 			}
-		},
-		async refreshAction(guildId) {
-			// Create the button to go in the Action Row
-			const refreshButton = new ButtonBuilder()
-				.setCustomId('refresh')
-				.setLabel('Refresh')
-				.setStyle(ButtonStyle.Primary);
-			const resetPingButton = new ButtonBuilder()
-				.setCustomId('resetping')
-				.setLabel('Reset Ping')
-				.setStyle(ButtonStyle.Secondary);
-			// Create the Action Row with the Button in it, to be sent with the Embed
-			let refreshActionRow = new ActionRowBuilder()
-				.addComponents(
-					refreshButton
-				);
-			const getGuildInfoResponse = await dbfn.getGuildInfo(guildId);
-			const guildInfo = getGuildInfoResponse.data;
-			if (guildInfo.reminderMessage != "" && guildInfo.reminderChannelId != "") {
-				refreshActionRow.addComponents(resetPingButton);
-			}
-			return refreshActionRow;
 		},
 		comparisonEmbed(content, guildInfo) {
 			// Create the embed using the content passed to this function
@@ -110,7 +85,7 @@ const functions = {
 			// Create the embed using the content passed to this function
 			const embed = new EmbedBuilder()
 				.setColor(strings.embeds.color)
-				.setTitle('Water Reminder')
+				.setTitle('Notification Relay')
 				.setDescription(`[Click here to go to your Tree](https://discord.com/channels/${guildInfo.guildId}/${guildInfo.treeChannelId}/${guildInfo.treeMessageId})`)
 				.setFooter({ text: `Click ♻️ to delete this message` });
 			const messageContents = { content: content, embeds: [embed], components: [this.actionRows.reminderActionRow()] };
@@ -417,8 +392,9 @@ const functions = {
 
 					// await dbfn.setGuildInfo(guildInfo);
 					// Bundle guildInfo into the response
-					const getGuildInfoResponse = await dbfn.getGuildInfo(guildInfo.guildId);
-					response.data = getGuildInfoResponse.data;
+					// const getGuildInfoResponse = await dbfn.getGuildInfo(guildInfo.guildId);
+					await functions.collectionBuilders.guildInfos(interaction.client);
+					response.data = interaction.client.guildInfos.get(guildInfo.guildId);
 
 					// Set the response status, this is only used as a response to /setup
 					if (treeFound && leaderboardFound) { // we found both the tree and leaderboard
@@ -453,8 +429,9 @@ const functions = {
 		}
 	},
 	async refresh(interaction) {
-		const getGuildInfoResponse = await dbfn.getGuildInfo(interaction.guildId);
-		let guildInfo = getGuildInfoResponse.data;
+		// const getGuildInfoResponse = await dbfn.getGuildInfo(interaction.guildId);
+		// let guildInfo = getGuildInfoResponse.data;
+		let guildInfo = interaction.client.guildInfos.get(interaction.guild.id);
 		const findMessagesResponse = await this.messages.find(interaction, guildInfo);
 		if (findMessagesResponse.code == 1) {
 			guildInfo = findMessagesResponse.data;
@@ -466,10 +443,7 @@ const functions = {
 			const comparedRankings = await this.rankings.compare(interaction, guildInfo);
 
 			const embed = this.builders.comparisonEmbed(comparedRankings, guildInfo);
-			await interaction.update(embed).then(async interactionResponse => {
-				// console.log(interactionResponse.interaction.message);
-				await dbfn.setComparisonMessage(interactionResponse.interaction.message, interaction.guildId);
-			});
+			await interaction.update(embed).catch(err => console.error(err));
 		} else {
 			await interaction.update(this.builders.errorEmbed(findMessagesResponse.status));
 		}
@@ -485,20 +459,12 @@ const functions = {
 			});
 		});
 	},
-	getInfo(guildId) {
-		return new Promise((resolve, reject) => {
-			dbfn.getGuildInfo(guildId).then(res => {
-				let guildInfo = res.data;
-				let guildInfoString = "";
-				guildInfoString += `Tree Message: https://discord.com/channels/${guildId}/${guildInfo.treeChannelId}/${guildInfo.treeMessageId}\n`;
-				guildInfoString += `Rank Message: https://discord.com/channels/${guildId}/${guildInfo.leaderboardChannelId}/${guildInfo.leaderboardMessageId}\n`;
-				resolve(`Here is your servers setup info:\n${guildInfoString}`);
-			}).catch(err => {
-				console.error(err);
-				reject(err);
-				return;
-			})
-		});
+	getInfo(interaction) {
+		let guildInfo = interaction.client.guildInfos.get(interaction.guild.id);
+		let guildInfoString = "";
+		guildInfoString += `Tree Message: https://discord.com/channels/${guildId}/${guildInfo.treeChannelId}/${guildInfo.treeMessageId}\n`;
+		guildInfoString += `Rank Message: https://discord.com/channels/${guildId}/${guildInfo.leaderboardChannelId}/${guildInfo.leaderboardMessageId}\n`;
+		return `Here is your servers setup info:\n${guildInfoString}`;
 	},
 	getWaterTime(size) {
 		return Math.floor(Math.pow(size * 0.07 + 5, 1.1)); // Seconds
@@ -539,88 +505,12 @@ const functions = {
 			}, ms);
 		});
 	},
-	async sendReminder(guildInfo, guild) {
-		const { guildId, reminderChannelId, reminderMessage } = guildInfo;
-		const reminderChannel = await guild.channels.fetch(reminderChannelId);
-		const reminderEmbed = functions.builders.reminderEmbed(reminderMessage, guildInfo);
-		await reminderChannel.send(reminderEmbed).then(async m => {
-			const setRemindedStatusReponse = await dbfn.setRemindedStatus(guildId, 1);
-			return 1;
-		}).catch(err => {
+	async sendReminder(guildInfo, message, channelId, guild) {
+		const reminderChannel = await guild.channels.fetch(channelId);
+		const reminderEmbed = functions.builders.reminderEmbed(message, guildInfo);
+		await reminderChannel.send(reminderEmbed).catch(err => {
 			console.error(err);
 		});
-	},
-	async setReminder(interaction, ms) {
-		setTimeout(this.sendReminder(interaction), ms);
-	},
-	async checkReady(client) { // Check if the guilds trees are ready to water
-		// let time = new Date(Date.now());
-		// console.log("Ready check " + time.getSeconds());
-		try {
-			// Get the guildInfos for each guild that is opted in and waiting to send a reminder
-			const getOptedInGuildsResponse = await dbfn.getOptedInGuilds();
-			// getOptedInGuilds will return this if it gets an empty set from the database
-			if (getOptedInGuildsResponse.status != "No servers have opted in yet") {
-				// Get the Array of Guilds from the response
-				const guilds = getOptedInGuildsResponse.data;
-				// Iterate over the Array
-				for (let i = 0; i < guilds.length; i++) {
-					// console.log(`iter: ${i}`);
-					// Save the 'old' guild info that came from getOptedInGuilds
-					const oldGuildInfo = guilds[i];
-					// Get up-to-date guildInfo from the database, probably unnecessary and redundant
-					const getGuildInfoResponse = await dbfn.getGuildInfo(oldGuildInfo.guildId);
-					// Save the new guildInfo so we can reference its remindedStatus
-					const guildInfo = getGuildInfoResponse.data;
-					const { guildId, treeChannelId, treeMessageId, remindedStatus } = guildInfo;
-					// console.log(`${guildInfo.treeName}: ${remindedStatus}`);
-					// Double check the remindedStatus to prevent double pings
-					if (remindedStatus == 0) {
-						// Fetch the guild
-						const guild = await client.guilds.fetch(guildId);
-						// Fetch the tree channel
-						const treeChannel = await guild.channels.fetch(treeChannelId);
-						// Fetch the tree message
-						const treeMessage = await treeChannel.messages.fetch(treeMessageId);
-						// Get the description from the embed of the tree message
-						const description = treeMessage.embeds[0].description;
-						// Default to not being ready to water
-						let readyToWater = false;
-						// Obviously if the tree says it's Ready to be watered, it's ready
-						if (description.includes("Ready to be watered")) {
-							readyToWater = true;
-							// But sometimes the tree doesn't refresh the embed, in that case we'll do a secondary check using the
-							// timestamp included in the embed.
-						} else {
-							const beginWaterTimestamp = description.indexOf("<t:") + 3;
-							const endWaterTimestamp = description.indexOf(":>");
-							// Split the description starting at "<t:" and ending at ":>" to get just the numerical timestamp
-							const waterTimestamp = parseInt(description.slice(beginWaterTimestamp, endWaterTimestamp));
-							// The Discord timestamp is in seconds, not ms so we need to divide by 1000
-							const nowTimestamp = (Date.now() / 1000);
-							readyToWater = (nowTimestamp > waterTimestamp);
-						}
-
-						if (readyToWater) {
-							// Send the reminder message
-							await this.sendReminder(guildInfo, guild);
-							guildInfo.remindedStatus = 1;
-							await this.refreshComparisonMessage(client, guildInfo);
-						}
-					}
-				}
-				await this.sleep(5000);
-				this.checkReady(client);
-			} else {
-				// console.log(getOptedInGuildsResponse.status);
-				await this.sleep(5000);
-				this.checkReady(client);
-			}
-		} catch (err) {
-			console.error(err);
-			await this.sleep(30000);
-			this.checkReady(client);
-		}
 	},
 	async refreshComparisonMessage(client, guildInfo) {
 		if (guildInfo.comparisonChannelId != "" && guildInfo.comparisonMessageId != "") {
@@ -633,8 +523,25 @@ const functions = {
 			return;
 		}
 	},
-	async resetPing(interaction) {
-		await dbfn.setRemindedStatus(interaction.guildId, 0);
+	async setupCollectors(client) {
+		let guildInfos = client.guildInfos;
+		guildInfos.set("collectors", []);
+		await guildInfos.forEach(async guildInfo => {
+			if (guildInfo.watchChannelId != "" && guildInfo instanceof GuildInfo) {
+				const guild = await client.guilds.fetch(guildInfo.guildId);
+				// console.log(guildInfo instanceof GuildInfo);
+				const channel = await guild.channels.fetch(guildInfo.watchChannelId);
+				const filter = message => message.author.id != process.env.BOTID;
+				const collector = channel.createMessageCollector({ filter });
+				collector.on('collect', message => {
+					if (message.content.includes(strings.notifications.water)) {
+						this.sendReminder(guildInfo, guildInfo.waterMessage, guildInfo.reminderChannelId, guild);
+					} else if (message.content.includes(strings.notifications.fruit)) {
+						this.sendReminder(guildInfo, guildInfo.fruitMessage, guildInfo.reminderChannelId, guild);
+					}
+				});
+			}
+		});
 	}
 };
 
