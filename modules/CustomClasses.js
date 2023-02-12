@@ -138,5 +138,23 @@ module.exports = {
                     break;
             }
         }
+        generateSetupInfo() {
+            let setupInfoParts = [
+                `Here is your server's configuration:`,
+                `Tree Name: ${this.treeName}`,
+                `Tree Height: ${this.treeHeight}`,
+                `Tree Channel: <#${this.treeChannelId}>`,
+                `[Tree Link](https://discord.com/channels/${this.guildId}/${this.treeChannelId}/${this.treeMessageId})`,
+                `Leaderboard Channel: <#${this.leaderboardChannelId}>`,
+                `[Leaderboard Link](https://discord.com/channels/${this.guildId}/${this.leaderboardChannelId}/${this.leaderboardMessageId})`,
+                `Notification Watch Channel: <#${this.watchChannelId}>`,
+                `Notification Relay Channel: <#${this.reminderChannelId}>`,
+                `Water Message: ${this.waterMessage}`,
+                `Fruit Message: ${this.fruitMessage}`,
+                `Water Role: <@&${this.waterRoleId}>`,
+                `Fruit Role: <@&${this.fruitRoleId}>`
+            ]
+            return setupInfoParts.join('\n');
+        }
     }
 }

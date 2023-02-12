@@ -145,6 +145,35 @@ module.exports = {
 			});
 		});
 	},
+	setTreeInfo(guildInfo) {
+		const db = mysql.createConnection({
+			host: process.env.DBHOST,
+			user: process.env.DBUSER,
+			password: process.env.DBPASS,
+			database: process.env.DBNAME,
+			port: process.env.DBPORT
+		});
+		db.connect((err) => {
+			if (err) throw `Error connecting to the database: ${err.message}`;
+		});
+		// Returns a Promise, resolve({ "status": "", "data": null })
+		// guildInfo = { "guildId": "123", "treeName": "name", "treeHeight": 123, "treeMessageId": "123", "treeChannelId": "123", "leaderboardMessageId": "123", "leaderboardChannelId": "123"}
+		// Set a server's tree information in the database)
+		const insertGuildInfoQuery = `INSERT INTO guild_info (guild_id, tree_name, tree_height, tree_message_id, tree_channel_id) VALUES (${db.escape(guildInfo.guildId)}, ${db.escape(guildInfo.treeName)}, ${db.escape(guildInfo.treeHeight)},${db.escape(guildInfo.treeMessageId)}, ${db.escape(guildInfo.treeChannelId)}) ON DUPLICATE KEY UPDATE tree_name = ${db.escape(guildInfo.treeName)},tree_height = ${db.escape(guildInfo.treeHeight)},tree_message_id = ${db.escape(guildInfo.treeMessageId)},tree_channel_id = ${db.escape(guildInfo.treeChannelId)}`;
+		// TODO run this query and return a promise, then resolve with { "status": , "data": null }
+		return new Promise((resolve, reject) => {
+			db.query(insertGuildInfoQuery, (err, res) => {
+				if (err) {
+					console.error(err);
+					db.end();
+					reject("Error setting the guild info: " + err.message);
+					return;
+				}
+				db.end();
+				resolve({ "status": "Successfully set the guild information", "data": null });
+			});
+		});
+	},
 	setLeaderboardInfo(guildInfo) {
 		const db = mysql.createConnection({
 			host: process.env.DBHOST,

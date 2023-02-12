@@ -549,13 +549,6 @@ const functions = {
 			});
 		});
 	},
-	getInfo(interaction) {
-		let guildInfo = interaction.client.guildInfos.get(interaction.guild.id);
-		let guildInfoString = "";
-		guildInfoString += `Tree Message: https://discord.com/channels/${guildId}/${guildInfo.treeChannelId}/${guildInfo.treeMessageId}\n`;
-		guildInfoString += `Rank Message: https://discord.com/channels/${guildId}/${guildInfo.leaderboardChannelId}/${guildInfo.leaderboardMessageId}\n`;
-		return `Here is your servers setup info:\n${guildInfoString}`;
-	},
 	getWaterTime(size) {
 		return Math.floor(Math.pow(size * 0.07 + 5, 1.1)); // Seconds
 	},
@@ -601,17 +594,6 @@ const functions = {
 		await reminderChannel.send(reminderEmbed).catch(err => {
 			console.error(err);
 		});
-	},
-	async refreshComparisonMessage(client, guildInfo) {
-		if (guildInfo.comparisonChannelId != "" && guildInfo.comparisonMessageId != "") {
-			const guild = await client.guilds.fetch(guildInfo.guildId);
-			const comparisonChannel = await guild.channels.fetch(guildInfo.comparisonChannelId);
-			const comparisonMessage = await comparisonChannel.messages.fetch(guildInfo.comparisonMessageId);
-			const embed = comparisonMessage.embeds[0];
-			const actionRow = this.builders.actionRows.comparisonActionRow(guildInfo);
-			await comparisonMessage.edit({ components: [actionRow] });
-			return;
-		}
 	},
 	async setupCollectors(client) {
 		let guildInfos = client.guildInfos;
