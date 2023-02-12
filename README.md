@@ -24,14 +24,23 @@ Silvanus requires permissions to `Send Messages` and `Send Messages in Threads` 
 
 ## Commands
 * `/setup` - You only need to run this command if your server has its `/tree` and `/top trees` messages in separate channels.
-* `/setupinfo` - Displays links to the current Tree and Tallest Trees messages configured in your server.
+* `/setupinfo` - Displays your server's configuration information.
 * `/compare` - Sends a refreshable embed that calculcates the height difference between your tree and the trees currently displayed on your Tallest Trees message. There is also an Active Growth Indicator (`[💧]`).
-* `/setping` - Guild members with the `Manage Roles` permission can run this command to set up automatic reminders when your tree is ready to be watered.
-    * Type a reminder message (including any `@pings` desired) and select a channel to send the reminders in.
-    * Once this command has been run a new `Reset Ping` button will appear next time you refresh the `/compare` message.
-    * Click the `Reset Ping` button to be sent a reminder the next time the tree is ready to be watered.
-    * Use `/optout` to disable reminder messages for your server.
+* `/notifications` - Guild members with the `Manage Roles` permission can run this command to set up automatic reminders when your tree is ready to be watered or when fruit is dropping.
+    * This feature relies on Grow A Tree's built-in Notification system. Refer to Grow A Tree for instructions on setting them up.
+    * `watchchannel`: Select the channel you've configured Grow A Tree to send notifications in.
+    * `watermessage`: This option sets the message to send when the tree is ready to be watered. This can include `@pings`, links, etc.
+    * `pingchannel`: Select the channel you want Silvanus to forward the notifications to.
+    * `fruitmessage`: Optional: This sets the message to send when the tree is dropping fruit. If not set, the `watermessage` will be used instead.
+* `/rolemenu` - Creates a menu for users to give themselves Water and Fruit pingable roles.
+    * Requires `Manage Roles` permission to run.
+    * `waterrole`: Select the role to give users when they select the Water button
+    * `fruitrole`: Optional: Select the role to give users when they select the Fruit button
+        * If this option isn't set, no Fruit Role will be available for self-assignment.
 * `/watertime` - Calculates the wait time between waters for a tree of a given height.
-* `/timetoheight` - Calculates how long it would take to go from `beginheight` to `endheight`.
+    * `height`: The height in feet to calculate for.
+* `/timetoheight` - Calculates how long it would take to grow to a height
+    * `endheight`: The destination height, in feet.
+    * `beginheight`: Optional: The starting height, in feet. If this option isn't set, the current height of your tree will be used insead.
 * `/reset` - Removes your server's configuration from the database.
 * `/help` - Displays the bot's help page and links to each command.
