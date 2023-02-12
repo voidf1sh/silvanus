@@ -531,7 +531,9 @@ const functions = {
 				const guild = await client.guilds.fetch(guildInfo.guildId);
 				// console.log(guildInfo instanceof GuildInfo);
 				const channel = await guild.channels.fetch(guildInfo.watchChannelId);
-				const filter = message => message.author.id != process.env.BOTID;
+				const filter = message => {
+					return message.author.id != process.env.BOTID && message.embeds != undefined;
+				}
 				const collector = channel.createMessageCollector({ filter });
 				collector.on('collect', message => {
 					if (message.embeds.length == 0) return;
