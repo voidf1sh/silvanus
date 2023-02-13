@@ -20,7 +20,7 @@ Otherwise, run `/setup` to set the proper channels for the bot to look in for th
 Use `/commands` to view a description of all my commands.
 
 ## Permissions
-Silvanus requires permissions to `Send Messages` and `Send Messages in Threads` if applicable.
+Silvanus requires permissions to `Send Messages` and `Send Messages in Threads` if applicable. If you plan to use the Role Menu Silvanus will also need permission to `Manage Roles`
 
 ## Commands
 * `/setup` - You only need to run this command if your server has its `/tree` and `/top trees` messages in separate channels.
