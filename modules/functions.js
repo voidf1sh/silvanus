@@ -124,11 +124,21 @@ const functions = {
 			const messageContents = { embeds: [embed], components: [this.actionRows.comparisonActionRow(guildInfo)] };
 			return messageContents;
 		},
-		reminderEmbed(content, guildInfo) {
+		waterReminderEmbed(content, guildInfo) {
 			// Create the embed using the content passed to this function
 			const embed = new EmbedBuilder()
-				.setColor(strings.embeds.color)
-				.setTitle('Notification Relay')
+				.setColor(strings.embeds.waterColor)
+				.setTitle(strings.embeds.waterTitle)
+				.setDescription(`[Click here to go to your Tree](https://discord.com/channels/${guildInfo.guildId}/${guildInfo.treeChannelId}/${guildInfo.treeMessageId})`)
+				.setFooter({ text: `Click ♻️ to delete this message` });
+			const messageContents = { content: content, embeds: [embed], components: [this.actionRows.reminderActionRow()] };
+			return messageContents;
+		},
+		fruitReminderEmbed(content, guildInfo) {
+			// Create the embed using the content passed to this function
+			const embed = new EmbedBuilder()
+				.setColor(strings.embeds.fruitColor)
+				.setTitle(strings.embeds.fruitTitle)
 				.setDescription(`[Click here to go to your Tree](https://discord.com/channels/${guildInfo.guildId}/${guildInfo.treeChannelId}/${guildInfo.treeMessageId})`)
 				.setFooter({ text: `Click ♻️ to delete this message` });
 			const messageContents = { content: content, embeds: [embed], components: [this.actionRows.reminderActionRow()] };
@@ -588,9 +598,16 @@ const functions = {
 			}, ms);
 		});
 	},
-	async sendReminder(guildInfo, message, channelId, guild) {
+	async sendWaterReminder(guildInfo, message, channelId, guild) {
 		const reminderChannel = await guild.channels.fetch(channelId);
-		const reminderEmbed = functions.builders.reminderEmbed(message, guildInfo);
+		const reminderEmbed = functions.builders.waterReminderEmbed(message, guildInfo);
+		await reminderChannel.send(reminderEmbed).catch(err => {
+			console.error(err);
+		});
+	},
+	async sendFruitReminder(guildInfo, message, channelId, guild) {
+		const reminderChannel = await guild.channels.fetch(channelId);
+		const reminderEmbed = functions.builders.fruitReminderEmbed(message, guildInfo);
 		await reminderChannel.send(reminderEmbed).catch(err => {
 			console.error(err);
 		});
@@ -612,9 +629,9 @@ const functions = {
 					guildInfo = client.guildInfos.get(guild.id);
 					console.log(message.embeds);
 					if (message.embeds[0].data.description.includes(strings.notifications.water)) {
-						this.sendReminder(guildInfo, guildInfo.waterMessage, guildInfo.reminderChannelId, guild);
+						this.sendWaterReminder(guildInfo, guildInfo.waterMessage, guildInfo.reminderChannelId, guild);
 					} else if (message.embeds[0].data.description.includes(strings.notifications.fruit)) {
-						this.sendReminder(guildInfo, guildInfo.fruitMessage, guildInfo.reminderChannelId, guild);
+						this.sendFruitReminder(guildInfo, guildInfo.fruitMessage, guildInfo.reminderChannelId, guild);
 					}
 				});
 			}

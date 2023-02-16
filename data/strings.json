@@ -20,6 +20,10 @@
 	"embeds": {
 		"footer": "Silvanus is not affiliated with Grow A Tree or Limbo Labs",
 		"color": "0x55FF55",
+		"waterColor": "0x5555FF",
+		"fruitColor": "0xCC5555",
+		"waterTitle": "Water Notification",
+		"fruitTitle": "Fruit Notification",
 		"roleMenuTitle": "Role Menu",
 		"treeRoleMenu": [
 			"Use the buttons below to give yourself roles.\n\n",
