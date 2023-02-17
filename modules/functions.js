@@ -621,10 +621,18 @@ const functions = {
 				// console.log(guildInfo instanceof GuildInfo);
 				const channel = await guild.channels.fetch(guildInfo.watchChannelId);
 				const filter = message => {
-					return message.author.id != process.env.BOTID && message.embeds != undefined;
+					return message.author.id != process.env.BOTID;
 				}
 				const collector = channel.createMessageCollector({ filter });
 				collector.on('collect', message => {
+					if (message.content.toLowerCase().includes("water ping")) {
+						this.sendWaterReminder(guildInfo, guildInfo.waterMessage, guildInfo.reminderChannelId, guild);
+						return;
+					} else if (message.content.toLowerCase().includes("fruit ping")) {
+						this.sendFruitReminder(guildInfo, guildInfo.fruitMessage, guildInfo.reminderChannelId, guild);
+						return;
+					}
+					if (message.embeds == undefined) return;
 					if (message.embeds.length == 0) return;
 					guildInfo = client.guildInfos.get(guild.id);
 					if (message.embeds[0].data.description.includes(strings.notifications.water)) {

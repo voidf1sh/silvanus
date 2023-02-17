@@ -4,7 +4,7 @@
 const dotenv = require('dotenv');
 dotenv.config();
 const token = process.env.TOKEN;
-const statusChannelId = process.env.statusChannelId;
+const statusChannelId = process.env.STATUSCHANNELID;
 
 // Discord.JS
 const { Client, GatewayIntentBits, Partials, ActivityType } = require('discord.js');
@@ -25,7 +25,7 @@ const client = new Client({
 const fn = require('./modules/functions.js');
 const strings = require('./data/strings.json');
 const dbfn = require('./modules/dbfn.js');
-const isDev = process.env.isDev;
+const isDev = process.env.DEBUG;
 
 client.once('ready', async () => {
 	await fn.collectionBuilders.slashCommands(client);
