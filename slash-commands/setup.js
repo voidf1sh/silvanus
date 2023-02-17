@@ -1,4 +1,4 @@
-const { SlashCommandBuilder } = require('discord.js');
+const { SlashCommandBuilder, PermissionFlagsBits } = require('discord.js');
 const fn = require('../modules/functions.js');
 const strings = require('../data/strings.json');
 const dbfn = require('../modules/dbfn.js');
