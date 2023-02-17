@@ -1,4 +1,4 @@
-name: Silvanus-Dev Dockerization
+name: Silvanus Production Dockerization
 
 on:
   pull_request:
@@ -16,11 +16,11 @@ jobs:
 
     steps:
     - uses: actions/checkout@v3
-    - name: Build the Docker image
+    - name: Build the Docker image v0idf1sh/silvanus
       run: docker build . --file Dockerfile --tag v0idf1sh/silvanus
     - name: Log into Docker Hub
       run: docker login -u $DHUB_UNAME -p $DHUB_PWORD
-    - name: Push image to Docker Hub
+    - name: Push image to Docker Hub v0idf1sh/silvanus
       run: docker push v0idf1sh/silvanus
     - name: Set up a skeleton .env file
       run: echo "TOKEN=${{secrets.PRODTOKEN}}" > .env && echo "clientId=${{ secrets.PRODCLIENTID }}" >> .env
