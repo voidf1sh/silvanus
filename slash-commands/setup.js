@@ -14,7 +14,8 @@ module.exports = {
 		.addChannelOption(o =>
 			o.setName('leaderboardchannel')
 			 .setDescription('If your leaderboard isn\'t in the same channel, where is it?')
-			 .setRequired(false)),
+			 .setRequired(false))
+		.setDefaultMemberPermissions(PermissionFlagsBits.Administrator),
 	async execute(interaction) {
 		await interaction.deferReply({ ephemeral: true });
 		/**/

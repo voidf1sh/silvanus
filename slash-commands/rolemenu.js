@@ -13,7 +13,8 @@ module.exports = {
         .addRoleOption(o =>
             o.setName('fruitrole')
              .setDescription('The role for fruit alert pings')
-             .setRequired(false)),
+             .setRequired(false))
+        .setDefaultMemberPermissions(PermissionFlagsBits.ManageRoles),
 	async execute(interaction) {
 		await interaction.deferReply().catch(err => console.error(err));
         if (interaction.client.guildInfos.has(interaction.guildId)) {

@@ -627,7 +627,6 @@ const functions = {
 				collector.on('collect', message => {
 					if (message.embeds.length == 0) return;
 					guildInfo = client.guildInfos.get(guild.id);
-					console.log(message.embeds);
 					if (message.embeds[0].data.description.includes(strings.notifications.water)) {
 						this.sendWaterReminder(guildInfo, guildInfo.waterMessage, guildInfo.reminderChannelId, guild);
 					} else if (message.embeds[0].data.description.includes(strings.notifications.fruit)) {

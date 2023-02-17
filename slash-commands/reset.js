@@ -4,7 +4,8 @@ const fn = require('../modules/functions.js');
 module.exports = {
 	data: new SlashCommandBuilder()
 		.setName('reset')
-		.setDescription('Reset all message assignments in your server'),
+		.setDescription('Reset all message assignments in your server')
+		.setDefaultMemberPermissions(PermissionFlagsBits.Administrator),
 	execute(interaction) {
 		interaction.deferReply({ ephemeral: true }).then(() => {
 			fn.reset(interaction.guildId).then(res => {

@@ -4,7 +4,8 @@ const fn = require('../modules/functions.js');
 module.exports = {
 	data: new SlashCommandBuilder()
 		.setName('setupinfo')
-		.setDescription('View information about how the bot is set up in your server'),
+		.setDescription('View information about how the bot is set up in your server')
+		.setDefaultMemberPermissions(PermissionFlagsBits.Administrator),
 	async execute(interaction) {
 		await interaction.deferReply({ ephemeral: true }).catch(err => console.error(err));
 		try {
