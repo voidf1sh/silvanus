@@ -43,9 +43,9 @@ client.once('ready', async () => {
 // slash-commands
 client.on('interactionCreate', async interaction => {
 	if (interaction.isCommand()) {
-		// if (isDev) {
-		// 	console.log(interaction);
-		// }
+		if (isDev) {
+			console.log(interaction);
+		}
 		const { commandName } = interaction;
 
 		if (client.slashCommands.has(commandName)) {
