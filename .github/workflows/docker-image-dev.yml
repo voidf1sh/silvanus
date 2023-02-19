@@ -1,8 +1,7 @@
 name: Silvanus-Dev Dockerization
 
 on:
-  push:
-    branches: [ "*-dev" ]
+  workflow_dispatch:
     
 env:
   DHUB_UNAME: ${{ secrets.DHUB_UNAME }}
