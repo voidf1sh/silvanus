@@ -57,7 +57,9 @@
 		"missingLeaderboardMessage": "There was a problem finding the Tallest Trees message. Please make sure the ``/tree`` and ``/top trees`` messages are in this channel, or run </setup:1065407649363005561> to set the ``/tree`` and ``/top trees`` channels.",
 		"missingLeaderboardChannel": "There was a problem finding the Tallest Trees channel, was it deleted? Please make sure the ``/tree`` and ``/top trees`` messages are in this channel, or run </setup:1065407649363005561> to set the ``/tree`` and ``/top trees`` channels.",
 		"missingTreeMessage": "There was a problem finding the Tree message. Please make sure the ``/tree`` and ``/top trees`` messages are this channel, or run </setup:1065407649363005561> to set the ``/tree`` and ``/top trees`` channels.",
-		"missingTreeChannel": "There was a problem finding the Tree channel, was it deleted? Please make sure the ``/tree`` and ``/top trees`` messages are in this channel, or run </setup:1065407649363005561> to set the ``/tree`` and ``/top trees`` channels."
+		"missingTreeChannel": "There was a problem finding the Tree channel, was it deleted? Please make sure the ``/tree`` and ``/top trees`` messages are in this channel, or run </setup:1065407649363005561> to set the ``/tree`` and ``/top trees`` channels.",
+		"reset": "All guild configuration information has been removed from the database.",
+		"resetError": "There was a problem deleting your guild information, contact @voidf1sh#0420 for help."
 	},
 	"notifications": {
 		"water": "is ready to be watered again!",

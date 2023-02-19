@@ -1,5 +1,6 @@
 const { SlashCommandBuilder, PermissionFlagsBits } = require('discord.js');
 const fn = require('../modules/functions.js');
+const strings = require('../data/strings.json');
 
 module.exports = {
 	data: new SlashCommandBuilder()
@@ -8,13 +9,13 @@ module.exports = {
 		.setDefaultMemberPermissions(PermissionFlagsBits.Administrator),
 	execute(interaction) {
 		interaction.deferReply({ ephemeral: true }).then(() => {
-			fn.reset(interaction.guildId).then(res => {
-				interaction.editReply(fn.builders.embed("Assignments Reset")).catch(err => {
+			fn.reset(interaction).then(res => {
+				interaction.editReply(fn.builders.embed(strings.status.reset)).catch(err => {
 					console.error(err);
 				});
 			}).catch(err => {
 				console.error(err);
-				interaction.editReply("There was a problem deleting your guild information, contact @voidf1sh#0420 for help.").catch(err => {
+				interaction.editReply(strings.status.resetError).catch(err => {
 					console.error(err);
 				});
 			});
