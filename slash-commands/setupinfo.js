@@ -7,7 +7,7 @@ module.exports = {
 		.setDescription('View information about how the bot is set up in your server')
 		.setDefaultMemberPermissions(PermissionFlagsBits.Administrator),
 	async execute(interaction) {
-		await interaction.deferReply({ ephemeral: true }).catch(err => console.error(err));
+		await interaction.deferReply({ ephemeral: true }).catch(e => console.error(e));
 		try {
 			if (interaction.client.guildInfos.has(interaction.guildId)) {
 				let guildInfo = interaction.client.guildInfos.get(interaction.guildId);
