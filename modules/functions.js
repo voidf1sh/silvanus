@@ -70,12 +70,12 @@ const functions = {
 					);
 				return refreshActionRow;
 			},
-			treeRoleMenu() {
-				return new ActionRowBuilder()
-					.addComponents(
-						this.buttons.waterPing(),
-						this.buttons.fruitPing()
-					);
+			treeRoleMenu(fruit) {
+				let actionRow = new ActionRowBuilder().addComponents(this.buttons.waterPing());
+				if (fruit) {
+					actionRow.addComponents(this.buttons.fruitPing());
+				}
+				return actionRow;
 			},
 			buttons: {
 				acceptRules() {
@@ -100,10 +100,10 @@ const functions = {
 		},
 		embeds: {
 			treeRoleMenu(guildInfo) {
-				const actionRow = functions.builders.actionRows.treeRoleMenu();
+				const actionRow = functions.builders.actionRows.treeRoleMenu(guildInfo.fruitRoleId == "" ? false : true);
 				let tempStrings = strings.embeds.treeRoleMenu;
 				let description = tempStrings[0] + tempStrings[1] + `<@&${guildInfo.waterRoleId}>` + tempStrings[2];
-				if (guildInfo.fruitRoleId != undefined) {
+				if (guildInfo.fruitRoleId != "") {
 					description += tempStrings[3] + `<@&${guildInfo.fruitRoleId}>` + tempStrings[4];
 				}
 				const embed = new EmbedBuilder()

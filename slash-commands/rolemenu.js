@@ -19,7 +19,7 @@ module.exports = {
 		await interaction.deferReply().catch(err => console.error(err));
         if (interaction.client.guildInfos.has(interaction.guildId)) {
             let guildInfo = interaction.client.guildInfos.get(interaction.guildId);
-            guildInfo.setRoles(interaction.options.getRole('waterrole').id, interaction.options.getRole('fruitrole').id);
+            guildInfo.setRoles(interaction.options.getRole('waterrole'), interaction.options.getRole('fruitrole'));
             await dbfn.setGuildInfo(guildInfo.queryBuilder("setRoles"));
             await fn.collectionBuilders.guildInfos(interaction.client);
             await interaction.editReply(fn.builders.embeds.treeRoleMenu(guildInfo)).catch(err => console.error(err));

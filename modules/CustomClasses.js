@@ -54,9 +54,9 @@ module.exports = {
             this.watchChannelId = watchChannelId;
             return this;
         }
-        setRoles(waterRoleId, fruitRoleId) {
-            this.waterRoleId = waterRoleId;
-            if (fruitRoleId) this.fruitRoleId = fruitRoleId;
+        setRoles(waterRole, fruitRole) {
+            this.waterRoleId = waterRole.id;
+            if (fruitRole) this.fruitRoleId = fruitRole.id;
             return this;
         }
         queryBuilder(query) {
@@ -127,11 +127,18 @@ module.exports = {
                     return queryParts.join('');
                     break;
                 case "setRoles":
-                    queryParts = [
-                        `UPDATE guild_info SET water_role_id = ${db.escape(this.waterRoleId)}, `,
-                        `fruit_role_id = ${db.escape(this.fruitRoleId)} `,
-                        `WHERE guild_id = ${db.escape(this.guildId)}`
-                    ];
+                    if (this.fruitRoleId != "") {
+                        queryParts = [
+                            `UPDATE guild_info SET water_role_id = ${db.escape(this.waterRoleId)}, `,
+                            `fruit_role_id = ${db.escape(this.fruitRoleId)} `,
+                            `WHERE guild_id = ${db.escape(this.guildId)}`
+                        ];
+                    } else {
+                        queryParts = [
+                            `UPDATE guild_info SET water_role_id = ${db.escape(this.waterRoleId)} `,
+                            `WHERE guild_id = ${db.escape(this.guildId)}`
+                        ];
+                    }
                     return queryParts.join('');
                     break;
                     default:
