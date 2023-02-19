@@ -102,11 +102,16 @@ module.exports = {
                     break;
                 case "setReminders":
                     queryParts = [
-                        `UPDATE guild_info SET water_message = ${db.escape(this.waterMessage)}, `,
+                        `INSERT INTO guild_info (guild_id, water_message, fruit_message, reminder_channel_id, watch_channel_id) VALUES (`,
+                        `${db.escape(this.guildId)},`,
+                        `${db.escape(this.waterMessage)},`,
+                        `${db.escape(this.fruitMessage)},`,
+                        `${db.escape(this.reminderChannelId)},`,
+                        `${db.escape(this.watchChannelId)}`,
+                        `) ON DUPLICATE KEY UPDATE water_message = ${db.escape(this.waterMessage)}, `,
                         `fruit_message = ${db.escape(this.fruitMessage)}, `,
                         `reminder_channel_id = ${db.escape(this.reminderChannelId)}, `,
-                        `watch_channel_id = ${db.escape(this.watchChannelId)} `,
-                        `WHERE guild_id = ${db.escape(this.guildId)}`
+                        `watch_channel_id = ${db.escape(this.watchChannelId)}`
                     ];
                     return queryParts.join('');
                     break;

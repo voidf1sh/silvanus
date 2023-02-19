@@ -548,9 +548,10 @@ const functions = {
 			await interaction.update(this.builders.errorEmbed(findMessagesResponse.status));
 		}
 	},
-	reset(guildId) {
+	reset(interaction) {
 		return new Promise((resolve, reject) => {
-			dbfn.deleteGuildInfo(guildId).then(res => {
+			dbfn.deleteGuildInfo(interaction.guildId).then(res => {
+				functions.collectionBuilders.guildInfos(interaction.client);
 				resolve(res);
 			}).catch(err => {
 				console.error(err);
