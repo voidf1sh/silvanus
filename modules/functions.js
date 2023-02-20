@@ -688,7 +688,12 @@ const functions = {
 	async sendWaterReminder(guildInfo, message, channelId, guild) {
 		const reminderChannel = await guild.channels.fetch(channelId);
 		const reminderEmbed = functions.builders.waterReminderEmbed(message, guildInfo);
-		await reminderChannel.send(reminderEmbed).catch(err => {
+		await reminderChannel.send(reminderEmbed).then(async m => {
+			if (!m.deletable) return;
+			await this.sleep(500).then(async () => {
+				await m.delete().catch(e => console.error(e));
+			});
+		}).catch(err => {
 			console.error(err);
 		});
 	},
