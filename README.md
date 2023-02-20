@@ -13,34 +13,24 @@ Silvanus is not affiliated with Grow A Tree or Limbo Labs.
 
 ## Setup
 
-If your `/tree` and `/top trees` messages are in the same channel, simple run `/compare` in that channel and you're good to go!
+If your `/tree` and `/top trees` messages are in the same channel, simply run `/compare` in that channel and you're good to go!
 
-Otherwise, run `/setup` to set the proper channels for the bot to look in for the `/tree` and `/top trees` messages.
+Otherwise, run `/setup compare` to set the proper channels for the bot to look in for the `/tree` and `/top trees` messages.
 
 Use `/commands` to view a description of all my commands.
 
 ## Permissions
-Silvanus requires permissions to `Send Messages` and `Send Messages in Threads` if applicable. If you plan to use the Role Menu Silvanus will also need permission to `Manage Roles`
+Silvanus requires permissions to `Send Messages` and `Send Messages in Threads` if applicable. If you plan to use the Role Menu Silvanus will also need permission to `Manage Roles`.
 
 ## Commands
-* `/setup` - You only need to run this command if your server has its `/tree` and `/top trees` messages in separate channels.
-* `/setupinfo` - Displays your server's configuration information.
-* `/compare` - Sends a refreshable embed that calculcates the height difference between your tree and the trees currently displayed on your Tallest Trees message. There is also an Active Growth Indicator (`[💧]`).
-* `/notifications` - Guild members with the `Manage Roles` permission can run this command to set up automatic reminders when your tree is ready to be watered or when fruit is dropping.
-    * This feature relies on Grow A Tree's built-in Notification system. Refer to Grow A Tree for instructions on setting them up.
-    * `watchchannel`: Select the channel you've configured Grow A Tree to send notifications in.
-    * `watermessage`: This option sets the message to send when the tree is ready to be watered. This can include `@pings`, links, etc.
-    * `pingchannel`: Select the channel you want Silvanus to forward the notifications to.
-    * `fruitmessage`: Optional: This sets the message to send when the tree is dropping fruit. If not set, the `watermessage` will be used instead.
-* `/rolemenu` - Creates a menu for users to give themselves Water and Fruit pingable roles.
-    * Requires `Manage Roles` permission to run.
-    * `waterrole`: Select the role to give users when they select the Water button
-    * `fruitrole`: Optional: Select the role to give users when they select the Fruit button
-        * If this option isn't set, no Fruit Role will be available for self-assignment.
-* `/watertime` - Calculates the wait time between waters for a tree of a given height.
-    * `height`: The height in feet to calculate for.
-* `/timetoheight` - Calculates how long it would take to grow to a height
-    * `endheight`: The destination height, in feet.
-    * `beginheight`: Optional: The starting height, in feet. If this option isn't set, the current height of your tree will be used insead.
-* `/reset` - Removes your server's configuration from the database.
-* `/help` - Displays the bot's help page and links to each command.
+* `/compare` - Compare your tree to others on the leaderboard
+* `/relay set` - Setup a Notification Relay for the first time
+* `/relay update` - Update an already configured Notification Relay
+* `/relay disable` - Disable the Notification Relay
+* `/rolemenu` - Send a self-assignable role menu for relay pings
+* `/watertime` - Calculates the time between waters for a tree of a given height
+* `/timetoheight` - Calculates how long it would take a tree to grow to a given height
+* `/setup compare` - Set the channels to use with `/compare`
+* `/setup view` - View your server's configuration
+* `/setup reset` - Delete your server's configuration
+* `/help` - Displays the bot's help page

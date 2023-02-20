@@ -14,7 +14,7 @@ module.exports = {
 				{ name: "True", value: "true" },
 				{ name: "False", value: "false" })),
 	execute(interaction) {
-		const helpEmbed = fn.builders.helpEmbed(`${strings.help.info}\n\n**Setup**\n${strings.help.setup}\n\nSee </commands:0> for a list of all my commands\n\n**Support Server**\n${strings.urls.supportServer}`, interaction.options.getString('private'));
+		const helpEmbed = fn.builders.helpEmbed(`${strings.help.info}\n\n**Setup**\n${strings.help.setup}\n\n**Support Server**\n${strings.urls.supportServer}`, interaction.options.getString('private'));
 		interaction.reply(helpEmbed);
 	},
 };
