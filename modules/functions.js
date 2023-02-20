@@ -157,8 +157,8 @@ const functions = {
 		errorEmbed(content) {
 			const embed = new EmbedBuilder()
 				.setColor(0xFF0000)
-				.setTitle('Error!')
-				.setDescription("Error: " + content)
+				.setTitle(strings.embeds.errorTitle)
+				.setDescription(`${strings.embeds.errorPrefix}\n${content}`)
 				.setFooter({ text: `v${package.version} - ${strings.embeds.footer}` });
 			const messageContents = { embeds: [embed], ephemeral: true };
 			return messageContents;

@@ -20,6 +20,8 @@
 	"embeds": {
 		"footer": "Silvanus is not affiliated with Grow A Tree or Limbo Labs",
 		"color": "0x55FF55",
+		"errorTitle": "Oops!",
+		"errorPrefix": "There seems to have been a problem.",
 		"waterColor": "0x5555FF",
 		"fruitColor": "0xCC5555",
 		"waterTitle": "Water Notification",
@@ -48,7 +50,8 @@
 		"supportServer": "https://discord.gg/g5JRGn7PxU"
 	},
 	"error": {
-		"noGuild": "Setup has not been completed yet. Try running </setup:1065407649363005561> or </help setup:1065346941166297129>"
+		"noGuild": "Setup has not been completed yet. Try running </setup:1065407649363005561> or </help setup:1065346941166297129>",
+		"invalidSubcommand": "Invalid subcommand detected."
 	},
 	"status": {
 		"treeAndLeaderboard": "Tree and leaderboard messages were both found, setup is complete. Run </setupinfo:1065413032374706196> to verify. Run </compare:1065346941166297128> to get started!",

@@ -88,6 +88,7 @@ module.exports = {
 				}
 				break;
 			default:
+				await interaction.editReply(fn.builders.errorEmbed(strings.error.invalidSubcommand)).catch(e => console.error(e));
 				break;
 		}
 	},
