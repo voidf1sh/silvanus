@@ -28,9 +28,9 @@ const dbfn = require('./modules/dbfn.js');
 const isDev = process.env.DEBUG;
 
 client.once('ready', async () => {
-	await fn.collectionBuilders.slashCommands(client);
+	fn.collectionBuilders.slashCommands(client);
 	await fn.collectionBuilders.guildInfos(client);
-	await fn.setupCollectors(client);
+	await fn.collectionBuilders.messageCollectors(client);
 	console.log('Ready!');
 	client.user.setActivity({ name: strings.activity.name, type: ActivityType.Watching });
 	if (isDev == 'false') {
@@ -84,6 +84,11 @@ client.on('interactionCreate', async interaction => {
 		}
 	}
 });
+
+client.on('messageUpdate', (oldMessage, newMessage) => {
+	if (process.env.DEBUG) console.log(`Message updated`);
+});
+
 
 process.on('unhandledRejection', error => {
 	console.error('Unhandled promise rejection:', error);
