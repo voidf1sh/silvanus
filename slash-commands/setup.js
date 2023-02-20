@@ -39,6 +39,15 @@ module.exports = {
 		.addSubcommand(sc =>
 			sc.setName('view')
 				.setDescription('View your server\'s configuration'))
+		.addSubcommand(sc =>
+			sc.setName('reset')
+			.setDescription('Remove all server configuration from the database')
+			.addBooleanOption(o =>
+				o.setName('confirm')
+				.setDescription('WARNING THIS IS IRREVERSIBLE')
+				.setRequired(true)
+			)
+		)
 		.setDefaultMemberPermissions(PermissionFlagsBits.Administrator),
 	async execute(interaction) {
 		await interaction.deferReply({ ephemeral: true });
@@ -85,6 +94,27 @@ module.exports = {
 				} catch (err) {
 					console.error(err);
 					await interaction.editReply(fn.builders.errorEmbed("There was an error running the command."));
+				}
+				break;
+			case "reset":
+				if (interaction.client.guildInfos.has(interaction.guildId)) {
+					let guildInfo = interaction.client.guildInfos.get(interaction.guildId);
+					if (interaction.options.getBoolean('confirm')) {
+						fn.reset(interaction).then(res => {
+							interaction.editReply(fn.builders.embed(strings.status.reset)).catch(err => {
+								console.error(err);
+							});
+						}).catch(err => {
+							console.error(err);
+							interaction.editReply(strings.status.resetError).catch(err => {
+								console.error(err);
+							});
+						});
+					} else {
+						await interaction.editReply(fn.builders.embed("You must select 'true' to confirm setup reset. No changes have been made.")).catch(e => console.error(e));
+					}
+				} else {
+					throw "Guild doesn't exist in database!";
 				}
 				break;
 			default:
