@@ -2,6 +2,7 @@ const { SlashCommandBuilder, PermissionFlagsBits } = require('discord.js');
 const { GuildInfo } = require('../modules/CustomClasses.js');
 const dbfn = require('../modules/dbfn.js');
 const fn = require('../modules/functions.js');
+const strings = require('../data/strings.json');
 
 module.exports = {
 	data: new SlashCommandBuilder()
@@ -55,6 +56,10 @@ module.exports = {
 						.setRequired(false)
 				)
 		)
+		.addSubcommand(sc =>
+			sc.setName('disable')
+			.setDescription('Disable the notification relay')
+		)
 		.setDefaultMemberPermissions(PermissionFlagsBits.ManageRoles),
 	async execute(interaction) {
 		try {
@@ -69,7 +74,7 @@ module.exports = {
 						const fruitMessage = interaction.options.getString('fruitmessage') ? interaction.options.getString('fruitmessage') : interaction.options.getString('watermessage');
 						const reminderChannel = interaction.options.getChannel('pingchannel');
 						let guildInfo = interaction.client.guildInfos.get(interaction.guildId);
-						guildInfo.setReminders(waterMessage, fruitMessage, reminderChannel.id, watchChannel.id);
+						guildInfo.setReminders(waterMessage, fruitMessage, reminderChannel.id, watchChannel.id, true);
 						let query = guildInfo.queryBuilder("setReminders");
 						await dbfn.setGuildInfo(query);
 						const replyParts = [
@@ -86,7 +91,7 @@ module.exports = {
 						const reminderChannel = interaction.options.getChannel('pingchannel');
 						let guildInfo = new GuildInfo()
 							.setId(interaction.guildId)
-							.setReminders(waterMessage, fruitMessage, reminderChannel.id, watchChannel.id);
+							.setReminders(waterMessage, fruitMessage, reminderChannel.id, watchChannel.id, true);
 						let query = guildInfo.queryBuilder("setReminders");
 						await dbfn.setGuildInfo(query);
 						const replyParts = [
@@ -111,7 +116,7 @@ module.exports = {
 						const outFruitMessage = inFruitMessage ? inFruitMessage : guildInfo.fruitMessage;
 						const outReminderChannelId = inReminderChannel ? inReminderChannel.id : guildInfo.reminderChannelId;
 
-						guildInfo.setReminders(outWaterMessage, outFruitMessage, outReminderChannelId, outWatchChannelId);
+						guildInfo.setReminders(outWaterMessage, outFruitMessage, outReminderChannelId, outWatchChannelId, true);
 						let query = guildInfo.queryBuilder("setReminders");
 						await dbfn.setGuildInfo(query);
 						const replyParts = [
@@ -123,6 +128,17 @@ module.exports = {
 						fn.collectionBuilders.guildInfos(interaction.client);
 					} else {
 						await interaction.editReply(fn.builders.errorEmbed("There is no existing notification relay to update!")).catch(e => console.error(e));
+					}
+					break;
+				case 'disable':
+					if (interaction.client.guildInfos.has(interaction.guildId)) {
+						let guildInfo = interaction.client.guildInfos.get(interaction.guildId);
+						guildInfo.setReminders(undefined, undefined, undefined, undefined, false);
+						await dbfn.setGuildInfo(guildInfo.queryBuilder("setReminders")).catch(e => console.error(e));
+						await fn.collectionBuilders.guildInfos(interaction.client);
+						await interaction.editReply(fn.builders.embed(strings.status.optout)).catch(e => console.error(e));
+					} else {
+						await interaction.editReply(fn.builders.errorEmbed("A notification relay has not been set up yet!")).catch(e => console.error(e));
 					}
 					break;
 				default:
