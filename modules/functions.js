@@ -563,6 +563,28 @@ const functions = {
 	getWaterTime(size) {
 		return Math.floor(Math.pow(size * 0.07 + 5, 1.1)); // Seconds
 	},
+	parseWaterTime(seconds) {
+		// 60 secs in min
+		// 3600 secs in hr
+		// 86400 sec in day
+
+		let waterParts = {
+			value: seconds,
+			units: "secs"
+		};
+
+		if (60 < seconds && seconds <= 3600) { // Minutes
+			waterParts.value = parseFloat(seconds / 60).toFixed(1);
+			waterParts.units = "mins";
+		} else if (3600 < seconds && seconds <= 86400) {
+			waterParts.value = parseFloat(seconds / 3600).toFixed(1);
+			waterParts.units = "hrs";
+		} else if (86400 < seconds) {
+			waterParts.value = parseFloat(seconds / 86400).toFixed(1);
+			waterParts.units = "days";
+		}
+		return `${waterParts.value} ${waterParts.units}`;
+	},
 	timeToHeight(beginHeight, destHeight) {
 		return new Promise((resolve, reject) => {
 			let time = 0;
@@ -617,7 +639,7 @@ const functions = {
 		let guildInfos = client.guildInfos;
 		guildInfos.set("collectors", []);
 		await guildInfos.forEach(async guildInfo => {
-			if (guildInfo.watchChannelId != "" && guildInfo instanceof GuildInfo) {
+			if ( guildInfo instanceof GuildInfo && guildInfo.watchChannelId != "" && guildInfo.notificationsEnabled) {
 				const guild = await client.guilds.fetch(guildInfo.guildId);
 				// console.log(guildInfo instanceof GuildInfo);
 				const channel = await guild.channels.fetch(guildInfo.watchChannelId);
