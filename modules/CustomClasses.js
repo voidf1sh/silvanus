@@ -23,6 +23,7 @@ module.exports = {
             this.fruitRoleId = "";
             this.reminderChannelId = "";
             this.watchChannelId = "";
+            this.notificationsEnabled = false;
         }
     
         setId(id) {
@@ -47,11 +48,12 @@ module.exports = {
             this.leaderboardChannelId = channelId;
             return this;
         }
-        setReminders(waterMessage, fruitMessage, reminderChannelId, watchChannelId) {
-            this.waterMessage = waterMessage;
-            this.fruitMessage = fruitMessage;
-            this.reminderChannelId = reminderChannelId;
-            this.watchChannelId = watchChannelId;
+        setReminders(waterMessage, fruitMessage, reminderChannelId, watchChannelId, enabled) {
+            if (waterMessage) this.waterMessage = waterMessage;
+            if (fruitMessage) this.fruitMessage = fruitMessage;
+            if (reminderChannelId) this.reminderChannelId = reminderChannelId;
+            if (watchChannelId) this.watchChannelId = watchChannelId;
+            if (enabled) this.notificationsEnabled = enabled;
             return this;
         }
         setRoles(waterRoleId, fruitRoleId) {
@@ -102,16 +104,18 @@ module.exports = {
                     break;
                 case "setReminders":
                     queryParts = [
-                        `INSERT INTO guild_info (guild_id, water_message, fruit_message, reminder_channel_id, watch_channel_id) VALUES (`,
+                        `INSERT INTO guild_info (guild_id, water_message, fruit_message, reminder_channel_id, watch_channel_id, notifications_enabled) VALUES (`,
                         `${db.escape(this.guildId)},`,
                         `${db.escape(this.waterMessage)},`,
                         `${db.escape(this.fruitMessage)},`,
                         `${db.escape(this.reminderChannelId)},`,
-                        `${db.escape(this.watchChannelId)}`,
+                        `${db.escape(this.watchChannelId)},`,
+                        `${db.escape(this.notificationsEnabled)}`,
                         `) ON DUPLICATE KEY UPDATE water_message = ${db.escape(this.waterMessage)}, `,
                         `fruit_message = ${db.escape(this.fruitMessage)}, `,
                         `reminder_channel_id = ${db.escape(this.reminderChannelId)}, `,
-                        `watch_channel_id = ${db.escape(this.watchChannelId)}`
+                        `watch_channel_id = ${db.escape(this.watchChannelId)},`,
+                        `notifications_enabled = ${db.escape(this.notificationsEnabled)}`
                     ];
                     return queryParts.join('');
                     break;

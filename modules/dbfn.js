@@ -68,7 +68,7 @@ module.exports = {
 					.setHeight(row.tree_height)
 					.setTreeMessage(row.tree_message_id, row.tree_channel_id)
 					.setLeaderboardMessage(row.leaderboard_message_id, row.leaderboard_channel_id)
-					.setReminders(row.water_message, row.fruit_message, row.reminder_channel_id, row.watch_channel_id)
+					.setReminders(row.water_message, row.fruit_message, row.reminder_channel_id, row.watch_channel_id, row.notifications_enabled)
 					.setRoles(row.water_role_id, row.fruit_role_id);
 				db.end();
 				resolve(guildInfo);
@@ -111,7 +111,7 @@ module.exports = {
 						.setHeight(row.tree_height)
 						.setTreeMessage(row.tree_message_id, row.tree_channel_id)
 						.setLeaderboardMessage(row.leaderboard_message_id, row.leaderboard_channel_id)
-						.setReminders(row.water_message, row.fruit_message, row.reminder_channel_id, row.watch_channel_id)
+						.setReminders(row.water_message, row.fruit_message, row.reminder_channel_id, row.watch_channel_id, row.notifications_enabled)
 						.setRoles(row.water_role_id, row.fruit_role_id)
 					);
 				}
