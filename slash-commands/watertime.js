@@ -6,13 +6,21 @@ module.exports = {
 	data: new SlashCommandBuilder()
 		.setName('watertime')
 		.setDescription('Calculate the watering time for a given tree height')
-		.addStringOption(o => 
+		.addIntegerOption(o => 
 			o.setName('height')
-			 .setDescription('Tree height in feet, numbers ONLY')
-			 .setRequired(true)),
+			 .setDescription('Tree height')
+			 .setRequired(true))
+		.addBooleanOption(o =>
+			o.setName('private')
+			.setDescription('Should the response be private? Default: true')
+			.setRequired(false)),
 	async execute(interaction) {
-		await interaction.deferReply();
-		const treeHeight = interaction.options.getString('height');
-		await interaction.editReply(`A tree that is ${treeHeight}ft tall will have a watering time of ${fn.getWaterTime(treeHeight)} minutes.`);
+		const treeHeight = interaction.options.getInteger('height');
+		const privateOpt = interaction.options.getBoolean('private');
+		const private = privateOpt != undefined ? privateOpt : true;
+		await interaction.deferReply( {ephemeral: private });
+		const waterSeconds = fn.getWaterTime(treeHeight);
+		const waterTime = fn.parseWaterTime(waterSeconds);
+		await interaction.editReply(`A tree that is ${treeHeight}ft tall will have a watering time of ${waterTime}.`);
 	},
 };
