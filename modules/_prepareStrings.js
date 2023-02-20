@@ -1,8 +1,8 @@
 const commands = [
     {raw: "`/compare`", clickable: "</compare:1077058896469966889>"},
-    {raw: "`/relay set`", clickable: "</relay set:0>"},
-    {raw: "`/relay update`", clickable: "</relay update:0>"},
-    {raw: "`/relay disable`", clickable: "</relay disable:0>"},
+    {raw: "`/relay set`", clickable: "</relay set:1077322799032578152>"},
+    {raw: "`/relay update`", clickable: "</relay update:1077322799032578152>"},
+    {raw: "`/relay disable`", clickable: "</relay disable:1077322799032578152>"},
     {raw: "`/rolemenu`", clickable: "</rolemenu:1077058896469966892>"},
     {raw: "`/watertime`", clickable: "</watertime:1077058896469966895>"},
     {raw: "`/timetoheight`", clickable: "</timetoheight:1077058896469966894>"},
