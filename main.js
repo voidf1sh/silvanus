@@ -85,10 +85,6 @@ client.on('interactionCreate', async interaction => {
 	}
 });
 
-client.on('messageUpdate', (oldMessage, newMessage) => {
-	if (process.env.DEBUG) console.log(`Message updated`);
-});
-
 
 process.on('unhandledRejection', error => {
 	console.error('Unhandled promise rejection:', error);
