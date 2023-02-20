@@ -36,6 +36,9 @@ module.exports = {
 						.setRequired(false)
 				)
 		)
+		.addSubcommand(sc =>
+			sc.setName('view')
+				.setDescription('View your server\'s configuration'))
 		.setDefaultMemberPermissions(PermissionFlagsBits.Administrator),
 	async execute(interaction) {
 		await interaction.deferReply({ ephemeral: true });
@@ -69,6 +72,19 @@ module.exports = {
 					await dbfn.setGuildInfo(guildInfo.queryBuilder("setRoles"));
 					await fn.collectionBuilders.guildInfos(interaction.client);
 					await interaction.editReply(fn.builders.embeds.treeRoleMenu(guildInfo)).catch(e => console.error(e));
+				}
+				break;
+			case "view":
+				try {
+					if (interaction.client.guildInfos.has(interaction.guildId)) {
+						let guildInfo = interaction.client.guildInfos.get(interaction.guildId);
+						await interaction.editReply(fn.builders.embed(guildInfo.generateSetupInfo()));
+					} else {
+						await interaction.editReply(fn.builders.errorEmbed("Guild doesn't exist in database!"));
+					}
+				} catch (err) {
+					console.error(err);
+					await interaction.editReply(fn.builders.errorEmbed("There was an error running the command."));
 				}
 				break;
 			default:
