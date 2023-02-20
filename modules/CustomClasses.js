@@ -54,9 +54,9 @@ module.exports = {
             this.watchChannelId = watchChannelId;
             return this;
         }
-        setRoles(waterRole, fruitRole) {
-            this.waterRoleId = waterRole.id;
-            if (fruitRole) this.fruitRoleId = fruitRole.id;
+        setRoles(waterRoleId, fruitRoleId) {
+            this.waterRoleId = waterRoleId;
+            if (fruitRoleId) this.fruitRoleId = fruitRoleId;
             return this;
         }
         queryBuilder(query) {
@@ -134,9 +134,12 @@ module.exports = {
                 case "setRoles":
                     if (this.fruitRoleId != "") {
                         queryParts = [
-                            `UPDATE guild_info SET water_role_id = ${db.escape(this.waterRoleId)}, `,
-                            `fruit_role_id = ${db.escape(this.fruitRoleId)} `,
-                            `WHERE guild_id = ${db.escape(this.guildId)}`
+                            `INSERT INTO guild_info (`,
+                            `guild_id, water_role_id, fruit_role_id`,
+                            `) VALUES (`,
+                            `${db.escape(this.guildId)}, ${db.escape(this.waterRoleId)}, ${db.escape(this.fruitRoleId)}`,
+                            `) ON DUPLICATE KEY UPDATE water_role_id = ${db.escape(this.waterRoleId)}, `,
+                            `fruit_role_id = ${db.escape(this.fruitRoleId)}`
                         ];
                     } else {
                         queryParts = [

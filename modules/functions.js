@@ -543,7 +543,7 @@ const functions = {
 			const comparedRankings = await this.rankings.compare(interaction, guildInfo);
 
 			const embed = this.builders.comparisonEmbed(comparedRankings, guildInfo);
-			await interaction.update(embed).catch(err => console.error(err));
+			await interaction.update(embed).catch(e => console.error(e));
 		} else {
 			await interaction.update(this.builders.errorEmbed(findMessagesResponse.status));
 		}
