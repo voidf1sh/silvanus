@@ -18,8 +18,8 @@ module.exports = {
 				)
 				.addChannelOption(o =>
 					o.setName('leaderboardchannel')
-						.setDescription('If your leaderboard isn\'t in the same channel, where is it?')
-						.setRequired(false)
+						.setDescription('What channel is your leaderboard in?')
+						.setRequired(true)
 				)
 		)
 		.addSubcommand(sc =>
@@ -41,12 +41,12 @@ module.exports = {
 				.setDescription('View your server\'s configuration'))
 		.addSubcommand(sc =>
 			sc.setName('reset')
-			.setDescription('Remove all server configuration from the database')
-			.addBooleanOption(o =>
-				o.setName('confirm')
-				.setDescription('WARNING THIS IS IRREVERSIBLE')
-				.setRequired(true)
-			)
+				.setDescription('Remove all server configuration from the database')
+				.addBooleanOption(o =>
+					o.setName('confirm')
+						.setDescription('WARNING THIS IS IRREVERSIBLE')
+						.setRequired(true)
+				)
 		)
 		.setDefaultMemberPermissions(PermissionFlagsBits.Administrator),
 	async execute(interaction) {
@@ -54,15 +54,27 @@ module.exports = {
 		const subcommand = interaction.options.getSubcommand();
 		switch (subcommand) {
 			case "compare":
+				const treeChannel = interaction.options.getChannel('treechannel');
+				const leaderboardChannel = interaction.options.getChannel('leaderboardchannel');
 				if (interaction.client.guildInfos.has(interaction.guildId)) {
 					let guildInfo = interaction.client.guildInfos.get(interaction.guildId);
-					const findMessagesResponse = await fn.messages.find(interaction, guildInfo);
-					await interaction.editReply(findMessagesResponse.status).catch(e => console.error(e));
+					guildInfo.setTreeMessage(undefined, treeChannel.id);
+					guildInfo.setLeaderboardMessage(undefined, leaderboardChannel.id);
+					// Update the database
+					await dbfn.setGuildInfo(guildInfo.queryBuilder("setTreeMessage")).catch(e => console.error(e));
+					await dbfn.setGuildInfo(guildInfo.queryBuilder("setLeaderboardMessage")).catch(e => console.error(e));
+					const reply = `Tree Channel: <#${treeChannel.id}> | Leaderboard Channel: <#${leaderboardChannel.id}>`;
+					await interaction.editReply(fn.builders.embed(reply)).catch(e => console.error(e));
 				} else {
 					let guildInfo = new GuildInfo()
-						.setId(interaction.guildId);
-					const findMessagesResponse = await fn.messages.find(interaction, guildInfo);
-					await interaction.editReply(findMessagesResponse.status).catch(e => console.error(e));
+						.setId(interaction.guildId)
+						.setTreeMessage(undefined, treeChannel.id)
+						.setLeaderboardMessage(undefined, leaderboardChannel.id);
+					// Update the database
+					await dbfn.setGuildInfo(guildInfo.queryBuilder("setTreeMessage")).catch(e => console.error(e));
+					await dbfn.setGuildInfo(guildInfo.queryBuilder("setLeaderboardMessage")).catch(e => console.error(e));
+					const reply = `Tree Channel: <#${treeChannel.id}> | Leaderboard Channel: <#${leaderboardChannel.id}>`;
+					await interaction.editReply(fn.builders.embed(reply)).catch(e => console.error(e));
 				}
 				break;
 			case "rolemenu":
