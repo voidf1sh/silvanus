@@ -22,7 +22,7 @@ console.log(`Token: ${token} Client ID: ${clientId}`);
 
 const rest = new REST({ version: '9' }).setToken(token);
 
-(async () => {
+async function deleteCommands() {
 	try {
 		console.log('Started deleting application (/) commands.');
 
@@ -35,11 +35,11 @@ const rest = new REST({ version: '9' }).setToken(token);
 	} catch (error) {
 		console.error(error);
 	}
-})();
+}
 
-(async () => {
+async function uploadCommands() {
 	try {
-		console.log('Started refreshing application (/) commands.');
+		console.log('Started reloading application (/) commands.');
 
 		await rest.put(
 			Routes.applicationCommands(clientId),
@@ -51,4 +51,9 @@ const rest = new REST({ version: '9' }).setToken(token);
 	} catch (error) {
 		console.error(error);
 	}
+}
+
+(async () => {
+	await deleteCommands();
+	await uploadCommands();
 })();
