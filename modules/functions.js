@@ -43,6 +43,17 @@ const functions = {
 				client.guildInfos.set(guildInfo.guildId, guildInfo);
 			}
 			return 'guildInfos Collection Built';
+		},
+		async messageCollectors(client) {
+			// Create an empty collection for MessageCollectors
+			if (!client.messageCollectors) client.messageCollectors = new Discord.Collection();
+			client.messageCollectors.clear();
+			// Get all of the guild infos from the client
+			const { guildInfos, messageCollectors } = client;
+			// Iterate over each guild info
+			await guildInfos.forEach(async guildInfo => {
+				await functions.collectors.create(client, guildInfo);
+			});
 		}
 	},
 	builders: {
@@ -528,6 +539,59 @@ const functions = {
 			await member.roles.remove(role).catch(err => console.error("Error taking the role: " + err + "\n" + JSON.stringify(role)));
 		}
 	},
+	collectors: {
+		async create(client, guildInfo) {
+			// If a collector is already setup
+			if (client.messageCollectors.has(guildInfo.guildId)) {
+				// Close the collector
+				await this.end(client, guildInfo);
+			}
+			// Make sure guildInfo is what we expect, the watch channel isnt blank, and notifications are enabled
+			if (guildInfo instanceof GuildInfo && guildInfo.watchChannelId != "" && guildInfo.notificationsEnabled) {
+				// Fetch the Guild
+				const guild = await client.guilds.fetch(guildInfo.guildId);
+				// Fetch the Channel
+				const channel = await guild.channels.fetch(guildInfo.watchChannelId);
+				// Create the filter function
+				const filter = message => {
+					// Discard any messages sent by Silvanus
+					return message.author.id != process.env.BOTID;
+				}
+				// Create the collector
+				const collector = channel.createMessageCollector({ filter });
+				// Add the collector to the messageCollectors Collection
+				client.messageCollectors.set(guildInfo.guildId, collector);
+				collector.on('collect', message => {
+					// Check for manual relay use with "water ping" and "fruit ping"
+					if (message.content.toLowerCase().includes("water ping")) {
+						functions.sendWaterReminder(guildInfo, guildInfo.waterMessage, guildInfo.reminderChannelId, guild);
+						return;
+					} else if (message.content.toLowerCase().includes("fruit ping")) {
+						functions.sendFruitReminder(guildInfo, guildInfo.fruitMessage, guildInfo.reminderChannelId, guild);
+						return;
+					}
+					// If the message doesn't contain an embed, we can ignore it
+					if (message.embeds == undefined) return;
+					if (message.embeds.length == 0) return;
+					// Check the description field of the embed to determine if it matches Grow A Tree's notification texts
+					if (message.embeds[0].data.description.includes(strings.notifications.water)) {
+						functions.sendWaterReminder(guildInfo, guildInfo.waterMessage, guildInfo.reminderChannelId, guild);
+					} else if (message.embeds[0].data.description.includes(strings.notifications.fruit)) {
+						functions.sendFruitReminder(guildInfo, guildInfo.fruitMessage, guildInfo.reminderChannelId, guild);
+					}
+				});
+			}
+		},
+		async end(client, guildInfo) {
+			if (!client.messageCollectors) throw "No Message Collectors";
+			if (!client.messageCollectors.has(guildInfo.guildId)) throw "Guild doesn't have a Message Collector";
+			const collector = client.messageCollectors.get(guildInfo.guildId);
+			// Close the collector
+			await collector.stop();
+			// Remove the collector from the messageCollectors Collection
+			client.messageCollectors.delete(guildInfo.guildId);
+		}
+	},
 	async refresh(interaction) {
 		// const getGuildInfoResponse = await dbfn.getGuildInfo(interaction.guildId);
 		// let guildInfo = getGuildInfoResponse.data;
@@ -642,9 +706,9 @@ const functions = {
 	},
 	async setupCollectors(client) {
 		let guildInfos = client.guildInfos;
-		guildInfos.set("collectors", []);
+		let collectorsArray = [];
 		await guildInfos.forEach(async guildInfo => {
-			if ( guildInfo instanceof GuildInfo && guildInfo.watchChannelId != "" && guildInfo.notificationsEnabled) {
+			if (guildInfo instanceof GuildInfo && guildInfo.watchChannelId != "" && guildInfo.notificationsEnabled) {
 				const guild = await client.guilds.fetch(guildInfo.guildId);
 				// console.log(guildInfo instanceof GuildInfo);
 				const channel = await guild.channels.fetch(guildInfo.watchChannelId);
@@ -671,29 +735,36 @@ const functions = {
 				});
 			}
 		});
+		guildInfos.set("collectors", collectorsArray);
 	},
-	async setupCollector(channel, guildInfo) {
-		const filter = message => {
-			return message.author.id != process.env.BOTID;
+	async setupCollector(channel, interaction) {
+		if (interaction.client.guildInfos.has(interaction.guildId)) {
+			let collectors = interaction.client.guildInfos.get('collectors');
+			let guildInfo = interaction.client.guildInfos.get(interaction.guildId);
+			const filter = message => {
+				return message.author.id != process.env.BOTID;
+			}
+			const collector = channel.createMessageCollector({ filter });
+			collectors.push(collector);
+			collector.on('collect', message => {
+				if (message.content.toLowerCase().includes("water ping")) {
+					this.sendWaterReminder(guildInfo, guildInfo.waterMessage, guildInfo.reminderChannelId, guild);
+					return;
+				} else if (message.content.toLowerCase().includes("fruit ping")) {
+					this.sendFruitReminder(guildInfo, guildInfo.fruitMessage, guildInfo.reminderChannelId, guild);
+					return;
+				}
+				if (message.embeds == undefined) return;
+				if (message.embeds.length == 0) return;
+				if (message.embeds[0].data.description.includes(strings.notifications.water)) {
+					this.sendWaterReminder(guildInfo, guildInfo.waterMessage, guildInfo.reminderChannelId, guild);
+				} else if (message.embeds[0].data.description.includes(strings.notifications.fruit)) {
+					this.sendFruitReminder(guildInfo, guildInfo.fruitMessage, guildInfo.reminderChannelId, guild);
+				}
+			});
+		} else {
+			throw "Guild doesn't exist in database!";
 		}
-		const collector = channel.createMessageCollector({ filter });
-		collector.on('collect', message => {
-			if (message.content.toLowerCase().includes("water ping")) {
-				this.sendWaterReminder(guildInfo, guildInfo.waterMessage, guildInfo.reminderChannelId, guild);
-				return;
-			} else if (message.content.toLowerCase().includes("fruit ping")) {
-				this.sendFruitReminder(guildInfo, guildInfo.fruitMessage, guildInfo.reminderChannelId, guild);
-				return;
-			}
-			if (message.embeds == undefined) return;
-			if (message.embeds.length == 0) return;
-			guildInfo = client.guildInfos.get(guild.id);
-			if (message.embeds[0].data.description.includes(strings.notifications.water)) {
-				this.sendWaterReminder(guildInfo, guildInfo.waterMessage, guildInfo.reminderChannelId, guild);
-			} else if (message.embeds[0].data.description.includes(strings.notifications.fruit)) {
-				this.sendFruitReminder(guildInfo, guildInfo.fruitMessage, guildInfo.reminderChannelId, guild);
-			}
-		});
 	}
 };
 

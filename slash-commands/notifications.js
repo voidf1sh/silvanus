@@ -6,7 +6,7 @@ const strings = require('../data/strings.json');
 
 module.exports = {
 	data: new SlashCommandBuilder()
-		.setName('notifications')
+		.setName('relay')
 		.setDescription('A notification relay for improved water and fruit notifications')
 		.addSubcommand(sc =>
 			sc.setName('set')
@@ -67,78 +67,115 @@ module.exports = {
 			const subcommand = interaction.options.getSubcommand();
 			// if (process.env.DEBUG) console.log(`${typeof subcommand}: ${subcommand}`);
 			switch (subcommand) {
+				// Set all components for the first time
 				case "set":
+					// If there is already a guildInfo object for this server
 					if (interaction.client.guildInfos.has(interaction.guildId)) {
-						const watchChannel = interaction.options.getChannel('watchchannel');
-						const waterMessage = interaction.options.getString('watermessage');
-						const fruitMessage = interaction.options.getString('fruitmessage') ? interaction.options.getString('fruitmessage') : interaction.options.getString('watermessage');
-						const reminderChannel = interaction.options.getChannel('pingchannel');
 						let guildInfo = interaction.client.guildInfos.get(interaction.guildId);
-						guildInfo.setReminders(waterMessage, fruitMessage, reminderChannel.id, watchChannel.id, true);
-						let query = guildInfo.queryBuilder("setReminders");
-						await dbfn.setGuildInfo(query);
-						const replyParts = [
-							`I'll watch <#${watchChannel.id}> for Grow A Tree Notifications and relay them to <#${reminderChannel.id}>.`,
-							`Water Message: ${waterMessage}`
-						];
-						if (fruitMessage != "") replyParts.push(`Fruit Message: ${fruitMessage}`);
-						await interaction.editReply(replyParts.join("\n")).catch(e => console.error(e));
-						fn.collectionBuilders.guildInfos(interaction.client);
-						fn.setupCollector(interaction.channel, guildInfo);
-					} else {
+						// Get options from the interaction
 						const watchChannel = interaction.options.getChannel('watchchannel');
 						const waterMessage = interaction.options.getString('watermessage');
+						// If the fruit message is set, use it, otherwise default to the water message.
 						const fruitMessage = interaction.options.getString('fruitmessage') ? interaction.options.getString('fruitmessage') : interaction.options.getString('watermessage');
 						const reminderChannel = interaction.options.getChannel('pingchannel');
+						// Set the reminder configuration in the GuildInfo object
+						guildInfo.setReminders(waterMessage, fruitMessage, reminderChannel.id, watchChannel.id, true);
+						// Update the guildInfos Collection
+						interaction.client.guildInfos.set(interaction.guildId, guildInfo);
+						// Build a query to update the database
+						let query = guildInfo.queryBuilder("setReminders");
+						// Run the query
+						await dbfn.setGuildInfo(query);
+						// Set up a collector on the watch channel
+						fn.collectors.create(interaction.client, guildInfo);
+						// Compose a reply
+						const reply = [
+							`I'll watch <#${watchChannel.id}> for Grow A Tree Notifications and relay them to <#${reminderChannel.id}>.`,
+							`Water Message: ${waterMessage}`,
+							`Fruit Message: ${fruitMessage}`
+						].join("\n");
+						// Send the reply
+						await interaction.editReply(fn.builders.embed(reply)).catch(e => console.error(e));
+					} else {
+						// Get options from the interaction
+						const watchChannel = interaction.options.getChannel('watchchannel');
+						const waterMessage = interaction.options.getString('watermessage');
+						// If the fruit message is set, use it. Otherwise default to the water message
+						const fruitMessage = interaction.options.getString('fruitmessage') ? interaction.options.getString('fruitmessage') : interaction.options.getString('watermessage');
+						const reminderChannel = interaction.options.getChannel('pingchannel');
+						// Create a new GuildInfo object
 						let guildInfo = new GuildInfo()
 							.setId(interaction.guildId)
+							// Set the reminder configuration
 							.setReminders(waterMessage, fruitMessage, reminderChannel.id, watchChannel.id, true);
+						// Update the guildInfos Collection
+						interaction.client.guildInfos.set(interaction.guildId, guildInfo);
+						// Build a query to update the database
 						let query = guildInfo.queryBuilder("setReminders");
+						// Run the query
 						await dbfn.setGuildInfo(query);
-						const replyParts = [
+						// Create a messageCollector on the watch channel
+						fn.collectors.create(interaction.client, guildInfo);
+						// Compose a reply
+						const reply = [
 							`I'll watch <#${watchChannel.id}> for Grow A Tree Notifications and relay them to <#${reminderChannel.id}>.`,
-							`Water Message: ${waterMessage}`
-						];
-						if (fruitMessage != "") replyParts.push(`Fruit Message: ${fruitMessage}`);
-						await interaction.editReply(replyParts.join("\n")).catch(e => console.error(e));
-						fn.collectionBuilders.guildInfos(interaction.client);
-						fn.setupCollector(watchChannel, guildInfo);
+							`Water Message: ${waterMessage}`,
+							`Fruit Message: ${fruitMessage}`
+						].join("\n");
+						// Send the reply
+						await interaction.editReply(reply).catch(e => console.error(e));
 					}
 					break;
-				case "update":
+				case "update": // Update the relay configuration piecemeal
 					if (interaction.client.guildInfos.has(interaction.guildId)) {
 						let guildInfo = interaction.client.guildInfos.get(interaction.guildId);
+						
+						// Get all possible options from the interaction
 						const inWatchChannel = interaction.options.getChannel('watchchannel');
 						const inWaterMessage = interaction.options.getString('watermessage');
 						const inFruitMessage = interaction.options.getString('fruitmessage');
 						const inReminderChannel = interaction.options.getChannel('pingchannel');
 						
+						// Check if each option is set, if it is, use it. Otherwise use what was already set
 						const outWatchChannelId = inWatchChannel ? inWatchChannel.id : guildInfo.watchChannelId;
 						const outWaterMessage = inWaterMessage ? inWaterMessage : guildInfo.waterMessage;
 						const outFruitMessage = inFruitMessage ? inFruitMessage : guildInfo.fruitMessage;
 						const outReminderChannelId = inReminderChannel ? inReminderChannel.id : guildInfo.reminderChannelId;
-
+						
+						// Update the relay configuration
 						guildInfo.setReminders(outWaterMessage, outFruitMessage, outReminderChannelId, outWatchChannelId, true);
+						// Update the guildInfos Collection
+						interaction.client.guildInfos.set(interaction.guildId, guildInfo);
+						// Build a query to update the database
 						let query = guildInfo.queryBuilder("setReminders");
+						// Run the query
 						await dbfn.setGuildInfo(query);
-						const replyParts = [
+						// Create a messageCollector on the watch channel
+						fn.collectors.create(interaction.client, guildInfo);
+						// Compose a reply
+						const reply = [
 							`I'll watch <#${outWatchChannelId}> for Grow A Tree Notifications and relay them to <#${outReminderChannelId}>.`,
-							`Water Message: ${outWaterMessage}`
-						];
-						if (outFruitMessage != "") replyParts.push(`Fruit Message: ${outFruitMessage}`);
-						await interaction.editReply(replyParts.join("\n")).catch(e => console.error(e));
-						fn.collectionBuilders.guildInfos(interaction.client);
-						fn.setupCollector(inWatchChannel, guildInfo);
+							`Water Message: ${outWaterMessage}`,
+							`Fruit Message: ${outFruitMessage}`
+						].join("\n");
+						// Send the reply
+						await interaction.editReply(reply).catch(e => console.error(e));
 					} else {
 						await interaction.editReply(fn.builders.errorEmbed("There is no existing notification relay to update!")).catch(e => console.error(e));
 					}
 					break;
-				case 'disable':
+				case 'disable': // Disable the relay
 					if (interaction.client.guildInfos.has(interaction.guildId)) {
 						let guildInfo = interaction.client.guildInfos.get(interaction.guildId);
+						// Update the relay config with all undefined except for `enabled` which is false
 						guildInfo.setReminders(undefined, undefined, undefined, undefined, false);
+						// Update the guildInfos Collection
+						interaction.client.guildInfos.set(interaction.guildId, guildInfo);
+						// Update the database
 						await dbfn.setGuildInfo(guildInfo.queryBuilder("setReminders")).catch(e => console.error(e));
-						await fn.collectionBuilders.guildInfos(interaction.client);
+						// Close the collector
+						await fn.collectors.end(interaction.client, guildInfo).catch(e => console.error(e));
+						// Reply confirming disabling of relay
 						await interaction.editReply(fn.builders.embed(strings.status.optout)).catch(e => console.error(e));
 					} else {
 						await interaction.editReply(fn.builders.errorEmbed("A notification relay has not been set up yet!")).catch(e => console.error(e));
