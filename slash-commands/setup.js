@@ -114,7 +114,7 @@ module.exports = {
 						await interaction.editReply(fn.builders.embed("You must select 'true' to confirm setup reset. No changes have been made.")).catch(e => console.error(e));
 					}
 				} else {
-					throw "Guild doesn't exist in database!";
+					await interaction.editReply(fn.builders.errorEmbed("There is no configuration to delete.")).catch(e => console.error(e));
 				}
 				break;
 			default:
