@@ -84,6 +84,7 @@ module.exports = {
 						if (fruitMessage != "") replyParts.push(`Fruit Message: ${fruitMessage}`);
 						await interaction.editReply(replyParts.join("\n")).catch(e => console.error(e));
 						fn.collectionBuilders.guildInfos(interaction.client);
+						fn.setupCollector(interaction.channel, guildInfo);
 					} else {
 						const watchChannel = interaction.options.getChannel('watchchannel');
 						const waterMessage = interaction.options.getString('watermessage');
@@ -101,6 +102,7 @@ module.exports = {
 						if (fruitMessage != "") replyParts.push(`Fruit Message: ${fruitMessage}`);
 						await interaction.editReply(replyParts.join("\n")).catch(e => console.error(e));
 						fn.collectionBuilders.guildInfos(interaction.client);
+						fn.setupCollector(watchChannel, guildInfo);
 					}
 					break;
 				case "update":
@@ -126,6 +128,7 @@ module.exports = {
 						if (outFruitMessage != "") replyParts.push(`Fruit Message: ${outFruitMessage}`);
 						await interaction.editReply(replyParts.join("\n")).catch(e => console.error(e));
 						fn.collectionBuilders.guildInfos(interaction.client);
+						fn.setupCollector(inWatchChannel, guildInfo);
 					} else {
 						await interaction.editReply(fn.builders.errorEmbed("There is no existing notification relay to update!")).catch(e => console.error(e));
 					}
