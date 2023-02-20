@@ -54,6 +54,6 @@ async function uploadCommands() {
 }
 
 (async () => {
-	await deleteCommands();
+	// await deleteCommands();
 	await uploadCommands();
 })();
