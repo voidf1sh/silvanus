@@ -4,7 +4,7 @@ dotenv.config();
 
 const { REST } = require('@discordjs/rest');
 const { Routes } = require('discord-api-types/v9');
-const clientId = process.env.clientId;
+const clientId = process.env.BOTID;
 const token = process.env.TOKEN;
 const fs = require('fs');
 
@@ -18,13 +18,28 @@ for (const file of commandFiles) {
 	}
 }
 
-console.log(commands);
+console.log(`Token: ${token} Client ID: ${clientId}`);
 
 const rest = new REST({ version: '9' }).setToken(token);
 
-(async () => {
+async function deleteCommands() {
 	try {
-		console.log('Started refreshing application (/) commands.');
+		console.log('Started deleting application (/) commands.');
+
+		await rest.put(
+			Routes.applicationCommands(clientId),
+			{ body: "" },
+		);
+
+		console.log('Successfully deleted application (/) commands.');
+	} catch (error) {
+		console.error(error);
+	}
+}
+
+async function uploadCommands() {
+	try {
+		console.log('Started reloading application (/) commands.');
 
 		await rest.put(
 			Routes.applicationCommands(clientId),
@@ -36,4 +51,9 @@ const rest = new REST({ version: '9' }).setToken(token);
 	} catch (error) {
 		console.error(error);
 	}
+}
+
+(async () => {
+	await deleteCommands();
+	await uploadCommands();
 })();

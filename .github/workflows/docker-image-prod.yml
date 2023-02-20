@@ -1,4 +1,4 @@
-name: Silvanus-Dev Dockerization
+name: Silvanus Production Dockerization
 
 on:
   workflow_dispatch:
@@ -15,14 +15,14 @@ jobs:
 
     steps:
     - uses: actions/checkout@v3
-    - name: Build the Docker image v0idf1sh/silvanus-dev
-      run: docker build . --file Dockerfile --tag v0idf1sh/silvanus-dev
+    - name: Build the Docker image v0idf1sh/silvanus
+      run: docker build . --file Dockerfile --tag v0idf1sh/silvanus
     - name: Log into Docker Hub
       run: docker login -u $DHUB_UNAME -p $DHUB_PWORD
-    - name: Push image to Docker Hub v0idf1sh/silvanus-dev
-      run: docker push v0idf1sh/silvanus-dev
+    - name: Push image to Docker Hub v0idf1sh/silvanus
+      run: docker push v0idf1sh/silvanus
     - name: Set up a skeleton .env file
-      run: echo "TOKEN=${{secrets.DEVTOKEN}}" > .env && echo "BOTID=${{ secrets.CLIENTID }}" >> .env
+      run: echo "TOKEN=${{secrets.PRODTOKEN}}" > .env && echo "clientId=${{ secrets.PRODCLIENTID }}" >> .env
     - name: Install modules
       run: npm i
     - name: Refresh commands with Discord
