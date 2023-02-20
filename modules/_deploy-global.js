@@ -24,6 +24,21 @@ const rest = new REST({ version: '9' }).setToken(token);
 
 (async () => {
 	try {
+		console.log('Started deleting application (/) commands.');
+
+		await rest.put(
+			Routes.applicationCommands(clientId),
+			{ body: "" },
+		);
+
+		console.log('Successfully deleted application (/) commands.');
+	} catch (error) {
+		console.error(error);
+	}
+})();
+
+(async () => {
+	try {
 		console.log('Started refreshing application (/) commands.');
 
 		await rest.put(
