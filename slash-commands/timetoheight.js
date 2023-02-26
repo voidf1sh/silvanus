@@ -32,7 +32,7 @@ module.exports = {
 			.setRequired(false)
 		),
 	async execute(interaction) {
-		const private = interaction.options.getBoolean('private') ? interaction.options.getBoolean('private') : true;
+		const private = interaction.options.getBoolean('private') != undefined ? interaction.options.getBoolean('private') : true;
 		await interaction.deferReply({ ephemeral: private });
 		const inBeginHeight = interaction.options.getInteger('beginheight');
 		const endHeight = interaction.options.getInteger('endheight');
