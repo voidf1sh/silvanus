@@ -31,7 +31,7 @@ client.once('ready', async () => {
 	fn.collectionBuilders.slashCommands(client);
 	await fn.collectionBuilders.guildInfos(client);
 	await fn.collectionBuilders.messageCollectors(client);
-	checkRateLimits();
+	// checkRateLimits();
 	console.log('Ready!');
 	client.user.setActivity({ name: strings.activity.name, type: ActivityType.Watching });
 	if (isDev == 'false') {
