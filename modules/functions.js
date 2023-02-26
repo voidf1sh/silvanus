@@ -649,31 +649,32 @@ const functions = {
 		}
 		return `${waterParts.value} ${waterParts.units}`;
 	},
-	timeToHeight(beginHeight, destHeight) {
+	timeToHeight(beginHeight, destHeight, efficiency, quality) {
 		return new Promise((resolve, reject) => {
 			let time = 0;
-			for (let i = beginHeight; i < destHeight; i++) {
-				const waterTime = parseFloat(functions.getWaterTime(i));
-				// console.log("Height: " + i + "Time: " + waterTime);
-				time += waterTime;
+			if ((efficiency) && (quality)) {
+				for (let i = beginHeight; i < destHeight; i++) {
+					const randNum = Math.floor(Math.random() * 100);
+					const compostApplied = randNum <= efficiency;
+					if (compostApplied) {
+						let qualityPercent = quality / 100;
+						let waterTime = functions.getWaterTime(i);
+						let reductionTime = waterTime * qualityPercent;
+						let finalTime = waterTime - reductionTime;
+						time += parseFloat(finalTime);
+					} else {
+						time += parseFloat(functions.getWaterTime(i));
+					}
+				}
+			} else {
+				for (let i = beginHeight; i < destHeight; i++) {
+					const waterTime = parseFloat(functions.getWaterTime(i));
+					// console.log("Height: " + i + "Time: " + waterTime);
+					time += waterTime;
+				}
 			}
-
-			// 60 secs in min
-			// 3600 secs in hr
-			// 86400 sec in day
-
-			let units = " secs";
-			if (60 < time && time <= 3600) { // Minutes
-				time = parseFloat(time / 60).toFixed(1);
-				units = " mins";
-			} else if (3600 < time && time <= 86400) {
-				time = parseFloat(time / 3600).toFixed(1);
-				units = " hrs";
-			} else if (86400 < time) {
-				time = parseFloat(time / 86400).toFixed(1);
-				units = " days";
-			}
-			resolve(time + units);
+			
+			resolve(this.parseWaterTime(time));
 		});
 	},
 	sleep(ms) {
