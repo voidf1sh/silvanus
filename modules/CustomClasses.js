@@ -39,12 +39,12 @@ module.exports = {
             return this;
         }
         setTreeMessage(messageId, channelId) {
-            this.treeMessageId = messageId;
+            this.treeMessageId = messageId ? messageId : this.treeMessageId;
             this.treeChannelId = channelId;
             return this;
         }
         setLeaderboardMessage(messageId, channelId) {
-            this.leaderboardMessageId = messageId;
+            this.leaderboardMessageId = messageId ? messageId : this.leaderboardMessageId;
             this.leaderboardChannelId = channelId;
             return this;
         }
@@ -122,7 +122,7 @@ module.exports = {
                 case "setTreeMessage":
                     queryParts = [
                         `UPDATE guild_info SET tree_message_id = ${db.escape(this.treeMessageId)}, `,
-                        `tree_channel_id = ${db.escape(this.treeChannelId)}, `,
+                        `tree_channel_id = ${db.escape(this.treeChannelId)} `,
                         `WHERE guild_id = ${db.escape(this.guildId)}`
                     ];
                     return queryParts.join('');
@@ -130,7 +130,7 @@ module.exports = {
                 case "setLeaderboardMessage":
                     queryParts = [
                         `UPDATE guild_info SET leaderboard_message_id = ${db.escape(this.leaderboardMessageId)}, `,
-                        `leaderboard_channel_id = ${db.escape(this.leaderboardChannelId)}, `,
+                        `leaderboard_channel_id = ${db.escape(this.leaderboardChannelId)} `,
                         `WHERE guild_id = ${db.escape(this.guildId)}`
                     ];
                     return queryParts.join('');

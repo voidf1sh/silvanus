@@ -28,9 +28,10 @@ const dbfn = require('./modules/dbfn.js');
 const isDev = process.env.DEBUG;
 
 client.once('ready', async () => {
-	await fn.collectionBuilders.slashCommands(client);
+	fn.collectionBuilders.slashCommands(client);
 	await fn.collectionBuilders.guildInfos(client);
-	await fn.setupCollectors(client);
+	await fn.collectionBuilders.messageCollectors(client);
+	// checkRateLimits();
 	console.log('Ready!');
 	client.user.setActivity({ name: strings.activity.name, type: ActivityType.Watching });
 	if (isDev == 'false') {
@@ -84,6 +85,30 @@ client.on('interactionCreate', async interaction => {
 		}
 	}
 });
+
+async function checkRateLimits(hi) {
+	const axios = require('axios');
+
+	// Make a GET request to the Discord API
+	await axios.get('https://discord.com/api/v10/users/@me', {
+		headers: {
+			'Authorization': `Bot ${token}`
+		}
+	}).then(response => {
+		// Get the rate limit headers
+		const remaining = response.headers['x-ratelimit-remaining'];
+		const reset = response.headers['x-ratelimit-reset'];
+
+		// Log the rate limit headers
+		console.log(`Remaining requests: ${remaining}`);
+		console.log(`Reset time (Unix epoch seconds): ${reset}`);
+	}).catch(error => {
+		console.error(error);
+	});
+	await fn.sleep(500).then(async () =>{
+		await checkRateLimits();
+	})
+}
 
 process.on('unhandledRejection', error => {
 	console.error('Unhandled promise rejection:', error);
