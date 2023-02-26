@@ -689,6 +689,7 @@ const functions = {
 	async sendWaterReminder(guildInfo, message, channelId, guild) {
 		const reminderChannel = await guild.channels.fetch(channelId);
 		const reminderEmbed = functions.builders.waterReminderEmbed(message, guildInfo);
+		console.log(`Water Relay: ${guild.name}: ${guildInfo.treeName}`);
 		await reminderChannel.send(reminderEmbed).then(async m => {
 			if (!m.deletable) return;
 			await this.sleep(500).then(async () => {
@@ -701,6 +702,7 @@ const functions = {
 	async sendFruitReminder(guildInfo, message, channelId, guild) {
 		const reminderChannel = await guild.channels.fetch(channelId);
 		const reminderEmbed = functions.builders.fruitReminderEmbed(message, guildInfo);
+		console.log(`Fruit Relay: ${guild.name}: ${guildInfo.treeName}`);
 		await reminderChannel.send(reminderEmbed).then(async m => {
 			if (!m.deletable) return;
 			await this.sleep(500).then(async () => {
