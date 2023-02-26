@@ -25,9 +25,15 @@ module.exports = {
 			o.setName('quality')
 			.setDescription('Compost quality percentage, rounded')
 			.setRequired(false)
+		)
+		.addBooleanOption(o =>
+			o.setName('private')
+			.setDescription('Should the reply be visible only to you?')
+			.setRequired(false)
 		),
 	async execute(interaction) {
-		await interaction.deferReply({ ephemeral: true });
+		const private = interaction.options.getBoolean('private') ? interaction.options.getBoolean('private') : true;
+		await interaction.deferReply({ ephemeral: private });
 		const inBeginHeight = interaction.options.getInteger('beginheight');
 		const endHeight = interaction.options.getInteger('endheight');
 		const efficiency = interaction.options.getInteger('efficiency');
