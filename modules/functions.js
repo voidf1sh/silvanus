@@ -123,6 +123,16 @@ const functions = {
 					.setDescription(description)
 					.setFooter({ text: strings.embeds.roleMenuFooter });
 				return { embeds: [embed], components: [actionRow] };
+			},
+			information(content, fields) {
+				const embed = new EmbedBuilder()
+					.setColor(strings.embeds.color)
+					.setTitle('Information')
+					.setDescription(content)
+					.setFooter({ text: `v${package.version} - ${strings.embeds.footer}` });
+				if (fields) embed.addFields(fields);
+				const messageContents = { embeds: [embed], ephemeral: true };
+				return messageContents;
 			}
 		},
 		comparisonEmbed(content, guildInfo) {
@@ -652,6 +662,9 @@ const functions = {
 	timeToHeight(beginHeight, destHeight, efficiency, quality) {
 		return new Promise((resolve, reject) => {
 			let time = 0;
+			let oldTime = 0;
+			let compostAppliedCount = 0;
+			let totalWaterCount = 0;
 			if ((efficiency) && (quality)) {
 				for (let i = beginHeight; i < destHeight; i++) {
 					const randNum = Math.floor(Math.random() * 100);
@@ -661,9 +674,15 @@ const functions = {
 						let waterTime = functions.getWaterTime(i);
 						let reductionTime = waterTime * qualityPercent;
 						let finalTime = waterTime - reductionTime;
+						compostAppliedCount++;
+						totalWaterCount++;
 						time += parseFloat(finalTime);
+						oldTime += waterTime;
 					} else {
-						time += parseFloat(functions.getWaterTime(i));
+						totalWaterCount++;
+						let waterTime = parseFloat(functions.getWaterTime(i));
+						time += waterTime;
+						oldTime += waterTime;
 					}
 				}
 			} else {
@@ -673,8 +692,15 @@ const functions = {
 					time += waterTime;
 				}
 			}
-			
-			resolve(this.parseWaterTime(time));
+			const readableWaterTime = this.parseWaterTime(time);
+			const savedTime = this.parseWaterTime(oldTime - time);
+			resolve({
+				time: readableWaterTime,
+				totalWaterCount: totalWaterCount ? totalWaterCount : undefined,
+				compostAppliedCount: compostAppliedCount ? compostAppliedCount : undefined,
+				average: totalWaterCount ? parseFloat((compostAppliedCount / totalWaterCount) * 100).toFixed(1) : undefined,
+				savedTime: savedTime
+			});
 		});
 	},
 	sleep(ms) {
