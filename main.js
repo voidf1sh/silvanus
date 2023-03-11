@@ -86,6 +86,11 @@ client.on('interactionCreate', async interaction => {
 	}
 });
 
+client.on('messageUpdate', async message => {
+	await fn.sleep(50);
+	await fn.messages.updateHandler(message);
+});
+
 async function checkRateLimits(hi) {
 	const axios = require('axios');
 
