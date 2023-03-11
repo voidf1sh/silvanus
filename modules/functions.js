@@ -2,7 +2,7 @@
 // dotenv for handling environment variables
 const dotenv = require('dotenv');
 dotenv.config();
-const isDev = process.env.isDev;
+const isDev = process.env.DEBUG === "true";
 const package = require('../package.json');
 
 // filesystem
@@ -275,9 +275,9 @@ const functions = {
 			});
 
 		},
-		async compare(interaction, guildInfo) {
+		async compare(guildInfo) {
 			try {
-				const getLeaderboardResponse = await dbfn.getLeaderboard(interaction.guildId);
+				const getLeaderboardResponse = await dbfn.getLeaderboard(guildInfo.guildId);
 				const leaderboard = getLeaderboardResponse.data; // [ { treeName: "Name", treeHeight: 1234.5, treeRank: 67 }, {...}, {...} ]
 
 				// Prepare the beginning of the comparison message
@@ -494,7 +494,7 @@ const functions = {
 		isTree(message) {
 			if (message.embeds.length > 0) {
 				// Grab the description and title
-				const {description, title} = message.embeds[0].data;
+				const { description, title } = message.embeds[0].data;
 				// Make sure it's a tree message
 				if (description.includes("Your tree is")) {
 					// Grab the name
@@ -509,21 +509,73 @@ const functions = {
 						treeName: treeName,
 						treeHeight: treeHeightFloat
 					};
+				} else {
+					return false;
 				}
 			} else {
 				return false;
 			}
 		},
+		// Checks if a message is a leaderboard message, and returns the entries if it is
 		isLeaderboard(message) {
 			if (message.embeds.length > 0) {
-				return message.embeds[0].data.title == "Tallest Trees";
+				// Grab the description and title from the embed
+				const { title, description } = message.embeds[0].data;
+				// Check that it's a Top Trees message
+				if (title == "Tallest Trees") {
+					// Break the description into an array of each line
+					const lines = description.split("\n");
+					const leaderboard = {
+						guildId: message.guildId,
+						entries: []
+					};
+
+					lines.forEach(line => {
+						// Skeleton entry:
+						const entry = {
+							treeRank: 0,
+							treeName: "",
+							treeHeight: 0,
+							hasPin: 0
+						}
+						// Break the line into parts separated by a hyphen -
+						const parts = line.split(" - ");
+						// Grab the rank
+
+						// Preset the indices to split the lines to get the data
+						const rankIndices = [parts[0].indexOf("#") + 1, parts[0].lastIndexOf("``")];
+						const nameIndices = [parts[1].indexOf("``") + 2, parts[1].lastIndexOf("``")];
+						const heightIndices = [0, parts[2].lastIndexOf("ft")];
+
+						// Set the data from the parts using the indices
+						entry.treeRank = parts[0].slice(...rankIndices);
+						entry.treeName = parts[1].slice(...nameIndices);
+						entry.treeHeight = parts[2].slice(...heightIndices);
+
+						// Go back and check for the first 3 as they use emojis instead of numbers, this will overwrite above
+						if (line.includes("🥇")) entry.treeRank = 1;
+						if (line.includes("🥈")) entry.treeRank = 2;
+						if (line.includes("🥉")) entry.treeRank = 3;
+
+						// Check for the pin showing ownership
+						if (line.includes("📍")) entry.hasPin = 1;
+
+						// Add the entry to the array
+						leaderboard.entries.push(entry);
+					});
+					return leaderboard;
+				} else {
+					return false;
+				}
 			} else {
 				return false;
 			}
 		},
 		async updateHandler(message) {
 			if (message.partial) {
-				message = await message.fetch();
+				message = await message.fetch().catch(e => {
+					throw e;
+				});
 			}
 			// Make sure the message is from Grow A Tree
 			if (message.author.id != strings.ids.growATree) return;
@@ -532,22 +584,79 @@ const functions = {
 			const isTree = this.isTree(message);
 			// Check if the message is a leaderboard
 			if (isLeaderboard) {
-				// Need to actually handle this later
-				// console.log("I've seen a leaderboard update.");
-			} else if (isTree) { // Check if the message is a tree
-				// console.log(`I've seen a tree update: ${isTree.treeName}: ${isTree.treeHeight}ft`);
+				if (isDev) console.log(`LU: ${message.guild.name}`);
 				let guildInfo;
+				let doDbUpdate = false;
 				if (message.client.guildInfos.has(message.guildId)) {
 					guildInfo = message.client.guildInfos.get(message.guildId);
-					guildInfo.setName(isTree.treeName)
-						.setHeight(isTree.treeHeight);
+					if ((guildInfo.leaderboardChannelId != message.channel.id) || (guildInfo.leaderboardMessageId != message.id)) {
+						guildInfo.setLeaderboardMessage(message.id, message.channel.id);
+						doDbUpdate = true;
+					}
 				} else {
 					guildInfo = new GuildInfo().setId(message.guildId)
-						.setName(isTree.treeName)
-						.setHeight(isTree.treeHeight);
+						.setLeaderboardMessage(message.id, message.channel.id);
+					doDbUpdate = true;
 				}
-				const query = guildInfo.queryBuilder("setTreeInfo");
-				await dbfn.setGuildInfo(query);
+				if (doDbUpdate) {
+					const query = guildInfo.queryBuilder("setLeaderboardMessage");
+					await dbfn.setGuildInfo(query);
+				}
+				await dbfn.uploadLeaderboard(isLeaderboard);
+				// Update the comparison message
+				// Check for valid message IDs
+				if (guildInfo.treeMessageId === "") throw strings.error.noTreeMessage;
+				if (guildInfo.leaderboardMessageId === "") throw strings.error.noLeaderboardMessage;
+				if (guildInfo.compareMessageId === "") throw strings.error.noCompareMessage;
+
+				// Fetch the messages
+				const { guild } = message;
+				// Tree
+				const treeChannel = await guild.channels.fetch(guildInfo.treeChannelId);
+				const treeMessage = await treeChannel.messages.fetch(guildInfo.treeMessageId);
+				// Leaderboard
+				const leaderboardChannel = await guild.channels.fetch(guildInfo.leaderboardChannelId);
+				const leaderboardMessage = await leaderboardChannel.messages.fetch(guildInfo.leaderboardMessageId);
+				// Comparison
+				const compareChannel = await guild.channels.fetch(guildInfo.compareChannelId);
+				const compareMessage = await compareChannel.messages.fetch(guildInfo.compareMessageId);
+
+				// Update the tree information
+				// Make sure we have a tree message and parse it
+				const isTree = this.isTree(treeMessage);
+				if (!isTree) throw "Tree message isn't actually a tree message!";
+				guildInfo.setTreeInfo(isTree.treeName, isTree.treeHeight);
+
+				// Grab the leaderboard
+				// Make sure it's a leaderboard and parse it
+				// const isLeaderboard = this.messages.isLeaderboard(leaderboardMessage);
+				// if (!isLeaderboard) throw "Leaderboard message isn't actually a leaderboard message!";
+				// Upload the leaderboard
+				// await dbfn.uploadLeaderboard(isLeaderboard);
+				// Build the string that shows the comparison // TODO Move the string building section to fn.builders?
+				const comparedRankings = await functions.rankings.compare(guildInfo);
+				const embed = functions.builders.comparisonEmbed(comparedRankings, guildInfo);
+				await compareMessage.edit(embed).catch(e => console.error(e));
+			} else if (isTree) {
+				// Check if the message is a tree
+				if (isDev) console.log(`TU: ${isTree.treeName}: ${isTree.treeHeight}ft`);
+				let guildInfo;
+				let doDbUpdate = false;
+				if (message.client.guildInfos.has(message.guildId)) {
+					guildInfo = message.client.guildInfos.get(message.guildId);
+					if ((guildInfo.treeName != isTree.treeName) || (guildInfo.treeHeight != isTree.treeHeight)) {
+						guildInfo.setTreeInfo(isTree.treeName, isTree.treeHeight, message.channel.id, message.id);
+						doDbUpdate = true;
+					}
+				} else {
+					guildInfo = new GuildInfo().setId(message.guildId)
+						.setTreeInfo(isTree.treeName, isTree.treeHeight, message.channel.id, message.id);
+					doDbUpdate = true;
+				}
+				if (doDbUpdate) {
+					const query = guildInfo.queryBuilder("setTreeInfo");
+					await dbfn.setGuildInfo(query);
+				}
 			}
 		}
 	},
@@ -652,23 +761,45 @@ const functions = {
 		}
 	},
 	async refresh(interaction) {
-		// const getGuildInfoResponse = await dbfn.getGuildInfo(interaction.guildId);
-		// let guildInfo = getGuildInfoResponse.data;
-		let guildInfo = interaction.client.guildInfos.get(interaction.guild.id);
-		const findMessagesResponse = await this.messages.find(interaction, guildInfo);
-		if (findMessagesResponse.code == 1) {
-			guildInfo = findMessagesResponse.data;
-			// Parse the tree
-			await this.tree.parse(interaction, guildInfo);
-			// Parse the leaderboard
-			await this.rankings.parse(interaction, guildInfo);
-			// Build the string that shows the comparison // TODO Move the string building section to fn.builders?
-			const comparedRankings = await this.rankings.compare(interaction, guildInfo);
 
+		if (interaction.client.guildInfos.has(interaction.guildId)) {
+			let guildInfo = interaction.client.guildInfos.get(interaction.guildId);
+			// Check for valid message IDs
+			if (guildInfo.treeMessageId === "") throw strings.error.noTreeMessage;
+			if (guildInfo.leaderboardMessageId === "") throw strings.error.noLeaderboardMessage;
+
+			// Fetch the messages
+			const { guild } = interaction;
+			// Tree
+			const treeChannel = await guild.channels.fetch(guildInfo.treeChannelId);
+			const treeMessage = await treeChannel.messages.fetch(guildInfo.treeMessageId);
+			// Leaderboard
+			const leaderboardChannel = await guild.channels.fetch(guildInfo.leaderboardChannelId);
+			const leaderboardMessage = await leaderboardChannel.messages.fetch(guildInfo.leaderboardMessageId);
+
+			// Update the comparison message information
+			guildInfo.setCompareMessage(interaction.channel.id, interaction.message.id);
+			const query = guildInfo.queryBuilder("setCompareMessage");
+			await dbfn.setGuildInfo(query);
+
+			// Update the tree information
+			// Make sure we have a tree message and parse it
+			const isTree = this.messages.isTree(treeMessage);
+			if (!isTree) throw "Tree message isn't actually a tree message!";
+			guildInfo.setTreeInfo(isTree.treeName, isTree.treeHeight);
+
+			// Grab the leaderboard
+			// Make sure it's a leaderboard and parse it
+			const isLeaderboard = this.messages.isLeaderboard(leaderboardMessage);
+			if (!isLeaderboard) throw "Leaderboard message isn't actually a leaderboard message!";
+			// Upload the leaderboard
+			await dbfn.uploadLeaderboard(isLeaderboard);
+			// Build the string that shows the comparison // TODO Move the string building section to fn.builders?
+			const comparedRankings = await this.rankings.compare(guildInfo);
 			const embed = this.builders.comparisonEmbed(comparedRankings, guildInfo);
 			await interaction.update(embed).catch(e => console.error(e));
 		} else {
-			await interaction.update(this.builders.errorEmbed(findMessagesResponse.status));
+			throw "Guild doesn't exist in database!";
 		}
 	},
 	reset(interaction) {
@@ -764,7 +895,7 @@ const functions = {
 	async sendWaterReminder(guildInfo, message, channelId, guild) {
 		const reminderChannel = await guild.channels.fetch(channelId);
 		const reminderEmbed = functions.builders.waterReminderEmbed(message, guildInfo);
-		console.log(`Water Relay: ${guild.name}: ${guildInfo.treeName}`);
+		if (isDev) console.log(`WR: ${guild.name}: ${guildInfo.treeName}`);
 		await reminderChannel.send(reminderEmbed).then(async m => {
 			if (!m.deletable) return;
 			await this.sleep(500).then(async () => {
@@ -777,7 +908,7 @@ const functions = {
 	async sendFruitReminder(guildInfo, message, channelId, guild) {
 		const reminderChannel = await guild.channels.fetch(channelId);
 		const reminderEmbed = functions.builders.fruitReminderEmbed(message, guildInfo);
-		console.log(`Fruit Relay: ${guild.name}: ${guildInfo.treeName}`);
+		if (isDev) console.log(`FR: ${guild.name}: ${guildInfo.treeName}`);
 		await reminderChannel.send(reminderEmbed).then(async m => {
 			if (!m.deletable) return;
 			await this.sleep(500).then(async () => {

@@ -24,6 +24,8 @@ module.exports = {
             this.reminderChannelId = "";
             this.watchChannelId = "";
             this.notificationsEnabled = false;
+            this.compareChannelId = "";
+            this.compareMessageId = "";
         }
     
         setId(id) {
@@ -43,9 +45,21 @@ module.exports = {
             this.treeChannelId = channelId;
             return this;
         }
+        setTreeInfo(name, height, channelId, messageId) {
+            this.treeName = name ? name : this.treeName;
+            this.treeHeight = height;
+            this.treeChannelId = channelId ? channelId : this.treeChannelId;
+            this.treeMessageId = messageId ? messageId : this.treeMessageId;
+            return this;
+        }
         setLeaderboardMessage(messageId, channelId) {
             this.leaderboardMessageId = messageId ? messageId : this.leaderboardMessageId;
-            this.leaderboardChannelId = channelId;
+            this.leaderboardChannelId = channelId ? channelId : this.leaderboardChannelId;
+            return this;
+        }
+        setCompareMessage(channelId, messageId) {
+            this.compareChannelId = channelId;
+            this.compareMessageId = messageId;
             return this;
         }
         setReminders(waterMessage, fruitMessage, reminderChannelId, watchChannelId, enabled) {
@@ -156,11 +170,22 @@ module.exports = {
                 case "setTreeInfo":
                     queryParts = [
                         `INSERT INTO guild_info (`,
-                        `guild_id, tree_name, tree_height`,
+                        `guild_id, tree_name, tree_height, tree_channel_id, tree_message_id`,
                         `) VALUES (`,
-                        `${db.escape(this.guildId)}, ${db.escape(this.treeName)}, ${db.escape(this.treeHeight)}`,
+                        `${db.escape(this.guildId)}, ${db.escape(this.treeName)}, ${db.escape(this.treeHeight)}, ${db.escape(this.treeChannelId)}, ${db.escape(this.treeMessageId)}`,
                         `) ON DUPLICATE KEY UPDATE tree_name = ${db.escape(this.treeName)}, `,
-                        `tree_height = ${db.escape(this.treeHeight)}`
+                        `tree_height = ${db.escape(this.treeHeight)}, `,
+                        `tree_channel_id = ${db.escape(this.treeChannelId)}, `,
+                        `tree_message_id = ${db.escape(this.treeMessageId)}`
+                    ];
+                    return queryParts.join('');
+                case "setCompareMessage":
+                    queryParts = [
+                        `INSERT INTO guild_info (`,
+                        `guild_id, compare_channel_id, compare_message_id`,
+                        `) VALUES (`,
+                        `${db.escape(this.guildId)}, ${db.escape(this.compareChannelId)}, ${db.escape(this.compareMessageId)}`,
+                        `) ON DUPLICATE KEY UPDATE compare_channel_id = ${db.escape(this.compareChannelId)}, compare_message_id = ${db.escape(this.compareMessageId)}`,
                     ];
                     return queryParts.join('');
                 default:

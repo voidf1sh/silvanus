@@ -51,7 +51,10 @@
 	},
 	"error": {
 		"noGuild": "Setup has not been completed yet. Try running </setup:1065407649363005561> or </help setup:1065346941166297129>",
-		"invalidSubcommand": "Invalid subcommand detected."
+		"invalidSubcommand": "Invalid subcommand detected.",
+		"noTreeMessage": "</tree:0> - Make sure you've sent or refreshed a Tree recently.",
+		"noLeaderboardMessage": "</top trees:0> - Make sure you've sent or refreshed the Tallest Trees leaderboard recently.",
+		"noCompareMessage": "</compare:0> - This is awkward, I've lost my own comparison message!"
 	},
 	"status": {
 		"treeAndLeaderboard": "Tree and leaderboard messages were both found, setup is complete. Run </setupinfo:1065413032374706196> to verify. Run </compare:1065346941166297128> to get started!",
