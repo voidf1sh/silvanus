@@ -7,21 +7,7 @@ const { GuildInfo } = require('../modules/CustomClasses.js');
 module.exports = {
 	data: new SlashCommandBuilder()
 		.setName('setup')
-		.setDescription('Attempt automatic configuration of the bot.')
-		.addSubcommand(sc =>
-			sc.setName('compare')
-				.setDescription('Set up the channels to be used with /compare')
-				.addChannelOption(o =>
-					o.setName('treechannel')
-						.setDescription('What channel is your tree in?')
-						.setRequired(true)
-				)
-				.addChannelOption(o =>
-					o.setName('leaderboardchannel')
-						.setDescription('What channel is your leaderboard in?')
-						.setRequired(true)
-				)
-		)
+		.setDescription('Configure some feature settings.')
 		.addSubcommand(sc =>
 			sc.setName('rolemenu')
 				.setDescription('Setup the roles to be used with /rolemenu')
@@ -53,30 +39,6 @@ module.exports = {
 		await interaction.deferReply({ ephemeral: true });
 		const subcommand = interaction.options.getSubcommand();
 		switch (subcommand) {
-			case "compare":
-				const treeChannel = interaction.options.getChannel('treechannel');
-				const leaderboardChannel = interaction.options.getChannel('leaderboardchannel');
-				if (interaction.client.guildInfos.has(interaction.guildId)) {
-					let guildInfo = interaction.client.guildInfos.get(interaction.guildId);
-					guildInfo.setTreeMessage(undefined, treeChannel.id);
-					guildInfo.setLeaderboardMessage(undefined, leaderboardChannel.id);
-					// Update the database
-					await dbfn.setGuildInfo(guildInfo.queryBuilder("setTreeMessage")).catch(e => console.error(e));
-					await dbfn.setGuildInfo(guildInfo.queryBuilder("setLeaderboardMessage")).catch(e => console.error(e));
-					const reply = `Tree Channel: <#${treeChannel.id}> | Leaderboard Channel: <#${leaderboardChannel.id}>`;
-					await interaction.editReply(fn.builders.embed(reply)).catch(e => console.error(e));
-				} else {
-					let guildInfo = new GuildInfo()
-						.setId(interaction.guildId)
-						.setTreeMessage(undefined, treeChannel.id)
-						.setLeaderboardMessage(undefined, leaderboardChannel.id);
-					// Update the database
-					await dbfn.setGuildInfo(guildInfo.queryBuilder("setTreeMessage")).catch(e => console.error(e));
-					await dbfn.setGuildInfo(guildInfo.queryBuilder("setLeaderboardMessage")).catch(e => console.error(e));
-					const reply = `Tree Channel: <#${treeChannel.id}> | Leaderboard Channel: <#${leaderboardChannel.id}>`;
-					await interaction.editReply(fn.builders.embed(reply)).catch(e => console.error(e));
-				}
-				break;
 			case "rolemenu":
 				let waterRoleId = interaction.options.getRole('waterrole').id;
 				let fruitRoleId = interaction.options.getRole('fruitrole') ? interaction.options.getRole('fruitrole').id : undefined;
