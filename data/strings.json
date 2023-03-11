@@ -70,5 +70,8 @@
 		"water": "is ready to be watered again!",
 		"fruit": "Fruit is appearing!"
 	},
+	"ids": {
+		"growATree": "972637072991068220"
+	},
 	"temp": {}
 }

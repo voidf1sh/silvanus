@@ -324,7 +324,6 @@ const functions = {
 	},
 	tree: {
 		parse(interaction, guildInfo) {
-			let input;
 			return new Promise((resolve, reject) => {
 				if (guildInfo == undefined) {
 					reject(`The guild entry hasn't been created yet. [${interaction.guildId || interaction.commandGuildId}]`);
@@ -337,6 +336,7 @@ const functions = {
 								reject("This doesn't appear to be a valid ``/tree`` message.");
 								return;
 							}
+							let input;
 							input = m.embeds[0].data.description;
 							let treeName = m.embeds[0].data.title;
 							let lines = input.split('\n');
@@ -493,12 +493,61 @@ const functions = {
 		},
 		isTree(message) {
 			if (message.embeds.length > 0) {
-				return message.embeds[0].data.description.includes("Your tree is");
+				// Grab the description and title
+				const {description, title} = message.embeds[0].data;
+				// Make sure it's a tree message
+				if (description.includes("Your tree is")) {
+					// Grab the name
+					const treeName = title;
+					// Grab the tree's height
+					const indices = [description.indexOf("Your tree is ") + 13, description.indexOf("ft")];
+					const treeHeightStr = description.slice(indices[0], indices[1]);
+					const treeHeightFloat = parseFloat(treeHeightStr).toFixed(1);
+
+					// Return the info gathered
+					return {
+						treeName: treeName,
+						treeHeight: treeHeightFloat
+					};
+				}
+			} else {
+				return false;
 			}
 		},
 		isLeaderboard(message) {
 			if (message.embeds.length > 0) {
 				return message.embeds[0].data.title == "Tallest Trees";
+			} else {
+				return false;
+			}
+		},
+		async updateHandler(message) {
+			if (message.partial) {
+				message = await message.fetch();
+			}
+			// Make sure the message is from Grow A Tree
+			if (message.author.id != strings.ids.growATree) return;
+			// Check and store the message types
+			const isLeaderboard = this.isLeaderboard(message);
+			const isTree = this.isTree(message);
+			// Check if the message is a leaderboard
+			if (isLeaderboard) {
+				// Need to actually handle this later
+				// console.log("I've seen a leaderboard update.");
+			} else if (isTree) { // Check if the message is a tree
+				// console.log(`I've seen a tree update: ${isTree.treeName}: ${isTree.treeHeight}ft`);
+				let guildInfo;
+				if (message.client.guildInfos.has(message.guildId)) {
+					guildInfo = message.client.guildInfos.get(message.guildId);
+					guildInfo.setName(isTree.treeName)
+						.setHeight(isTree.treeHeight);
+				} else {
+					guildInfo = new GuildInfo().setId(message.guildId)
+						.setName(isTree.treeName)
+						.setHeight(isTree.treeHeight);
+				}
+				const query = guildInfo.queryBuilder("setTreeInfo");
+				await dbfn.setGuildInfo(query);
 			}
 		}
 	},

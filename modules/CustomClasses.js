@@ -153,7 +153,17 @@ module.exports = {
                     }
                     return queryParts.join('');
                     break;
-                    default:
+                case "setTreeInfo":
+                    queryParts = [
+                        `INSERT INTO guild_info (`,
+                        `guild_id, tree_name, tree_height`,
+                        `) VALUES (`,
+                        `${db.escape(this.guildId)}, ${db.escape(this.treeName)}, ${db.escape(this.treeHeight)}`,
+                        `) ON DUPLICATE KEY UPDATE tree_name = ${db.escape(this.treeName)}, `,
+                        `tree_height = ${db.escape(this.treeHeight)}`
+                    ];
+                    return queryParts.join('');
+                default:
                     break;
             }
         }
