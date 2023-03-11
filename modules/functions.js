@@ -523,7 +523,7 @@ const functions = {
 		},
 		async updateHandler(message) {
 			if (message.partial) {
-				message = await message.fetch();
+				message = await message.fetch().catch(e => console.error(e));
 			}
 			// Make sure the message is from Grow A Tree
 			if (message.author.id != strings.ids.growATree) return;

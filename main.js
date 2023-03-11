@@ -87,8 +87,7 @@ client.on('interactionCreate', async interaction => {
 });
 
 client.on('messageUpdate', async message => {
-	await fn.sleep(50);
-	await fn.messages.updateHandler(message);
+	await fn.messages.updateHandler(message).catch(e => console.error(e));
 });
 
 async function checkRateLimits(hi) {
