@@ -24,10 +24,15 @@ const client = new Client({
 const fn = require('../modules/functions.js');
 
 client.once('ready', async () => {
-    watchRequestRates();
+    // watchRequestRates();
 	console.log('Ready!');
     const count = JSON.stringify(client.guilds.cache.size);
-    console.log(count);
+    console.log("I'm currently in " + count + " servers.");
+    const guilds = client.guilds.cache;
+    guilds.each(g => {
+        console.log(g.name);
+    });
+    process.exit();
 });
 
 client.login(token);
