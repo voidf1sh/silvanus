@@ -729,7 +729,7 @@ const functions = {
 			// Make sure guildInfo is what we expect, the watch channel isnt blank, and notifications are enabled
 			if (guildInfo instanceof GuildInfo && guildInfo.watchChannelId != "" && guildInfo.notificationsEnabled) {
 				// Fetch the Guild
-				const guild = await client.guilds.fetch(guildInfo.guildId).catch(e => console.err("Attempted to fetch guild I'm no longer in."));
+				const guild = await client.guilds.fetch(guildInfo.guildId).catch(e => console.error("Attempted to fetch guild I'm no longer in."));
 				// Fetch the Channel
 				const channel = await guild.channels.fetch(guildInfo.watchChannelId);
 				// Create the filter function
