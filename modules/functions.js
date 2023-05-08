@@ -539,7 +539,19 @@ const functions = {
 							hasPin: 0
 						}
 						// Break the line into parts separated by a hyphen -
-						const parts = line.split(" - ");
+						// DO NOT USE this, it breaks when any tree name contains " - " which
+						// isn't uncommon apparently
+						// const parts = line.split(" - ");
+
+						// Instead, find the indices of the first and last instances of " - "
+						const hyphenIndices = [line.indexOf(" - "), line.lastIndexOf(" - ")];
+						const parts = [
+							line.slice(0, hyphenIndices[0]),
+							line.slice(hyphenIndices[0] + 3, hyphenIndices[1]),
+							line.slice(hyphenIndices[1] + 3, line.length)
+						];
+
+						// 
 						// Grab the rank
 
 						// Preset the indices to split the lines to get the data
