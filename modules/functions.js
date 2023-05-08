@@ -260,7 +260,7 @@ const functions = {
 							});
 						}).catch(err => {
 							reject(strings.status.missingLeaderboardMessage);
-							console.error(err);
+							// console.error(err);
 							return;
 						});
 					}).catch(err => {
@@ -347,7 +347,7 @@ const functions = {
 							});
 						}).catch(err => {
 							reject(strings.status.missingTreeMessage);
-							console.error(err);
+							// console.error(err);
 							return;
 						});
 					}).catch(err => {
