@@ -713,10 +713,10 @@ const functions = {
 			return await guild.roles.fetch(roleId).catch(err => console.error("Error fetching the role: " + err + "\n" + roleId));
 		},
 		async giveRole(member, role) {
-			await member.roles.add(role).catch(err => console.error("Error giving the role: " + err + "\n" + JSON.stringify(role)));
+			await member.roles.add(role).catch(err => console.error(`Error giving role: ${err}\nRole Info: ${role.name} (${role.guild}: ${member.guild.name})`));
 		},
 		async takeRole(member, role) {
-			await member.roles.remove(role).catch(err => console.error("Error taking the role: " + err + "\n" + JSON.stringify(role)));
+			await member.roles.remove(role).catch(err => console.error(`Error removing role: ${err}\nRole Info: ${role.name} (${role.guild}: ${member.guild.name})`));
 		}
 	},
 	collectors: {
