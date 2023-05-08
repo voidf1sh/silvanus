@@ -1,6 +1,6 @@
 {
   "name": "silvanus",
-  "version": "1.2.4",
+  "version": "1.2.5",
   "description": "Grow A Tree Companion Bot",
   "main": "main.js",
   "scripts": {
