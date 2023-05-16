@@ -17,6 +17,7 @@ const { GuildInfo } = require('./CustomClasses');
 const config = require('../data/config.json');
 const strings = require('../data/strings.json');
 const slashCommandFiles = fs.readdirSync('./slash-commands/').filter(file => file.endsWith('.js'));
+const dotCommandFiles = fs.readdirSync('./dot-commands/').filter(file => file.endsWith('.js'));
 const dbfn = require('./dbfn.js');
 const { finished } = require('stream');
 
@@ -34,6 +35,44 @@ const functions = {
 				}
 			}
 			if (isDev) console.log('Slash Commands Collection Built');
+		},
+		dotCommands(client) {
+			// If the dotCommands collection doesn't exist already, create it
+			if (!client.dotCommands) client.dotCommands = new Discord.Collection();
+			// Empty the dotcommands collection
+			client.dotCommands.clear();
+			// Iterate over each file within ./dot-commands that ends with .js
+			for (const file of dotCommandFiles) {
+				// Pull the file into a temporary variable
+				const dotCommand = require(`../dot-commands/${file}`);
+				// Create a new entry in the collection with the key of the command name, value of the command itself
+				client.dotCommands.set(dotCommand.name, dotCommand);
+				// Old code from NodBot to implement aliases for dot commands. Unused as of 5/16/23
+				// if (Array.isArray(dotCommand.alias)) {
+				// 	dotCommand.alias.forEach(element => {
+				// 		client.dotCommands.set(element, dotCommand);
+				// 	});
+				// } else if (dotCommand.alias != undefined) {
+				// 	client.dotCommands.set(dotCommand.alias, dotCommand);
+				// }
+			}
+			if (isDev) console.log('Dot Commands Collection Built');
+		},
+		setvalidCommands(client) {
+			// Iterate over every entry in the dotCommands collection
+			for (const entry of client.dotCommands.map(command => command)) {
+				// Add the command's name to the valid commands list for validation later
+				config.validCommands.push(entry.name);
+				// Old code from NodBot to implement aliases for dot commands. Unused as of 5/16/23
+				// if (Array.isArray(entry.alias)) {
+				// 	entry.alias.forEach(element => {
+				// 		config.validCommands.push(element);
+				// 	});
+				// } else if (entry.alias != undefined) {
+				// 	config.validCommands.push(entry.alias);
+				// }
+			}
+			if (isDev) console.log(`Valid Commands Added to Config\n${config.validCommands}`);
 		},
 		async guildInfos(client) {
 			const guildInfos = await dbfn.getAllGuildInfos();
@@ -192,6 +231,40 @@ const functions = {
 				.setFooter({ text: `v${package.version} - ${strings.embeds.footer}` });
 			const messageContents = { embeds: [embed], ephemeral: true };
 			return messageContents;
+		}
+	},
+	dotCommands: {
+		getCommandData(message) {
+			const commandData = {};
+			// Split the message content at the final instance of a period
+			const finalPeriod = message.content.lastIndexOf('.');
+			if(isDev) console.log(message.content);
+			// If the final period is the last character, or doesn't exist
+			if (finalPeriod < 0) {
+				if (isDev) console.log(finalPeriod);
+				commandData.isCommand = false;
+				return commandData;
+			}
+			commandData.isCommand = true;
+			// Get the first part of the message, everything leading up to the final period
+			commandData.args = message.content.slice(0,finalPeriod).toLowerCase();
+			// Get the last part of the message, everything after the final period
+			commandData.command = message.content.slice(finalPeriod).replace('.','').toLowerCase();
+			commandData.author = `${message.author.username}#${message.author.discriminator}`;
+			return this.checkCommand(commandData);
+		},
+		checkCommand(commandData) {
+			if (commandData.isCommand) {
+				const validCommands = require('./config.json').validCommands;
+				commandData.isValid = validCommands.includes(commandData.command);
+				// Add exceptions for messages that contain only a link
+				if (commandData.args.startsWith('http')) commandData.isValid = false;
+			}
+			else {
+				commandData.isValid = false;
+				console.error('Somehow a non-command made it to checkCommands()');
+			}
+			return commandData;
 		}
 	},
 	rankings: {
