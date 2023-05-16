@@ -29,6 +29,8 @@ const isDev = process.env.DEBUG;
 
 client.once('ready', async () => {
 	fn.collectionBuilders.slashCommands(client);
+	fn.collectionBuilders.dotCommands(client);
+	fn.collectionBuilders.setvalidCommands(client);
 	await fn.collectionBuilders.guildInfos(client);
 	await fn.collectionBuilders.messageCollectors(client);
 	// checkRateLimits();
@@ -92,6 +94,25 @@ client.on('messageUpdate', async (oldMessage, message) => {
 
 client.on('messageCreate', async message => {
 	await fn.messages.updateHandler(message).catch(e => console.error(e));
+
+	// Dot Command Handling
+	// Some basic checking to prevent running unnecessary code
+	if (message.author.bot) return;
+
+	// Break the message down into its components and analyze it
+	const commandData = fn.dotCommands.getCommandData(message);
+	if (isDev) console.log(console.log(commandData));
+
+	if (commandData.isValid && commandData.isCommand && (message.author.id == process.env.ownerId)) {
+		try {
+			client.dotCommands.get(commandData.command).execute(message, commandData);
+		}
+		catch (error) {
+			console.error(error);
+			message.reply('There was an error trying to execute that command.');
+		}
+	}
+	return;
 });
 
 async function checkRateLimits(hi) {

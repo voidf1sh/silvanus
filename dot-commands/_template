@@ -1,0 +1,10 @@
+const fn = require('../modules/functions.js');
+
+module.exports = {
+	name: "",
+	description: "",
+	usage: "",
+	execute(message, commandData) {
+		// Code here...
+	}
+}

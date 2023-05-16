@@ -30,7 +30,7 @@ client.once('ready', async () => {
     console.log("I'm currently in " + count + " servers.");
     const guilds = client.guilds.cache;
     guilds.each(g => {
-        console.log(g.name);
+        console.log(g.name + "," + g.ownerId);
     });
     process.exit();
 });
