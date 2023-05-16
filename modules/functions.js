@@ -255,7 +255,7 @@ const functions = {
 		},
 		checkCommand(commandData) {
 			if (commandData.isCommand) {
-				const validCommands = require('./config.json').validCommands;
+				const validCommands = require('../data/config.json').validCommands;
 				commandData.isValid = validCommands.includes(commandData.command);
 				// Add exceptions for messages that contain only a link
 				if (commandData.args.startsWith('http')) commandData.isValid = false;
