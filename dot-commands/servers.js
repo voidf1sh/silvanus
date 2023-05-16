@@ -9,9 +9,9 @@ module.exports = {
 		const count = JSON.stringify(message.client.guilds.cache.size);
 		servers.push("I'm currently in " + count + " servers.");
 		const guilds = await message.client.guilds.cache;
-		await guilds.each(g => {
-			servers.push(g.name + "," + g.ownerId);
-		});
+		// await guilds.each(g => {
+		// 	servers.push(g.name + "," + g.ownerId);
+		// });
 		await message.reply(servers.join("\n"));
 	}
 }
