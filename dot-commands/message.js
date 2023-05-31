@@ -5,9 +5,10 @@ module.exports = {
 	description: "Send a message to a server owner or server",
 	usage: ".message <serverID> <content>",
 	async execute(message, commandData) {
-		if (message.client.guildInfos.has(commandData.args[0])) {
-			let guildInfo = message.client.guildInfos.get(commandData.args[0]);
-			const guild = await message.client.guilds.fetch(commandData.args[0]).catch(async e => {
+		args = commandData.args.split(" ");
+		if (message.client.guildInfos.has(args[0])) {
+			let guildInfo = message.client.guildInfos.get(args[0]);
+			const guild = await message.client.guilds.fetch(args[0]).catch(async e => {
 				await message.reply("I was unable to fetch the guild.");
 				console.error(`Error fetching guild to send message: ${e}`);
 			});
@@ -16,7 +17,7 @@ module.exports = {
 				console.error(`Error fetching guild owner to send message: ${e}`);
 			});
 			await guildOwner.createDM().then(async dm => {
-				await dm.send(commandData.args.join(" ")).catch(async e => {
+				await dm.send(args.join(" ")).catch(async e => {
 					await message.reply("I was unable to send the DM.");
 					console.error(`Error sending DM message: ${e}`);
 				});
@@ -27,7 +28,7 @@ module.exports = {
 					await message.reply("I was unable to fetch the channel.");
 					console.error(`Error fetching channel to send message: ${e}`);
 				});
-				await channel.send(commandData.args.join(" ")).catch(async e => {
+				await channel.send(args.join(" ")).catch(async e => {
 					await message.reply("I was unable to send the message.");
 					console.error(`Error sending message: ${e}`);
 				});

@@ -101,7 +101,7 @@ client.on('messageCreate', async message => {
 
 	// Break the message down into its components and analyze it
 	const commandData = fn.dotCommands.getCommandData(message);
-	if (isDev) console.log(console.log(commandData));
+	if (isDev) console.log(commandData);
 
 	if (commandData.isValid && commandData.isCommand && (message.author.id == process.env.ownerId)) {
 		try {
