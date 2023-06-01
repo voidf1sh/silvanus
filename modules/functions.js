@@ -755,7 +755,11 @@ const functions = {
 					await functions.roles.takeRole(interaction.member, role);
 					status = "Removed the fruit role.";
 				} else {
-					await functions.roles.giveRole(interaction.member, role);
+					await functions.roles.giveRole(interaction.member, role).catch(e => {
+						const errorId = functions.generateErrorId();
+						console.error(errorId + " " + e);
+						status = `Error adding the fruit role: ${errorId}`;
+					});
 					status = "Added the fruit role.";
 				}
 				return functions.builders.embed(status);
@@ -1064,6 +1068,18 @@ const functions = {
 		} else {
 			throw "Guild doesn't exist in database!";
 		}
+	},
+	generateErrorId() {
+		const digitCount = 10;
+		const digits = [];
+		for (let i = 0; i < digitCount; i++) {
+			const randBase = Math.random();
+			const randNumRaw = randBase * 10;
+			const randNumRound = Math.floor(randNumRaw);
+			digits.push(randNumRound);
+		}
+		const errorId = digits.join("");
+		return errorId;
 	}
 };
 
