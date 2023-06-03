@@ -238,10 +238,10 @@ const functions = {
 			const commandData = {};
 			// Split the message content at the final instance of a period
 			const finalPeriod = message.content.lastIndexOf('.');
-			if(isDev) console.log(message.content);
+			// if(isDev) console.log(message.content);
 			// If the final period is the last character, or doesn't exist
 			if (finalPeriod < 0) {
-				if (isDev) console.log(finalPeriod);
+				// if (isDev) console.log(finalPeriod);
 				commandData.isCommand = false;
 				return commandData;
 			}
