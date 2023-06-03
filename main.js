@@ -148,7 +148,7 @@ async function checkRateLimits(hi) {
 }
 
 process.on('unhandledRejection', error => {
-	console.error('Unhandled promise rejection:', error);
+	console.error('Unhandled promise rejection (pls dont break up with me):', error);
 });
 
 client.login(token);

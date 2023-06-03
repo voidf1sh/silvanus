@@ -25,9 +25,6 @@ const fn = require('../modules/functions.js');
 
 client.once('ready', async () => {
     // watchRequestRates();
-	console.log('Ready!');
-    const count = JSON.stringify(client.guilds.cache.size);
-    console.log("I'm currently in " + count + " servers.");
     const guilds = client.guilds.cache;
     guilds.each(g => {
         console.log(g.name + "," + g.ownerId);
