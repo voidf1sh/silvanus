@@ -143,7 +143,7 @@ module.exports = {
 					return;
 				}
 				db.end();
-				console.log("Updated the database");
+				// console.log("Updated the database");
 				resolve();
 			});
 		});
