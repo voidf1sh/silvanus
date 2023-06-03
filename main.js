@@ -89,7 +89,15 @@ client.on('interactionCreate', async interaction => {
 });
 
 client.on('messageUpdate', async (oldMessage, message) => {
-	await fn.messages.updateHandler(message).catch(e => console.error(e));
+	await fn.messages.updateHandler(message).catch(async e => {
+		switch (e) {
+			case strings.error.noCompareMessage:
+				await message.channel.send(strings.error.noCompareMessage);
+				break;
+			default:
+				break;
+		}
+	});
 });
 
 client.on('messageCreate', async message => {

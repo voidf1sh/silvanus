@@ -751,18 +751,24 @@ const functions = {
 		async fruitPing(interaction) {
 			if (interaction.client.guildInfos.has(interaction.guildId)) {
 				let guildInfo = interaction.client.guildInfos.get(interaction.guildId);
-				const role = await functions.roles.fetchRole(interaction.guild, guildInfo.fruitRoleId);
 				let status = "No Changes Made";
+				let errorFlag = false;
+				const role = await functions.roles.fetchRole(interaction.guild, guildInfo.fruitRoleId).catch(e => {
+					errorFlag = true;
+					status = strings.error.noFetchRole;
+				});
 				if (interaction.member.roles.cache.some(role => role.id == guildInfo.fruitRoleId)) {
-					await functions.roles.takeRole(interaction.member, role);
-					status = "Removed the fruit role.";
+					await functions.roles.takeRole(interaction.member, role).catch(e => {
+						errorFlag = true;
+						status = strings.error.noTakeRole;
+					});
+					if(!errorFlag) status = strings.error.yesTakeRole;
 				} else {
 					await functions.roles.giveRole(interaction.member, role).catch(e => {
-						const errorId = functions.generateErrorId();
-						console.error(errorId + " " + e);
-						status = `Error adding the fruit role: ${errorId}`;
+						errorFlag = true;
+						status = strings.error.noGiveRole;
 					});
-					status = "Added the fruit role.";
+					if (!errorFlag) status = strings.error.yesGiveRole;
 				}
 				return functions.builders.embed(status);
 			} else {
@@ -773,13 +779,23 @@ const functions = {
 			if (interaction.client.guildInfos.has(interaction.guildId)) {
 				let guildInfo = interaction.client.guildInfos.get(interaction.guildId);
 				let status = "No Changes Made";
-				const role = await functions.roles.fetchRole(interaction.guild, guildInfo.waterRoleId);
+				let errorFlag = false;
+				const role = await functions.roles.fetchRole(interaction.guild, guildInfo.waterRoleId).catch(e => {
+					errorFlag = true;
+					status = strings.error.noFetchRole;
+				});
 				if (interaction.member.roles.cache.some(role => role.id == guildInfo.waterRoleId)) {
-					await functions.roles.takeRole(interaction.member, role);
-					status = "Removed the water role.";
+					await functions.roles.takeRole(interaction.member, role).catch(e => {
+						errorFlag = true;
+						status = strings.error.noTakeRole;
+					});
+					if (!errorFlag) status = strings.error.yesTakeRole;
 				} else {
-					await functions.roles.giveRole(interaction.member, role);
-					status = "Added the water role.";
+					await functions.roles.giveRole(interaction.member, role).catch(e => {
+						errorFlag = true;
+						status = strings.error.noGiveRole;
+					});
+					if (!errorFlag) status = strings.error.yesGiveRole;
 				}
 				return functions.builders.embed(status);
 			} else {
@@ -789,13 +805,13 @@ const functions = {
 	},
 	roles: {
 		async fetchRole(guild, roleId) {
-			return await guild.roles.fetch(roleId).catch(err => console.error("Error fetching the role: " + err + "\n" + roleId));
+			return await guild.roles.fetch(roleId);
 		},
 		async giveRole(member, role) {
-			await member.roles.add(role).catch(err => console.error(`Error giving role: ${err}\nRole Info: ${role.name} (${role.guild}: ${member.guild.name})`));
+			await member.roles.add(role);
 		},
 		async takeRole(member, role) {
-			await member.roles.remove(role).catch(err => console.error(`Error removing role: ${err}\nRole Info: ${role.name} (${role.guild}: ${member.guild.name})`));
+			await member.roles.remove(role);
 		}
 	},
 	collectors: {
