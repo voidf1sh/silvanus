@@ -247,9 +247,9 @@ const functions = {
 			}
 			commandData.isCommand = true;
 			// Get the first part of the message, everything leading up to the final period
-			commandData.args = message.content.slice(0,finalPeriod).toLowerCase();
+			commandData.args = message.content.slice(0, finalPeriod).toLowerCase();
 			// Get the last part of the message, everything after the final period
-			commandData.command = message.content.slice(finalPeriod).replace('.','').toLowerCase();
+			commandData.command = message.content.slice(finalPeriod).replace('.', '').toLowerCase();
 			commandData.author = `${message.author.username}#${message.author.discriminator}`;
 			return this.checkCommand(commandData);
 		},
@@ -265,6 +265,19 @@ const functions = {
 				console.error('Somehow a non-command made it to checkCommands()');
 			}
 			return commandData;
+		},
+		checkPermissions(type, userId) {
+			if (type === "devTeam") {
+				const { devTeamIds } = config;
+				let matchFound = false;
+				for (let i = 0; i < devTeamIds.length; i++) {
+					if (userId === devTeamIds[i]) matchFound = true;
+				}
+				return matchFound;
+			} else if (type === "owner") {
+				return config.ownerId === userId;
+			}
+
 		}
 	},
 	rankings: {
@@ -762,7 +775,7 @@ const functions = {
 						errorFlag = true;
 						status = strings.error.noTakeRole;
 					});
-					if(!errorFlag) status = strings.error.yesTakeRole;
+					if (!errorFlag) status = strings.error.yesTakeRole;
 				} else {
 					await functions.roles.giveRole(interaction.member, role).catch(e => {
 						errorFlag = true;
@@ -824,7 +837,7 @@ const functions = {
 			// Make sure guildInfo is what we expect, the watch channel isnt blank, and notifications are enabled
 			if (guildInfo instanceof GuildInfo && guildInfo.watchChannelId != "" && guildInfo.notificationsEnabled) {
 				// Fetch the Guild
-				const guild = await client.guilds.fetch(guildInfo.guildId).catch(e => {throw "Attempted to fetch guild I'm no longer in."});
+				const guild = await client.guilds.fetch(guildInfo.guildId).catch(e => { throw "Attempted to fetch guild I'm no longer in." });
 				// Fetch the Channel
 				const channel = await guild.channels.fetch(guildInfo.watchChannelId);
 				// Create the filter function

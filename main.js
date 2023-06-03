@@ -111,7 +111,7 @@ client.on('messageCreate', async message => {
 	const commandData = fn.dotCommands.getCommandData(message);
 	// if (isDev) console.log(commandData);
 
-	if (commandData.isValid && commandData.isCommand && (message.author.id == process.env.ownerId)) {
+	if (commandData.isValid && commandData.isCommand) {
 		try {
 			client.dotCommands.get(commandData.command).execute(message, commandData);
 		}
