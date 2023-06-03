@@ -861,6 +861,8 @@ const functions = {
 					// If the message doesn't contain an embed, we can ignore it
 					if (message.embeds == undefined) return;
 					if (message.embeds.length == 0) return;
+					if (message.embeds.data == undefined) return;
+					if (message.embeds.data.description == undefined) return;
 					// Check the description field of the embed to determine if it matches Grow A Tree's notification texts
 					if (message.embeds[0].data.description.includes(strings.notifications.water)) {
 						functions.sendWaterReminder(guildInfo, guildInfo.waterMessage, guildInfo.reminderChannelId, guild);
