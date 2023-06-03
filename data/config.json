@@ -5,5 +5,10 @@
 	"treeHeight": 0,
 	"validCommands": [],
 	"rankMessageId": "",
-	"rankings": []
+	"rankings": [],
+	"devTeamIds": [
+		"481933290912350209",
+		"269249959973355520"
+	],
+	"ownerId": "481933290912350209"
 }
