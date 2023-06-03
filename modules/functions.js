@@ -686,6 +686,7 @@ const functions = {
 				if (doDbUpdate) {
 					const query = guildInfo.queryBuilder("setLeaderboardMessage");
 					await dbfn.setGuildInfo(query);
+					await functions.collectionBuilders.guildInfos(message.client);
 				}
 				await dbfn.uploadLeaderboard(isLeaderboard);
 				// Update the comparison message
@@ -741,6 +742,7 @@ const functions = {
 				if (doDbUpdate) {
 					const query = guildInfo.queryBuilder("setTreeInfo");
 					await dbfn.setGuildInfo(query);
+					await functions.collectionBuilders.guildInfos(message.client);
 				}
 			}
 		}
