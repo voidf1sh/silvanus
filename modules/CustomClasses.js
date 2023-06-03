@@ -63,11 +63,11 @@ module.exports = {
             return this;
         }
         setReminders(waterMessage, fruitMessage, reminderChannelId, watchChannelId, enabled) {
-            if (waterMessage) this.waterMessage = waterMessage;
-            if (fruitMessage) this.fruitMessage = fruitMessage;
-            if (reminderChannelId) this.reminderChannelId = reminderChannelId;
-            if (watchChannelId) this.watchChannelId = watchChannelId;
-            if (enabled) this.notificationsEnabled = enabled;
+            this.waterMessage = waterMessage === undefined ? this.waterMessage : waterMessage
+            this.fruitMessage = fruitMessage === undefined ? this.fruitMessage : fruitMessage;
+            this.reminderChannelId = reminderChannelId === undefined ? this.reminderChannelId : reminderChannelId
+            this.watchChannelId = watchChannelId === undefined ? this.watchChannelId : watchChannelId;
+            this.notificationsEnabled = enabled === undefined ? this.notificationsEnabled : enabled;
             return this;
         }
         setRoles(waterRoleId, fruitRoleId) {

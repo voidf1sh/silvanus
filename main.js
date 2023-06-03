@@ -33,9 +33,10 @@ client.once('ready', async () => {
 	fn.collectionBuilders.setvalidCommands(client);
 	await fn.collectionBuilders.guildInfos(client);
 	await fn.collectionBuilders.messageCollectors(client);
+	const serverCount = client.guilds.cache.size;
 	// checkRateLimits();
 	console.log('Ready!');
-	client.user.setActivity({ name: strings.activity.name, type: ActivityType.Watching });
+	client.user.setActivity({ name: `${serverCount} trees grow.`, type: ActivityType.Watching });
 	if (isDev == 'false') {
 		client.channels.fetch(statusChannelId).then(channel => {
 			channel.send(`${new Date().toISOString()} -- \nStartup Sequence Complete <@481933290912350209>`);

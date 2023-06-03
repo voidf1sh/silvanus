@@ -91,7 +91,17 @@ const functions = {
 			const { guildInfos, messageCollectors } = client;
 			// Iterate over each guild info
 			await guildInfos.forEach(async guildInfo => {
-				await functions.collectors.create(client, guildInfo);
+				await functions.collectors.create(client, guildInfo).catch(async e => {
+					if (e === "ERRNOGUILD") {
+						guildInfo.setReminders(undefined, undefined, undefined, undefined, false);
+						const query = guildInfo.queryBuilder("setReminders");
+						await dbfn.setGuildInfo(query);
+						await functions.collectionBuilders.guildInfos(client);
+						console.log("Disabled notification relay for a guild I'm no longer in: " + guildInfo.guildId);
+					} else {
+						throw e;
+					}
+				});
 			});
 		}
 	},
@@ -835,9 +845,11 @@ const functions = {
 				await this.end(client, guildInfo);
 			}
 			// Make sure guildInfo is what we expect, the watch channel isnt blank, and notifications are enabled
-			if (guildInfo instanceof GuildInfo && guildInfo.watchChannelId != "" && guildInfo.notificationsEnabled) {
+			if ((guildInfo instanceof GuildInfo && guildInfo.watchChannelId != "") && (guildInfo.notificationsEnabled == true)) {
 				// Fetch the Guild
-				const guild = await client.guilds.fetch(guildInfo.guildId).catch(e => { throw "Attempted to fetch guild I'm no longer in." });
+				const guild = await client.guilds.fetch(guildInfo.guildId).catch(e => {
+					throw "ERRNOGUILD"
+				});
 				// Fetch the Channel
 				const channel = await guild.channels.fetch(guildInfo.watchChannelId);
 				// Create the filter function
