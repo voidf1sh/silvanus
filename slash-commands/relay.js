@@ -114,6 +114,8 @@ module.exports = {
 						let query = guildInfo.queryBuilder("setReminders");
 						// Run the query
 						await dbfn.setGuildInfo(query);
+						// Refresh the collection
+						await fn.collectionBuilders.guildInfos(interaction.client);
 						// Create a messageCollector on the watch channel
 						fn.collectors.create(interaction.client, guildInfo);
 						// Compose a reply
@@ -150,6 +152,8 @@ module.exports = {
 						let query = guildInfo.queryBuilder("setReminders");
 						// Run the query
 						await dbfn.setGuildInfo(query);
+						// Refresh the collection
+						await fn.collectionBuilders.guildInfos(interaction.client);
 						// Create a messageCollector on the watch channel
 						fn.collectors.create(interaction.client, guildInfo);
 						// Compose a reply
@@ -173,6 +177,8 @@ module.exports = {
 						interaction.client.guildInfos.set(interaction.guildId, guildInfo);
 						// Update the database
 						await dbfn.setGuildInfo(guildInfo.queryBuilder("setReminders")).catch(e => console.error(e));
+						// Refresh the collection
+						await fn.collectionBuilders.guildInfos(interaction.client);
 						// Close the collector
 						await fn.collectors.end(interaction.client, guildInfo).catch(e => console.error(e));
 						// Reply confirming disabling of relay
