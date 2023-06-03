@@ -134,18 +134,28 @@ module.exports = {
                     return queryParts.join('');
                     break;
                 case "setTreeMessage":
+                    // queryParts = [
+                    //     `UPDATE guild_info SET tree_message_id = ${db.escape(this.treeMessageId)}, `,
+                    //     `tree_channel_id = ${db.escape(this.treeChannelId)} `,
+                    //     `WHERE guild_id = ${db.escape(this.guildId)}`
+                    // ];
                     queryParts = [
-                        `UPDATE guild_info SET tree_message_id = ${db.escape(this.treeMessageId)}, `,
-                        `tree_channel_id = ${db.escape(this.treeChannelId)} `,
-                        `WHERE guild_id = ${db.escape(this.guildId)}`
+                        `INSERT INTO guild_info (guild_id, tree_message_id, tree_channel_id)`,
+                        `VALUES (${db.escape(this.guildId)}, ${db.escape(this.treeMessageId)}, ${db.escape(this.treeChannelId)})`,
+                        `ON DUPLICATE KEY UPDATE tree_message_id = ${db.escape(this.treeMessageId)}, tree_channel_id = ${db.escape(this.treeChannelId)}`
                     ];
                     return queryParts.join('');
                     break;
                 case "setLeaderboardMessage":
+                    // queryParts = [
+                    //     `UPDATE guild_info SET leaderboard_message_id = ${db.escape(this.leaderboardMessageId)}, `,
+                    //     `leaderboard_channel_id = ${db.escape(this.leaderboardChannelId)} `,
+                    //     `WHERE guild_id = ${db.escape(this.guildId)}`
+                    // ];
                     queryParts = [
-                        `UPDATE guild_info SET leaderboard_message_id = ${db.escape(this.leaderboardMessageId)}, `,
-                        `leaderboard_channel_id = ${db.escape(this.leaderboardChannelId)} `,
-                        `WHERE guild_id = ${db.escape(this.guildId)}`
+                        `INSERT INTO guild_info (guild_id, leaderboard_message_id, leaderboard_channel_id)`,
+                        `VALUES (${db.escape(this.guildId)}, ${db.escape(this.leaderboardMessageId)}, ${db.escape(this.leaderboardChannelId)})`,
+                        `ON DUPLICATE KEY UPDATE leaderboard_message_id = ${db.escape(this.leaderboardMessageId)}, leaderboard_channel_id = ${db.escape(this.leaderboardChannelId)}`
                     ];
                     return queryParts.join('');
                     break;
