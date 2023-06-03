@@ -54,7 +54,12 @@
 		"invalidSubcommand": "Invalid subcommand detected.",
 		"noTreeMessage": "</tree:0> - Make sure you've sent or refreshed a Tree recently.",
 		"noLeaderboardMessage": "</top trees:0> - Make sure you've sent or refreshed the Tallest Trees leaderboard recently.",
-		"noCompareMessage": "</compare:0> - This is awkward, I've lost my own comparison message!"
+		"noCompareMessage": "</compare:0> - This is awkward, I've lost my own comparison message!",
+		"noFetchRole": "I was unable to find that role, please make sure it exists and I have access to it.",
+		"noGiveRole": "I was unable to give that role to you, please make sure I have permission to `Manage Roles` and that the role is below my role in the server settings role list.",
+		"noTakeRole": "I was unable to remove that role from you, please make sure I have permission to `Manage Roles` and that the role is below my role in the server settings role list.",
+		"yesGiveRole": "Successfully added the role to your profile!",
+		"yesTakeRole": "Successfully removed the role from your profile!"
 	},
 	"status": {
 		"treeAndLeaderboard": "Tree and leaderboard messages were both found, setup is complete. Run </setupinfo:1065413032374706196> to verify. Run </compare:1065346941166297128> to get started!",
