@@ -748,7 +748,7 @@ const functions = {
 				await compareMessage.edit(embed).catch(e => console.error(e));
 			} else if (isTree) {
 				// Check if the message is a tree
-				if (isDev) console.log(`TU: ${isTree.treeName}: ${isTree.treeHeight}ft`);
+				// if (isDev) console.log(`TU: ${isTree.treeName}: ${isTree.treeHeight}ft`);
 				let guildInfo;
 				let doDbUpdate = false;
 				if (message.client.guildInfos.has(message.guildId)) {
@@ -861,7 +861,10 @@ const functions = {
 				const collector = channel.createMessageCollector({ filter });
 				// Add the collector to the messageCollectors Collection
 				client.messageCollectors.set(guildInfo.guildId, collector);
+				// if (isDev) console.log("Set up a collector in " + guildInfo.guildId);
 				collector.on('collect', message => {
+					// if (isDev) console.log("Collected a message in " + message.guild.id);
+					if (message.guild.id === "1113951253949599844") console.log(JSON.stringify(message));
 					// Check for manual relay use with "water ping" and "fruit ping"
 					if (message.content.toLowerCase().includes("water ping")) {
 						functions.sendWaterReminder(guildInfo, guildInfo.waterMessage, guildInfo.reminderChannelId, guild);
@@ -873,8 +876,8 @@ const functions = {
 					// If the message doesn't contain an embed, we can ignore it
 					if (message.embeds == undefined) return;
 					if (message.embeds.length == 0) return;
-					if (message.embeds.data == undefined) return;
-					if (message.embeds.data.description == undefined) return;
+					// console.log(JSON.stringify(message.embeds[0].data));
+					if (message.embeds[0].data.description == undefined) return;
 					// Check the description field of the embed to determine if it matches Grow A Tree's notification texts
 					if (message.embeds[0].data.description.includes(strings.notifications.water)) {
 						functions.sendWaterReminder(guildInfo, guildInfo.waterMessage, guildInfo.reminderChannelId, guild);
