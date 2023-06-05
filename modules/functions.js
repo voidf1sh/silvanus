@@ -257,7 +257,7 @@ const functions = {
 			}
 			commandData.isCommand = true;
 			// Get the first part of the message, everything leading up to the final period
-			commandData.args = message.content.slice(0, finalPeriod).toLowerCase();
+			commandData.args = message.content.slice(0, finalPeriod);
 			// Get the last part of the message, everything after the final period
 			commandData.command = message.content.slice(finalPeriod).replace('.', '').toLowerCase();
 			commandData.author = `${message.author.username}#${message.author.discriminator}`;
