@@ -27,7 +27,7 @@ client.once('ready', async () => {
     // watchRequestRates();
     const guilds = client.guilds.cache;
     guilds.each(g => {
-        console.log(g.name + "," + g.ownerId);
+        console.log(g.name + "," + g.id + "," + g.ownerId);
     });
     process.exit();
 });
