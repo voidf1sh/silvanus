@@ -55,6 +55,11 @@ module.exports = {
 						.setDescription("Message to send for fruit reminders")
 						.setRequired(false)
 				)
+				.addBooleanOption(o =>
+					o.setName('enabled')
+						.setDescription("Enable the relay?")
+						.setRequired(false)
+				)
 		)
 		.addSubcommand(sc =>
 			sc.setName('disable')
@@ -137,15 +142,17 @@ module.exports = {
 						const inWaterMessage = interaction.options.getString('watermessage');
 						const inFruitMessage = interaction.options.getString('fruitmessage');
 						const inReminderChannel = interaction.options.getChannel('pingchannel');
+						const inEnabled = interaction.options.getBoolean('enabled');
 						
 						// Check if each option is set, if it is, use it. Otherwise use what was already set
 						const outWatchChannelId = inWatchChannel ? inWatchChannel.id : guildInfo.watchChannelId;
 						const outWaterMessage = inWaterMessage ? inWaterMessage : guildInfo.waterMessage;
 						const outFruitMessage = inFruitMessage ? inFruitMessage : guildInfo.fruitMessage;
 						const outReminderChannelId = inReminderChannel ? inReminderChannel.id : guildInfo.reminderChannelId;
+						const outEnabled = inEnabled === undefined ? guildInfo.notificationsEnabled : inEnabled;
 						
 						// Update the relay configuration
-						guildInfo.setReminders(outWaterMessage, outFruitMessage, outReminderChannelId, outWatchChannelId, true);
+						guildInfo.setReminders(outWaterMessage, outFruitMessage, outReminderChannelId, outWatchChannelId, outEnabled);
 						// Update the guildInfos Collection
 						interaction.client.guildInfos.set(interaction.guildId, guildInfo);
 						// Build a query to update the database
