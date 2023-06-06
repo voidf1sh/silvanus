@@ -286,6 +286,8 @@ const functions = {
 				return matchFound;
 			} else if (type === "owner") {
 				return config.ownerId === userId;
+			} else if (type === "everyone") {
+				return true;
 			}
 
 		}

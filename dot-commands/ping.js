@@ -4,7 +4,7 @@ module.exports = {
 	name: "ping",
 	description: "pong",
 	usage: "ping pong",
-	permission: "devTeam",
+	permission: "everyone",
 	async execute(message, commandData) {
 		if (fn.dotCommands.checkPermissions(this.permission, message.author.id)) {
 			try {
