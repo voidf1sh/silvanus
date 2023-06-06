@@ -211,6 +211,7 @@ module.exports = {
                 `[Tree Link](https://discord.com/channels/${this.guildId}/${this.treeChannelId}/${this.treeMessageId})`,
                 `Leaderboard Channel: <#${this.leaderboardChannelId}>`,
                 `[Leaderboard Link](https://discord.com/channels/${this.guildId}/${this.leaderboardChannelId}/${this.leaderboardMessageId})`,
+                `Notification Relay Enabled: ${this.notificationsEnabled}`,
                 `Notification Watch Channel: <#${this.watchChannelId}>`,
                 `Notification Relay Channel: <#${this.reminderChannelId}>`,
                 `Water Message: ${this.waterMessage}`,
