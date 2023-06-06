@@ -1,4 +1,5 @@
 const fn = require('../modules/functions.js');
+const { PermissionsBitField } = require('discord.js');
 
 module.exports = {
 	name: "permissions",
@@ -12,11 +13,11 @@ module.exports = {
 				const guildPerms =  me.permissions;
 				const manageRoles = guildPerms.has(PermissionsBitField.Flags.ManageRoles);
 				const mentionEveryone = guildPerms.has(PermissionsBitField.Flags.MentionEveryone);
-				const channelPerms = me.permissionsIn(interaction.channel);
+				const channelPerms = me.permissionsIn(message.channel);
 				const viewChannel = channelPerms.has(PermissionsBitField.Flags.ViewChannel);
 				const sendMessages = channelPerms.has(PermissionsBitField.Flags.SendMessages);
 				const responseParts = [
-					`This is the status of my permissions in this server and this channel (<#${interaction.channel.id}>)`,
+					`This is the status of my permissions in this server and this channel (<#${message.channel.id}>)`,
 					`**Guild Permissions**`,
 					`Manage Roles: ${manageRoles}`,
 					`Mention All Roles: ${mentionEveryone}`,
