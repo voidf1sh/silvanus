@@ -9,4 +9,7 @@ Silvanus is not affiliated with Grow A Tree or Limbo Labs.
 ## Silvanus Support Server
 [Join Discord Server](https://discord.gg/g5JRGn7PxU)
 
+## Silvanus Support Wiki
+Find the most up-to-date guides and information about Silvanus at the [Silvanus Support Wiki](https://silvanus.vfsh.dev/).
+
 Please find the most up-to-date guides and information at the Silvanus Support Discord Server!
