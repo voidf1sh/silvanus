@@ -26,6 +26,7 @@ const fn = require('./modules/functions.js');
 const strings = require('./data/strings.json');
 const dbfn = require('./modules/dbfn.js');
 const isDev = process.env.DEBUG;
+let statusChannel;
 
 client.once('ready', async () => {
 	fn.collectionBuilders.slashCommands(client);
@@ -37,10 +38,9 @@ client.once('ready', async () => {
 	// checkRateLimits();
 	console.log('Ready!');
 	client.user.setActivity({ name: `${serverCount} trees grow.`, type: ActivityType.Watching });
+	statusChannel = await client.channels.fetch(statusChannelId);
 	if (isDev == 'false') {
-		client.channels.fetch(statusChannelId).then(channel => {
-			channel.send(`${new Date().toISOString()} -- \nStartup Sequence Complete <@481933290912350209>`);
-		});
+		statusChannel.send(`${new Date().toISOString()} -- \nStartup Sequence Complete <@481933290912350209>`);
 	}
 });
 
@@ -122,6 +122,10 @@ client.on('messageCreate', async message => {
 		}
 	}
 	return;
+});
+
+client.on('guildCreate', async guild => {
+	await statusChannel.send(`I've been added to a new guild: ${guild.name} (${guild.id})`);
 });
 
 async function checkRateLimits(hi) {
