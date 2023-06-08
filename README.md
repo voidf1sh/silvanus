@@ -11,5 +11,6 @@ Silvanus is not affiliated with Grow A Tree or Limbo Labs.
 
 ## Silvanus Support Wiki
 Find the most up-to-date guides and information about Silvanus at the [Silvanus Support Wiki](https://silvanus.vfsh.dev/).
+[Silvanus Setup Guide](https://silvanus.vfsh.dev/en/setup)
 
 Please find the most up-to-date guides and information at the Silvanus Support Discord Server!
