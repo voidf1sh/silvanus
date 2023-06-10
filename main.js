@@ -125,7 +125,15 @@ client.on('messageCreate', async message => {
 });
 
 client.on('guildCreate', async guild => {
+	const serverCount = client.guilds.cache.size;
+	client.user.setActivity({ name: `${serverCount} trees grow.`, type: ActivityType.Watching });
 	await statusChannel.send(`I've been added to a new guild: ${guild.name} (${guild.id})`);
+});
+
+client.on('guildDelete', async guild => {
+	const serverCount = client.guilds.cache.size;
+	client.user.setActivity({ name: `${serverCount} trees grow.`, type: ActivityType.Watching });
+	await statusChannel.send(`I've been removed from a guild: ${guild.name} (${guild.id})`);
 });
 
 async function checkRateLimits(hi) {
