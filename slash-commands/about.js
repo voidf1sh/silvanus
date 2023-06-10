@@ -13,8 +13,8 @@ module.exports = {
 			 .addChoices(
 				{ name: "True", value: "true" },
 				{ name: "False", value: "false" })),
-	execute(interaction) {
-		const helpEmbed = fn.builders.helpEmbed(`${strings.help.info}\n\n${strings.help.longDescription}`, interaction.options.getString('private'));
-		interaction.reply(helpEmbed);
+	async execute(interaction) {
+		const aboutEmbed = fn.builders.aboutEmbed(interaction.options.getString('private'));
+		await interaction.reply(aboutEmbed);
 	},
 };

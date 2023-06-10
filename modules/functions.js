@@ -224,6 +224,19 @@ const functions = {
 			const messageContents = { embeds: [embed], ephemeral: privateBool };
 			return messageContents;
 		},
+		aboutEmbed(private) {
+			const embed = new EmbedBuilder()
+				.setColor(strings.embeds.color)
+				.setTitle(strings.help.aboutTitle)
+				.setDescription(`${strings.help.info}\n\n${strings.help.longDescription}`)
+				.setFooter({ text: `v${package.version} - ${strings.embeds.footer}` });
+			embed.addFields([
+				{ name: strings.help.topggTitle, value: strings.help.topggBody}
+			]);
+			const privateBool = private == 'true';
+			const messageContents = { embeds: [embed], ephemeral: privateBool };
+			return messageContents;
+		},
 		errorEmbed(content) {
 			const embed = new EmbedBuilder()
 				.setColor(0xFF0000)
