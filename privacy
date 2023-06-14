@@ -1,0 +1,39 @@
+Privacy Policy for Silvanus Discord Bot
+
+This Privacy Policy describes how Silvanus ("the Bot," "we," or "us") collects, uses, and stores your personal information when you interact with the bot. Please read this policy carefully to understand our practices regarding your personal data and how we will treat it.
+
+Data Collection and Usage:
+We collect and store the following data when you use the Silvanus Discord Bot:
+
+User IDs: We collect user IDs to provide personalized services and ensure smooth bot functionality.
+Guild IDs: We collect guild IDs to enable the bot to operate within specific servers and provide server-specific features.
+Channel IDs: We collect channel IDs to facilitate bot functionality within specific channels.
+Message IDs: We collect message IDs to support certain features and improve the user experience.
+Role IDs: We collect role IDs to provide role-based functionality within Discord servers.
+Tree Names, Ranks, and Heights: We collect tree-related data for in-game purposes and to enhance user interactions.
+
+Data Storage and Security:
+All collected data is stored securely using industry-standard practices. User IDs, guild IDs, channel IDs, message IDs, role IDs, tree names, tree ranks, and tree heights are stored in an encrypted MariaDB database. Additionally, the database is stored on a LUKS encrypted drive, providing an extra layer of security.
+
+Data Deletion Requests:
+If you would like to request the deletion of your data, please follow one of the methods below:
+
+Discord Message: You can message @voidf1sh on Discord to request data deletion.
+Email: You can send an email to SilvanusDev@gmail.com to request data deletion.
+Support Server: You can join our support server at https://discord.gg/g5JRGn7PxU and submit a request for data deletion.
+
+Please note that we will make reasonable efforts to respond to and process your data deletion requests in a timely manner, subject to any legal obligations or legitimate interests that may prevent us from complying with such requests.
+
+Data Sharing:
+We do not sell or share your personal information with third parties, except in the following circumstances:
+
+Compliance with Laws: We may share your personal information if required to do so by applicable laws, regulations, legal processes, or governmental requests.
+Protection of Rights: We may share your personal information to protect the rights, property, or safety of Silvanus, its users, or others.
+
+Changes to the Privacy Policy:
+We reserve the right to modify or update this Privacy Policy at any time. We will notify users of any material changes through the bot or other means. Your continued use of Silvanus after such modifications or updates signifies your acceptance of the revised Privacy Policy.
+
+Contact Information:
+If you have any questions, concerns, or requests regarding this Privacy Policy or our data practices, please contact us at SilvanusDev@gmail.com.
+
+Last updated: [22 May 2023]
