@@ -11,6 +11,7 @@ module.exports = {
     GuildInfo: class {
         constructor() {
             this.guildId = "";
+            this.ownerId = ""; // TODO Is ownerId fully implemented?
             this.treeName = "";
             this.treeHeight = 0;
             this.treeMessageId = "";
@@ -28,8 +29,9 @@ module.exports = {
             this.compareMessageId = "";
         }
     
-        setId(id) {
-            this.guildId = id;
+        setIds(guildId, ownerId) {
+            this.guildId = guildId;
+            this.ownerId = ownerId === undefined ? this.ownerId : ownerId
             return this;
         }
         setName(name) {
@@ -196,6 +198,23 @@ module.exports = {
                         `) VALUES (`,
                         `${db.escape(this.guildId)}, ${db.escape(this.compareChannelId)}, ${db.escape(this.compareMessageId)}`,
                         `) ON DUPLICATE KEY UPDATE compare_channel_id = ${db.escape(this.compareChannelId)}, compare_message_id = ${db.escape(this.compareMessageId)}`,
+                    ];
+                    return queryParts.join('');
+                // TODO This is hacked in and needs to be implemented throughout the code
+                case "setIds":
+                    queryParts = [
+                        `UPDATE guild_info SET `,
+                        `owner_id=${db.escape(this.ownerId)} `,
+                        `WHERE guild_id=${db.escape(this.guildId)}`
+                    ];
+                    return queryParts.join('');
+                case "setBasic":
+                    queryParts = [
+                        `INSERT INTO guild_info (`,
+                        `guild_id, owner_id`,
+                        `) VALUES (`,
+                        `${db.escape(this.guildId)}, ${db.escape(this.ownerId)}`,
+                        `) ON DUPLICATE KEY UPDATE owner_id=${db.escape(this.ownerId)}`
                     ];
                     return queryParts.join('');
                 default:

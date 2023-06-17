@@ -110,7 +110,7 @@ module.exports = {
 						const reminderChannel = interaction.options.getChannel('pingchannel');
 						// Create a new GuildInfo object
 						let guildInfo = new GuildInfo()
-							.setId(interaction.guildId)
+							.setIds(interaction.guildId, interaction.guild.ownerId)
 							// Set the reminder configuration
 							.setReminders(waterMessage, fruitMessage, reminderChannel.id, watchChannel.id, true);
 						// Update the guildInfos Collection

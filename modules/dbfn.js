@@ -63,7 +63,7 @@ module.exports = {
 				}
 				row = res[0];
 				const guildInfo = new GuildInfo()
-					.setId(row.guild_id)
+					.setIds(row.guild_id, row.owner_id)
 					.setName(row.tree_name)
 					.setHeight(row.tree_height)
 					.setTreeMessage(row.tree_message_id, row.tree_channel_id)
@@ -107,7 +107,7 @@ module.exports = {
 				for (let i = 0; i < res.length; i++) {
 					let row = res[i];
 					guildInfos.push(new GuildInfo()
-						.setId(row.guild_id)
+						.setIds(row.guild_id, row.owner_id)
 						.setName(row.tree_name)
 						.setHeight(row.tree_height)
 						.setTreeMessage(row.tree_message_id, row.tree_channel_id)
@@ -117,6 +117,7 @@ module.exports = {
 						.setCompareMessage(row.compare_channel_id, row.compare_message_id)
 					);
 				}
+				console.log(res.length + " // " + guildInfos.length);
 
 				db.end();
 				resolve(guildInfos);

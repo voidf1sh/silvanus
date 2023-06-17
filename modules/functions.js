@@ -463,7 +463,7 @@ const functions = {
 						});
 					}).catch(err => {
 						reject(strings.status.missingTreeChannel);
-						console.error(err);
+						// console.error(err);
 						return;
 					});
 				} else {
@@ -717,7 +717,7 @@ const functions = {
 						doDbUpdate = true;
 					}
 				} else {
-					guildInfo = new GuildInfo().setId(message.guildId)
+					guildInfo = new GuildInfo().setIds(message.guildId, message.guild.ownerId)
 						.setLeaderboardMessage(message.id, message.channel.id);
 					doDbUpdate = true;
 				}
@@ -773,7 +773,7 @@ const functions = {
 						doDbUpdate = true;
 					}
 				} else {
-					guildInfo = new GuildInfo().setId(message.guildId)
+					guildInfo = new GuildInfo().setIds(message.guildId, message.guild.ownerId)
 						.setTreeInfo(isTree.treeName, isTree.treeHeight, message.channel.id, message.id);
 					doDbUpdate = true;
 				}

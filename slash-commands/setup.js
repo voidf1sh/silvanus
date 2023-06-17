@@ -50,7 +50,7 @@ module.exports = {
 					await interaction.editReply(fn.builders.embeds.treeRoleMenu(guildInfo)).catch(e => console.error(e));
 				} else {
 					let guildInfo = new GuildInfo()
-						.setId(interaction.guildId);
+						.setIds(interaction.guildId, interaction.guild.ownerId);
 					guildInfo.setRoles(waterRoleId, fruitRoleId);
 					await dbfn.setGuildInfo(guildInfo.queryBuilder("setRoles"));
 					await fn.collectionBuilders.guildInfos(interaction.client);

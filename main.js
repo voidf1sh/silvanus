@@ -25,6 +25,7 @@ const client = new Client({
 const fn = require('./modules/functions.js');
 const strings = require('./data/strings.json');
 const dbfn = require('./modules/dbfn.js');
+const { GuildInfo } = require('./modules/CustomClasses.js');
 const isDev = process.env.DEBUG;
 let statusChannel;
 
@@ -71,7 +72,7 @@ client.on('interactionCreate', async interaction => {
 			case 'deleteping':
 				if (interaction.message.deletable) {
 					await interaction.message.delete().catch(err => {
-						console.error(err);
+						// console.error(err);
 					});
 				}
 				break;
@@ -128,12 +129,22 @@ client.on('guildCreate', async guild => {
 	const serverCount = client.guilds.cache.size;
 	client.user.setActivity({ name: `${serverCount} trees grow.`, type: ActivityType.Watching });
 	await statusChannel.send(`I've been added to a new guild: ${guild.name} (${guild.id})`);
+	const guildInfo = new GuildInfo()
+		.setIds(guild.id, guild.ownerId);
+	const setBasicQuery = guildInfo.queryBuilder("setBasic");
+	await dbfn.setGuildInfo(setBasicQuery).catch(e => console.error(e));
 });
 
 client.on('guildDelete', async guild => {
 	const serverCount = client.guilds.cache.size;
 	client.user.setActivity({ name: `${serverCount} trees grow.`, type: ActivityType.Watching });
 	await statusChannel.send(`I've been removed from a guild: ${guild.name} (${guild.id})`);
+	if (client.guildInfos.has(guild.id)) {
+		let guildInfo = client.guildInfos.get(guild.id);
+		guildInfo.setReminders(undefined, undefined, undefined, undefined, false);
+		const setRemindersQuery = guildInfo.queryBuilder("setReminders");
+		await dbfn.setGuildInfo(setRemindersQuery);
+	}
 });
 
 async function checkRateLimits(hi) {
