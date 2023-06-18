@@ -75,7 +75,7 @@
 		"reset": "All guild configuration information has been removed from the database.",
 		"resetError": "There was a problem deleting your guild information, contact @voidf1sh#0420 for help.",
 		"noRoleMenu": "A role menu has not been created for this guild yet. Run </setup rolemenu:0> to create a role menu.",
-		"optout": "Notification relay has been disabled, to re-enable the relay use </notifications update:0> with no options."
+		"optout": "Notification relay has been disabled, to re-enable the relay use </relay update:0> with no options."
 	},
 	"notifications": {
 		"water": "is ready to be watered again!",
