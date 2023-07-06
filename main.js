@@ -47,47 +47,58 @@ client.once('ready', async () => {
 
 // slash-commands
 client.on('interactionCreate', async interaction => {
-	if (interaction.isCommand()) {
-		if (isDev) {
-			// console.log(interaction);
+	try {
+		if (interaction.isCommand()) {
+			if (isDev) {
+				// console.log(interaction);
+			}
+			const { commandName } = interaction;
+	
+			if (client.slashCommands.has(commandName)) {
+				client.slashCommands.get(commandName).execute(interaction);
+			} else {
+				interaction.reply('Sorry, I don\'t have access to that command.');
+				console.error('Slash command attempted to run but not found: ' + commandName);
+			}
 		}
-		const { commandName } = interaction;
-
-		if (client.slashCommands.has(commandName)) {
-			client.slashCommands.get(commandName).execute(interaction);
-		} else {
-			interaction.reply('Sorry, I don\'t have access to that command.');
-			console.error('Slash command attempted to run but not found: ' + commandName);
-		}
-	}
-
-	if (interaction.isButton()) {
-		switch (interaction.component.customId) {
-			case 'refresh':
-				// console.log(JSON.stringify(interaction));
-				await fn.refresh(interaction).catch(err => {
-					interaction.channel.send(fn.builders.errorEmbed(err));
-				});
-				break;
-			case 'deleteping':
-				if (interaction.message.deletable) {
-					await interaction.message.delete().catch(err => {
-						// console.error(err);
+	
+		if (interaction.isButton()) {
+			switch (interaction.component.customId) {
+				case 'refresh':
+					// console.log(JSON.stringify(interaction));
+					await fn.refresh(interaction).catch(err => {
+						interaction.channel.send(fn.builders.errorEmbed("Oops! Something went wrong!"));
 					});
-				}
-				break;
-			case 'waterpingrole':
-				const waterPingStatus = await fn.buttonHandlers.waterPing(interaction);
-				await interaction.reply(waterPingStatus).catch(e => console.error(e));
-				break;
-			case 'fruitpingrole':
-				const fruitPingStatus = await fn.buttonHandlers.fruitPing(interaction);
-				await interaction.reply(fruitPingStatus).catch(e => console.error(e));
-				break;
-			default:
-				break;
+					break;
+				case 'deleteping':
+					if (interaction.message.deletable) {
+						await interaction.message.delete().catch(err => {
+							// console.error(err);
+						});
+					}
+					break;
+				case 'waterpingrole':
+					const waterPingStatus = await fn.buttonHandlers.waterPing(interaction);
+					await interaction.reply(waterPingStatus).catch(e => console.error(e));
+					break;
+				case 'fruitpingrole':
+					const fruitPingStatus = await fn.buttonHandlers.fruitPing(interaction);
+					await interaction.reply(fruitPingStatus).catch(e => console.error(e));
+					break;
+				default:
+					break;
+			}
+		}
+	} catch(err) {
+		if (err === "Guild doesn't exist in database!") {
+			interaction.channel.send(fn.builders.errorEmbed(strings.error.noGuild));
+			console.error(err);
+		} else {
+			interaction.channel.send("Oops! An error occurred... Sorry about that, please contact my owner @vfsh if this keeps happening.");
+			console.error(err);
 		}
 	}
+	
 });
 
 client.on('messageUpdate', async (oldMessage, message) => {

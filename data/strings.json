@@ -53,7 +53,7 @@
 		"supportServer": "https://discord.gg/g5JRGn7PxU"
 	},
 	"error": {
-		"noGuild": "Setup has not been completed yet. Try running </setup:1065407649363005561> or </help setup:1065346941166297129>",
+		"noGuild": "I was unable to find an entry for your server in the database. Try using the `/setup rolemenu` or `/relay` commands to generate a new entry. If that fails, try `/setup reset`, then kick me and re-add me. If you continue receiving this error, join the Support Server or DM @vfsh",
 		"invalidSubcommand": "Invalid subcommand detected.",
 		"noTreeMessage": "</tree:0> - Make sure you've sent or refreshed a Tree recently.",
 		"noLeaderboardMessage": "</top trees:0> - Make sure you've sent or refreshed the Tallest Trees leaderboard recently.",
