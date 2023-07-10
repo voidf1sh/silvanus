@@ -117,7 +117,7 @@ module.exports = {
 						.setCompareMessage(row.compare_channel_id, row.compare_message_id)
 					);
 				}
-				console.log(res.length + " // " + guildInfos.length);
+				// console.log(res.length + " // " + guildInfos.length);
 
 				db.end();
 				resolve(guildInfos);
