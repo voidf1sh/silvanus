@@ -881,10 +881,10 @@ const functions = {
 					// if (isDev) console.log("Collected a message in " + message.guild.id);
 					// Check for manual relay use with "water ping" and "fruit ping"
 					if (message.content.toLowerCase().includes("water ping")) {
-						functions.sendWaterReminder(guildInfo, guildInfo.waterMessage, guildInfo.reminderChannelId, guild).catch(e => console.error(`[${e.code}]: ${e.message}`));
+						functions.sendWaterReminder(guildInfo, guildInfo.waterMessage, guildInfo.reminderChannelId, guild).catch(e => console.error(`[${e.code}]: ${e.message} - ${e.url}`));
 						return;
 					} else if (message.content.toLowerCase().includes("fruit ping")) {
-						functions.sendFruitReminder(guildInfo, guildInfo.fruitMessage, guildInfo.reminderChannelId, guild).catch(e => console.error(`[${e.code}]: ${e.message}`));
+						functions.sendFruitReminder(guildInfo, guildInfo.fruitMessage, guildInfo.reminderChannelId, guild).catch(e => console.error(`[${e.code}]: ${e.message} - ${e.url}`));
 						return;
 					}
 					// If the message doesn't contain an embed, we can ignore it
@@ -894,9 +894,9 @@ const functions = {
 					if (message.embeds[0].data.description == undefined) return;
 					// Check the description field of the embed to determine if it matches Grow A Tree's notification texts
 					if (message.embeds[0].data.description.includes(strings.notifications.water)) {
-						functions.sendWaterReminder(guildInfo, guildInfo.waterMessage, guildInfo.reminderChannelId, guild).catch(e => console.error(`[${e.code}]: ${e.message}`));
+						functions.sendWaterReminder(guildInfo, guildInfo.waterMessage, guildInfo.reminderChannelId, guild).catch(e => console.error(`[${e.code}]: ${e.message} - ${e.url}`));
 					} else if (message.embeds[0].data.description.includes(strings.notifications.fruit)) {
-						functions.sendFruitReminder(guildInfo, guildInfo.fruitMessage, guildInfo.reminderChannelId, guild).catch(e => console.error(`[${e.code}]: ${e.message}`));
+						functions.sendFruitReminder(guildInfo, guildInfo.fruitMessage, guildInfo.reminderChannelId, guild).catch(e => console.error(`[${e.code}]: ${e.message} - ${e.url}`));
 					}
 				});
 			}
@@ -1053,7 +1053,7 @@ const functions = {
 				await m.delete().catch(e => console.error(e));
 			});
 		}).catch(err => {
-			console.error(`[${err.code}]: ${err.message}`);
+			console.error(`[${err.code}]: ${err.message} - ${err.url}`);
 		});
 	},
 	async sendFruitReminder(guildInfo, message, channelId, guild) {
@@ -1066,7 +1066,7 @@ const functions = {
 				await m.delete().catch(e => console.error(e));
 			});
 		}).catch(err => {
-			console.error(`[${err.code}]: ${err.message}`);
+			console.error(`[${err.code}]: ${err.message} - ${err.url}`);
 		});
 	},
 	async setupCollectors(client) {
@@ -1083,19 +1083,19 @@ const functions = {
 				const collector = channel.createMessageCollector({ filter });
 				collector.on('collect', message => {
 					if (message.content.toLowerCase().includes("water ping")) {
-						this.sendWaterReminder(guildInfo, guildInfo.waterMessage, guildInfo.reminderChannelId, guild).catch(e => console.error(`[${e.code}]: ${e.message}`));
+						this.sendWaterReminder(guildInfo, guildInfo.waterMessage, guildInfo.reminderChannelId, guild).catch(e => console.error(`[${e.code}]: ${e.message} - ${e.url}`));
 						return;
 					} else if (message.content.toLowerCase().includes("fruit ping")) {
-						this.sendFruitReminder(guildInfo, guildInfo.fruitMessage, guildInfo.reminderChannelId, guild).catch(e => console.error(`[${e.code}]: ${e.message}`));
+						this.sendFruitReminder(guildInfo, guildInfo.fruitMessage, guildInfo.reminderChannelId, guild).catch(e => console.error(`[${e.code}]: ${e.message} - ${e.url}`));
 						return;
 					}
 					if (message.embeds == undefined) return;
 					if (message.embeds.length == 0) return;
 					guildInfo = client.guildInfos.get(guild.id);
 					if (message.embeds[0].data.description.includes(strings.notifications.water)) {
-						this.sendWaterReminder(guildInfo, guildInfo.waterMessage, guildInfo.reminderChannelId, guild).catch(e => console.error(`[${e.code}]: ${e.message}`));
+						this.sendWaterReminder(guildInfo, guildInfo.waterMessage, guildInfo.reminderChannelId, guild).catch(e => console.error(`[${e.code}]: ${e.message} - ${e.url}`));
 					} else if (message.embeds[0].data.description.includes(strings.notifications.fruit)) {
-						this.sendFruitReminder(guildInfo, guildInfo.fruitMessage, guildInfo.reminderChannelId, guild).catch(e => console.error(`[${e.code}]: ${e.message}`));
+						this.sendFruitReminder(guildInfo, guildInfo.fruitMessage, guildInfo.reminderChannelId, guild).catch(e => console.error(`[${e.code}]: ${e.message} - ${e.url}`));
 					}
 				});
 			}
@@ -1113,18 +1113,18 @@ const functions = {
 			collectors.push(collector);
 			collector.on('collect', message => {
 				if (message.content.toLowerCase().includes("water ping")) {
-					this.sendWaterReminder(guildInfo, guildInfo.waterMessage, guildInfo.reminderChannelId, guild).catch(e => console.error(`[${e.code}]: ${e.message}`));
+					this.sendWaterReminder(guildInfo, guildInfo.waterMessage, guildInfo.reminderChannelId, guild).catch(e => console.error(`[${e.code}]: ${e.message} - ${e.url}`));
 					return;
 				} else if (message.content.toLowerCase().includes("fruit ping")) {
-					this.sendFruitReminder(guildInfo, guildInfo.fruitMessage, guildInfo.reminderChannelId, guild).catch(e => console.error(`[${e.code}]: ${e.message}`));
+					this.sendFruitReminder(guildInfo, guildInfo.fruitMessage, guildInfo.reminderChannelId, guild).catch(e => console.error(`[${e.code}]: ${e.message} - ${e.url}`));
 					return;
 				}
 				if (message.embeds == undefined) return;
 				if (message.embeds.length == 0) return;
 				if (message.embeds[0].data.description.includes(strings.notifications.water)) {
-					this.sendWaterReminder(guildInfo, guildInfo.waterMessage, guildInfo.reminderChannelId, guild).catch(e => console.error(`[${e.code}]: ${e.message}`));
+					this.sendWaterReminder(guildInfo, guildInfo.waterMessage, guildInfo.reminderChannelId, guild).catch(e => console.error(`[${e.code}]: ${e.message} - ${e.url}`));
 				} else if (message.embeds[0].data.description.includes(strings.notifications.fruit)) {
-					this.sendFruitReminder(guildInfo, guildInfo.fruitMessage, guildInfo.reminderChannelId, guild).catch(e => console.error(`[${e.code}]: ${e.message}`));
+					this.sendFruitReminder(guildInfo, guildInfo.fruitMessage, guildInfo.reminderChannelId, guild).catch(e => console.error(`[${e.code}]: ${e.message} - ${e.url}`));
 				}
 			});
 		} else {
