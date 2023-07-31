@@ -56,11 +56,6 @@ module.exports = {
 					db.end();
 					return;
 				}
-				if (res.length == 0) {
-					reject("There is no database entry for your guild yet. Try running /setup");
-					db.end();
-					return;
-				}
 				row = res[0];
 				const guildInfo = new GuildInfo()
 					.setIds(row.guild_id, row.owner_id)
